@@ -1,0 +1,191 @@
+@model IEnumerable<AgendaIR.Models.Funcionario>
+
+@{
+    ViewData["Title"] = "Gerenciar Funcionários";
+}
+
+<!-- Breadcrumbs -->
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Início</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Funcionários</li>
+    </ol>
+</nav>
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h2"><i class="bi bi-people-fill"></i> Gerenciar Funcionários</h1>
+                <a asp-action="Create" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Novo Funcionário
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mensagens de sucesso/erro -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill"></i> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Tabela de Funcionários -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            @if (Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Nome</th>
+                                <th>Username</th>
+                                <th>E-mail</th>
+                                <th>CPF</th>
+                                <th class="text-center">Administrador</th>
+                                <th class="text-center">Status</th>
+                                <th class="text-center">Data Criação</th>
+                                <th class="text-center" style="width: 200px;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <strong>@item.Nome</strong>
+                                    </td>
+                                    <td>
+                                        <code>@item.Username</code>
+                                    </td>
+                                    <td>@item.Email</td>
+                                    <td>@item.CPF</td>
+                                    <td class="text-center">
+                                        @if (item.IsAdmin)
+                                        {
+                                            <span class="badge bg-danger">
+                                                <i class="bi bi-shield-fill-check"></i> Admin
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">
+                                                <i class="bi bi-person-fill"></i> Funcionário
+                                            </span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        @if (item.Ativo)
+                                        {
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle-fill"></i> Ativo
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning text-dark">
+                                                <i class="bi bi-x-circle-fill"></i> Inativo
+                                            </span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <small>@item.DataCriacao.ToString("dd/MM/yyyy")</small>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group" role="group">
+                                            <a asp-action="Details" asp-route-id="@item.Id" 
+                                               class="btn btn-sm btn-info" 
+                                               title="Ver detalhes">
+                                                <i class="bi bi-eye-fill"></i>
+                                            </a>
+                                            <a asp-action="Edit" asp-route-id="@item.Id" 
+                                               class="btn btn-sm btn-warning" 
+                                               title="Editar">
+                                                <i class="bi bi-pencil-fill"></i>
+                                            </a>
+                                            <a asp-action="Delete" asp-route-id="@item.Id" 
+                                               class="btn btn-sm btn-danger" 
+                                               title="Excluir">
+                                                <i class="bi bi-trash-fill"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info" role="alert">
+                    <i class="bi bi-info-circle-fill"></i> 
+                    Nenhum funcionário cadastrado no sistema. 
+                    <a asp-action="Create" class="alert-link">Clique aqui para cadastrar o primeiro funcionário</a>.
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Estatísticas -->
+    @if (Model.Any())
+    {
+        <div class="row mt-4">
+            <div class="col-md-3">
+                <div class="card text-white bg-primary">
+                    <div class="card-body">
+                        <h5 class="card-title">Total de Funcionários</h5>
+                        <p class="card-text display-6">@Model.Count()</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-success">
+                    <div class="card-body">
+                        <h5 class="card-title">Funcionários Ativos</h5>
+                        <p class="card-text display-6">@Model.Count(f => f.Ativo)</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-danger">
+                    <div class="card-body">
+                        <h5 class="card-title">Administradores</h5>
+                        <p class="card-text display-6">@Model.Count(f => f.IsAdmin)</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-warning">
+                    <div class="card-body">
+                        <h5 class="card-title">Funcionários Inativos</h5>
+                        <p class="card-text display-6">@Model.Count(f => !f.Ativo)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        // Auto-dismiss alerts after 5 seconds
+        window.setTimeout(function() {
+            $(".alert").fadeTo(500, 0).slideUp(500, function(){
+                $(this).remove();
+            });
+        }, 5000);
+    </script>
+}

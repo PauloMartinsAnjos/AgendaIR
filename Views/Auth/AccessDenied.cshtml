@@ -1,0 +1,36 @@
+@{
+    ViewData["Title"] = "Acesso Negado";
+    Layout = "~/Views/Shared/_LayoutLogin.cshtml";
+}
+
+<div class="container">
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-6">
+            <div class="card shadow border-warning">
+                <div class="card-body text-center">
+                    <i class="bi bi-exclamation-triangle-fill text-warning" style="font-size: 4rem;"></i>
+                    <h3 class="card-title mt-3">Acesso Negado</h3>
+                    
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-warning mt-3">
+                            @TempData["Error"]
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="card-text mt-3">
+                            Você não tem permissão para acessar este recurso.
+                        </p>
+                    }
+
+                    <div class="mt-4">
+                        <a href="@Url.Action("Login", "Auth")" class="btn btn-primary">
+                            <i class="bi bi-box-arrow-in-right"></i> Ir para Login
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

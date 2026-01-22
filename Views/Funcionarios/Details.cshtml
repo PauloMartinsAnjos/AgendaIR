@@ -1,0 +1,282 @@
+@model AgendaIR.Models.Funcionario
+
+@{
+    ViewData["Title"] = "Detalhes do Funcionário";
+}
+
+<!-- Breadcrumbs -->
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Início</a></li>
+        <li class="breadcrumb-item"><a asp-action="Index">Funcionários</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Detalhes</li>
+    </ol>
+</nav>
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2"><i class="bi bi-person-badge-fill"></i> Detalhes do Funcionário</h1>
+                    <p class="text-muted">Informações completas do funcionário</p>
+                </div>
+                <div>
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
+                        <i class="bi bi-pencil-fill"></i> Editar
+                    </a>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Voltar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Informações do Funcionário -->
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-person-circle"></i> Informações Pessoais</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Nome Completo:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            @Model.Nome
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>E-mail:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            <a href="mailto:@Model.Email">@Model.Email</a>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>CPF:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            @Model.CPF
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Nome de Usuário:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            <code>@Model.Username</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-calendar-check"></i> Integração Google Calendar</h5>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrWhiteSpace(Model.GoogleCalendarEmail))
+                    {
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <strong>E-mail do Google:</strong>
+                            </div>
+                            <div class="col-md-8">
+                                <a href="mailto:@Model.GoogleCalendarEmail">@Model.GoogleCalendarEmail</a>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <strong>Status da Integração:</strong>
+                            </div>
+                            <div class="col-md-8">
+                                @if (!string.IsNullOrWhiteSpace(Model.GoogleCalendarToken))
+                                {
+                                    <span class="badge bg-success">
+                                        <i class="bi bi-check-circle-fill"></i> Conectado
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">
+                                        <i class="bi bi-exclamation-triangle-fill"></i> Não Conectado
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info mb-0" role="alert">
+                            <i class="bi bi-info-circle-fill"></i> 
+                            Este funcionário não possui integração com Google Calendar configurada.
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Estatísticas -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-bar-chart-fill"></i> Estatísticas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-6 mb-3">
+                            <div class="border rounded p-3">
+                                <h3 class="text-primary">@Model.Clientes.Count</h3>
+                                <p class="text-muted mb-0">Clientes Associados</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="border rounded p-3">
+                                <h3 class="text-success">@Model.Agendamentos.Count</h3>
+                                <p class="text-muted mb-0">Total de Agendamentos</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar com Status e Ações -->
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="bi bi-shield-check"></i> Status e Permissões</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Tipo de Conta:</strong>
+                        <br />
+                        @if (Model.IsAdmin)
+                        {
+                            <span class="badge bg-danger mt-2">
+                                <i class="bi bi-shield-fill-check"></i> Administrador
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary mt-2">
+                                <i class="bi bi-person-fill"></i> Funcionário
+                            </span>
+                        }
+                    </div>
+
+                    <div class="mb-3">
+                        <strong>Status:</strong>
+                        <br />
+                        @if (Model.Ativo)
+                        {
+                            <span class="badge bg-success mt-2">
+                                <i class="bi bi-check-circle-fill"></i> Ativo
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning text-dark mt-2">
+                                <i class="bi bi-x-circle-fill"></i> Inativo
+                            </span>
+                        }
+                    </div>
+
+                    <div class="mb-3">
+                        <strong>Data de Criação:</strong>
+                        <br />
+                        <small class="text-muted">@Model.DataCriacao.ToString("dd/MM/yyyy HH:mm")</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="bi bi-gear-fill"></i> Ações</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
+                            <i class="bi bi-pencil-fill"></i> Editar Funcionário
+                        </a>
+                        
+                        @if (Model.Clientes.Count == 0 && Model.Agendamentos.Count == 0)
+                        {
+                            <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">
+                                <i class="bi bi-trash-fill"></i> Excluir Funcionário
+                            </a>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-danger" disabled title="Não é possível excluir funcionário com clientes ou agendamentos associados">
+                                <i class="bi bi-trash-fill"></i> Excluir Funcionário
+                            </button>
+                            <small class="text-muted">
+                                <i class="bi bi-info-circle"></i> 
+                                Este funcionário possui clientes ou agendamentos associados.
+                            </small>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Clientes Associados -->
+    @if (Model.Clientes.Any())
+    {
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-people-fill"></i> Clientes Associados</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Nome</th>
+                                        <th>E-mail</th>
+                                        <th>Telefone</th>
+                                        <th>CPF</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var cliente in Model.Clientes.OrderBy(c => c.Nome))
+                                    {
+                                        <tr>
+                                            <td>@cliente.Nome</td>
+                                            <td>@cliente.Email</td>
+                                            <td>@cliente.Telefone</td>
+                                            <td>@cliente.CPF</td>
+                                            <td>
+                                                @if (cliente.Ativo)
+                                                {
+                                                    <span class="badge bg-success">Ativo</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-warning text-dark">Inativo</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

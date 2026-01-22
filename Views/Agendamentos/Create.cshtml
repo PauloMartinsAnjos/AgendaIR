@@ -1,0 +1,176 @@
+@model AgendaIR.Models.ViewModels.AgendamentoCreateViewModel
+
+@{
+    ViewData["Title"] = "Novo Agendamento";
+}
+
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="bi bi-calendar-plus"></i> Novo Agendamento</h2>
+            <p class="text-muted">Preencha as informações para agendar seu atendimento IR</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card shadow">
+                <div class="card-body">
+                    <form asp-action="Create" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                        <!-- Informações do Funcionário Responsável -->
+                        <div class="card mb-4 bg-light">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="bi bi-person-badge"></i> Funcionário Responsável</h5>
+                                <p class="mb-0"><strong>@Model.FuncionarioNome</strong></p>
+                                <small class="text-muted">Este é o funcionário que irá atendê-lo</small>
+                            </div>
+                        </div>
+
+                        <!-- Data e Hora -->
+                        <div class="mb-4">
+                            <label asp-for="DataHora" class="form-label">
+                                <i class="bi bi-calendar-event"></i> Data e Hora do Agendamento
+                            </label>
+                            <input asp-for="DataHora" class="form-control" type="datetime-local" />
+                            <span asp-validation-for="DataHora" class="text-danger"></span>
+                            <small class="form-text text-muted">
+                                <i class="bi bi-info-circle"></i> Agendamentos disponíveis de segunda a sexta-feira, das 8h às 18h
+                            </small>
+                        </div>
+
+                        <!-- Observações -->
+                        <div class="mb-4">
+                            <label asp-for="Observacoes" class="form-label">
+                                <i class="bi bi-chat-text"></i> Observações (Opcional)
+                            </label>
+                            <textarea asp-for="Observacoes" class="form-control" rows="3" 
+                                      placeholder="Adicione informações adicionais sobre seu agendamento..."></textarea>
+                            <span asp-validation-for="Observacoes" class="text-danger"></span>
+                        </div>
+
+                        <!-- Documentos -->
+                        <div class="mb-4">
+                            <h5><i class="bi bi-file-earmark-arrow-up"></i> Documentos Necessários</h5>
+                            <p class="text-muted">
+                                Faça o upload dos documentos solicitados. 
+                                Documentos marcados com <span class="badge bg-danger">Obrigatório</span> são necessários.
+                            </p>
+
+                            @for (int i = 0; i < Model.Documentos.Count; i++)
+                            {
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <div class="row align-items-center">
+                                            <div class="col-md-6">
+                                                <h6 class="mb-1">
+                                                    <i class="bi bi-file-earmark-text"></i> @Model.Documentos[i].Nome
+                                                    @if (Model.Documentos[i].Obrigatorio)
+                                                    {
+                                                        <span class="badge bg-danger ms-2">Obrigatório</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-secondary ms-2">Opcional</span>
+                                                    }
+                                                </h6>
+                                                @if (!string.IsNullOrEmpty(Model.Documentos[i].Descricao))
+                                                {
+                                                    <small class="text-muted">@Model.Documentos[i].Descricao</small>
+                                                }
+                                            </div>
+                                            <div class="col-md-6">
+                                                <input type="hidden" asp-for="Documentos[i].DocumentoSolicitadoId" />
+                                                <input type="hidden" asp-for="Documentos[i].Nome" />
+                                                <input type="hidden" asp-for="Documentos[i].Descricao" />
+                                                <input type="hidden" asp-for="Documentos[i].Obrigatorio" />
+                                                
+                                                <input asp-for="Documentos[i].Arquivo" class="form-control" type="file" 
+                                                       accept=".pdf,.jpg,.jpeg,.png" />
+                                                <small class="form-text text-muted">
+                                                    Formatos aceitos: PDF, JPG, PNG (máx. 10MB)
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Botões -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a asp-action="MeusAgendamentos" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Criar Agendamento
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // Definir data mínima como amanhã
+        document.addEventListener('DOMContentLoaded', function() {
+            var dataHoraInput = document.querySelector('input[type="datetime-local"]');
+            if (dataHoraInput) {
+                // Data mínima: amanhã
+                var tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                tomorrow.setHours(8, 0, 0, 0);
+                
+                // Formatar para datetime-local (YYYY-MM-DDTHH:MM)
+                var year = tomorrow.getFullYear();
+                var month = String(tomorrow.getMonth() + 1).padStart(2, '0');
+                var day = String(tomorrow.getDate()).padStart(2, '0');
+                var hours = String(tomorrow.getHours()).padStart(2, '0');
+                var minutes = String(tomorrow.getMinutes()).padStart(2, '0');
+                
+                var minDateTime = year + '-' + month + '-' + day + 'T' + hours + ':' + minutes;
+                dataHoraInput.setAttribute('min', minDateTime);
+                
+                // Validação ao mudar
+                dataHoraInput.addEventListener('change', function() {
+                    var selectedDate = new Date(this.value);
+                    var dayOfWeek = selectedDate.getDay();
+                    var hour = selectedDate.getHours();
+                    
+                    // Verificar fim de semana
+                    if (dayOfWeek === 0 || dayOfWeek === 6) {
+                        alert('Agendamentos só podem ser feitos de segunda a sexta-feira.');
+                        this.value = '';
+                        return;
+                    }
+                    
+                    // Verificar horário (8h às 18h)
+                    if (hour < 8 || hour >= 18) {
+                        alert('Agendamentos só podem ser feitos entre 8h e 18h.');
+                        this.value = '';
+                        return;
+                    }
+                });
+            }
+        });
+
+        // Preview dos arquivos selecionados
+        document.querySelectorAll('input[type="file"]').forEach(function(input) {
+            input.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    var fileName = this.files[0].name;
+                    var fileSize = (this.files[0].size / 1024 / 1024).toFixed(2); // MB
+                    console.log('Arquivo selecionado: ' + fileName + ' (' + fileSize + ' MB)');
+                }
+            });
+        });
+    </script>
+}
