@@ -1,0 +1,148 @@
+@model AgendaIR.Models.ViewModels.ClienteCreateViewModel
+
+@{
+    ViewData["Title"] = "Novo Cliente";
+    var isAdmin = User.FindFirst("IsAdmin")?.Value == "True";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-person-plus-fill"></i> Cadastrar Novo Cliente
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                        @* Nome *@
+                        <div class="mb-3">
+                            <label asp-for="Nome" class="form-label">
+                                <i class="bi bi-person"></i> Nome Completo
+                            </label>
+                            <input asp-for="Nome" class="form-control" placeholder="Ex: João da Silva" />
+                            <span asp-validation-for="Nome" class="text-danger"></span>
+                        </div>
+
+                        @* Email *@
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label">
+                                <i class="bi bi-envelope"></i> Email
+                            </label>
+                            <input asp-for="Email" class="form-control" type="email" placeholder="Ex: joao@email.com" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+
+                        @* Telefone *@
+                        <div class="mb-3">
+                            <label asp-for="Telefone" class="form-label">
+                                <i class="bi bi-whatsapp"></i> Telefone/WhatsApp
+                            </label>
+                            <input asp-for="Telefone" 
+                                   class="form-control" 
+                                   placeholder="Ex: (11) 98765-4321"
+                                   id="telefone" />
+                            <span asp-validation-for="Telefone" class="text-danger"></span>
+                            <div class="form-text">
+                                O link de acesso poderá ser enviado diretamente para este WhatsApp
+                            </div>
+                        </div>
+
+                        @* CPF *@
+                        <div class="mb-3">
+                            <label asp-for="CPF" class="form-label">
+                                <i class="bi bi-card-text"></i> CPF
+                            </label>
+                            <input asp-for="CPF" 
+                                   class="form-control" 
+                                   placeholder="Ex: 123.456.789-00"
+                                   id="cpf" />
+                            <span asp-validation-for="CPF" class="text-danger"></span>
+                        </div>
+
+                        @* Funcionário Responsável *@
+                        <div class="mb-3">
+                            <label asp-for="FuncionarioId" class="form-label">
+                                <i class="bi bi-person-badge"></i> Funcionário Responsável
+                            </label>
+                            
+                            @if (isAdmin)
+                            {
+                                @* Admin pode selecionar qualquer funcionário *@
+                                <select asp-for="FuncionarioId" class="form-select">
+                                    <option value="">Selecione um funcionário</option>
+                                    @if (ViewBag.Funcionarios != null)
+                                    {
+                                        foreach (var func in ViewBag.Funcionarios as IEnumerable<AgendaIR.Models.Funcionario>)
+                                        {
+                                            <option value="@func.Id">@func.Nome</option>
+                                        }
+                                    }
+                                </select>
+                                <span asp-validation-for="FuncionarioId" class="text-danger"></span>
+                            }
+                            else
+                            {
+                                @* Funcionário vê apenas seu nome (readonly) *@
+                                var funcionarioNome = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value ?? "";
+                                <input type="text" class="form-control" value="@funcionarioNome" readonly disabled />
+                                <input asp-for="FuncionarioId" type="hidden" />
+                                <div class="form-text">
+                                    Este cliente será vinculado a você
+                                </div>
+                            }
+                        </div>
+
+                        <hr class="my-4" />
+
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i>
+                            <strong>Importante:</strong> Após criar o cliente, um link mágico (Magic Link) será gerado automaticamente.
+                            Você poderá copiar este link e enviar ao cliente via WhatsApp para que ele acesse o sistema.
+                        </div>
+
+                        @* Botões *@
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Cadastrar Cliente
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // Máscara para CPF
+        document.getElementById('cpf').addEventListener('input', function (e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length <= 11) {
+                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            }
+            e.target.value = value;
+        });
+
+        // Máscara para telefone
+        document.getElementById('telefone').addEventListener('input', function (e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length <= 11) {
+                value = value.replace(/^(\d{2})(\d)/g, '($1) $2');
+                value = value.replace(/(\d)(\d{4})$/, '$1-$2');
+            }
+            e.target.value = value;
+        });
+    </script>
+}

@@ -1,0 +1,151 @@
+@model AgendaIR.Models.Cliente
+
+@{
+    ViewData["Title"] = "Cliente Criado com Sucesso";
+    var magicLink = ViewBag.MagicLink as string ?? "";
+    var whatsappLink = ViewBag.WhatsAppLink as string ?? "";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            @* Mensagem de sucesso *@
+            <div class="alert alert-success text-center mb-4">
+                <h3 class="mb-3">
+                    <i class="bi bi-check-circle-fill" style="font-size: 3rem;"></i>
+                </h3>
+                <h4>Cliente Cadastrado com Sucesso!</h4>
+                <p class="mb-0">O cliente <strong>@Model.Nome</strong> foi cadastrado e o link de acesso foi gerado.</p>
+            </div>
+
+            @* Card com informações do cliente *@
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person-check"></i> Informações do Cliente
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Nome:</strong> @Model.Nome</p>
+                            <p><strong>Email:</strong> @Model.Email</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Telefone:</strong> @Model.Telefone</p>
+                            <p><strong>CPF:</strong> @Model.CPF</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p><strong>Funcionário Responsável:</strong> 
+                                <span class="badge bg-info">@Model.Funcionario?.Nome</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* Card com Magic Link *@
+            <div class="card shadow mb-4 border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="bi bi-link-45deg"></i> Link de Acesso do Cliente (Magic Link)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Importante:</strong> Este é o link único que permite ao cliente acessar o sistema.
+                        Envie este link para o cliente via WhatsApp ou email.
+                    </div>
+
+                    @* Campo com o magic link *@
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Link de Acesso:</label>
+                        <div class="input-group">
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="magicLinkInput" 
+                                   value="@magicLink" 
+                                   readonly>
+                            <button class="btn btn-primary" 
+                                    type="button" 
+                                    id="copyButton"
+                                    onclick="copyMagicLink()">
+                                <i class="bi bi-clipboard"></i> Copiar Link
+                            </button>
+                        </div>
+                        <div class="form-text">
+                            O cliente pode usar este link para fazer login automaticamente
+                        </div>
+                    </div>
+
+                    @* Botão para WhatsApp *@
+                    <div class="d-grid gap-2 mt-4">
+                        <a href="@whatsappLink" 
+                           target="_blank" 
+                           class="btn btn-success btn-lg">
+                            <i class="bi bi-whatsapp"></i> Enviar Link via WhatsApp
+                        </a>
+                        <small class="text-muted text-center">
+                            Clique para abrir o WhatsApp com uma mensagem pré-formatada contendo o link
+                        </small>
+                    </div>
+
+                    @* QR Code (opcional - placeholder) *@
+                    <div class="text-center mt-4 d-none">
+                        <p class="text-muted">
+                            <i class="bi bi-qr-code"></i> 
+                            Ou mostre este QR Code para o cliente escanear
+                        </p>
+                        @* Aqui você pode adicionar uma biblioteca de QR Code se desejar *@
+                    </div>
+                </div>
+            </div>
+
+            @* Ações *@
+            <div class="row">
+                <div class="col-md-6 mb-2">
+                    <a asp-action="Index" class="btn btn-secondary w-100">
+                        <i class="bi bi-list"></i> Voltar para Lista de Clientes
+                    </a>
+                </div>
+                <div class="col-md-6 mb-2">
+                    <a asp-action="Create" class="btn btn-primary w-100">
+                        <i class="bi bi-plus-circle"></i> Cadastrar Outro Cliente
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Função para copiar o magic link
+        function copyMagicLink() {
+            const input = document.getElementById('magicLinkInput');
+            const button = document.getElementById('copyButton');
+            
+            input.select();
+            input.setSelectionRange(0, 99999); // Para mobile
+            
+            navigator.clipboard.writeText(input.value).then(function() {
+                // Feedback visual
+                const originalHTML = button.innerHTML;
+                button.innerHTML = '<i class="bi bi-check"></i> Link Copiado!';
+                button.classList.remove('btn-primary');
+                button.classList.add('btn-success');
+                
+                setTimeout(function() {
+                    button.innerHTML = originalHTML;
+                    button.classList.remove('btn-success');
+                    button.classList.add('btn-primary');
+                }, 3000);
+            }).catch(function(err) {
+                alert('Erro ao copiar o link: ' + err);
+            });
+        }
+    </script>
+}
