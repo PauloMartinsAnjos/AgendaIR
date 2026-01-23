@@ -631,6 +631,204 @@ namespace AgendaIR.Controllers
         }
 
         /// <summary>
+        /// FUNCIONÁRIO/ADMIN: Exibe formulário para criar novo agendamento para um cliente
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> CreateAgendamento()
+        {
+            var userType = GetUserType();
+            if (userType != "Funcionario")
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            var funcionarioId = GetUsuarioId();
+            if (funcionarioId == null)
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            var isAdmin = IsAdmin();
+
+            // Carregar tipos ativos
+            ViewBag.TiposAgendamento = await _context.TiposAgendamento
+                .Where(t => t.Ativo)
+                .OrderBy(t => t.Nome)
+                .ToListAsync();
+
+            // Carregar clientes
+            var query = _context.Clientes.Where(c => c.Ativo).AsQueryable();
+            
+            if (!isAdmin)
+            {
+                query = query.Where(c => c.FuncionarioId == funcionarioId.Value);
+            }
+
+            ViewBag.Clientes = await query.OrderBy(c => c.Nome).ToListAsync();
+
+            // Se admin, carregar funcionários para escolher responsável
+            if (isAdmin)
+            {
+                ViewBag.Funcionarios = await _context.Funcionarios
+                    .Where(f => f.Ativo)
+                    .OrderBy(f => f.Nome)
+                    .ToListAsync();
+            }
+
+            var model = new AgendamentoCreateViewModel();
+            return View(model);
+        }
+
+        /// <summary>
+        /// FUNCIONÁRIO/ADMIN: Processa criação de novo agendamento para um cliente
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateAgendamento(AgendamentoCreateViewModel model, List<IFormFile> documentos)
+        {
+            var userType = GetUserType();
+            if (userType != "Funcionario")
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            var funcionarioId = GetUsuarioId();
+            if (funcionarioId == null)
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            var isAdmin = IsAdmin();
+
+            // Validação básica
+            if (model.ClienteId == 0)
+            {
+                ModelState.AddModelError("ClienteId", "Selecione um cliente");
+            }
+
+            if (model.TipoAgendamentoId == 0)
+            {
+                ModelState.AddModelError("TipoAgendamentoId", "Selecione o tipo de agendamento");
+            }
+
+            if (ModelState.IsValid)
+            {
+                // Validar documentos obrigatórios
+                var docsObrigatorios = await _context.DocumentosSolicitados
+                    .Where(d => d.TipoAgendamentoId == model.TipoAgendamentoId && d.Obrigatorio && d.Ativo)
+                    .ToListAsync();
+
+                if (docsObrigatorios.Any() && (documentos == null || !documentos.Any()))
+                {
+                    ModelState.AddModelError("", "Este tipo de agendamento requer documentos obrigatórios");
+                    await CarregarViewBags(isAdmin, funcionarioId.Value);
+                    return View(model);
+                }
+
+                // Determinar responsável
+                int responsavelId;
+                if (isAdmin && model.FuncionarioId > 0)
+                {
+                    responsavelId = model.FuncionarioId; // Admin escolheu
+                }
+                else
+                {
+                    responsavelId = funcionarioId.Value; // Funcionário logado
+                }
+
+                // Validar data/hora
+                var validacao = ValidarDataHoraAgendamento(model.DataHora);
+                if (!validacao.IsValid)
+                {
+                    ModelState.AddModelError("DataHora", validacao.ErrorMessage);
+                    await CarregarViewBags(isAdmin, funcionarioId.Value);
+                    return View(model);
+                }
+
+                var agendamento = new Agendamento
+                {
+                    ClienteId = model.ClienteId,
+                    FuncionarioId = responsavelId,
+                    TipoAgendamentoId = model.TipoAgendamentoId,
+                    DataHora = model.DataHora,
+                    Status = "Pendente",
+                    Observacoes = model.Observacoes,
+                    DataCriacao = DateTime.UtcNow,
+                    DataAtualizacao = DateTime.UtcNow
+                };
+
+                _context.Add(agendamento);
+                await _context.SaveChangesAsync();
+
+                // Upload de documentos (simplified for funcionario workflow)
+                if (documentos != null && documentos.Any())
+                {
+                    int documentosSalvos = 0;
+                    foreach (var arquivo in documentos)
+                    {
+                        if (arquivo.Length > 0)
+                        {
+                            // Processar e comprimir arquivo
+                            var uploadResult = await _fileUploadService.ProcessarArquivoAsync(arquivo);
+
+                            if (uploadResult.Success && uploadResult.ConteudoComprimido != null)
+                            {
+                                // Salvar no banco de dados (comprimido)
+                                var documentoAnexado = new DocumentoAnexado
+                                {
+                                    AgendamentoId = agendamento.Id,
+                                    DocumentoSolicitadoId = 1, // Generic - will need proper mapping later
+                                    NomeArquivo = arquivo.FileName,
+                                    ConteudoComprimido = uploadResult.ConteudoComprimido,
+                                    TamanhoOriginalBytes = uploadResult.TamanhoOriginal,
+                                    TamanhoComprimidoBytes = uploadResult.TamanhoComprimido,
+                                    DataUpload = DateTime.UtcNow
+                                };
+
+                                _context.DocumentosAnexados.Add(documentoAnexado);
+                                documentosSalvos++;
+                                _logger.LogInformation($"Documento {arquivo.FileName} anexado ao agendamento {agendamento.Id}");
+                            }
+                        }
+                    }
+
+                    if (documentosSalvos > 0)
+                    {
+                        await _context.SaveChangesAsync();
+                    }
+                }
+
+                _logger.LogInformation($"Agendamento {agendamento.Id} criado por funcionário {User.Identity?.Name}");
+
+                TempData["SuccessMessage"] = "Agendamento criado com sucesso!";
+                return RedirectToAction(nameof(Details), new { id = agendamento.Id });
+            }
+
+            await CarregarViewBags(isAdmin, funcionarioId.Value);
+            return View(model);
+        }
+
+        /// <summary>
+        /// Helper para carregar ViewBags necessárias
+        /// </summary>
+        private async Task CarregarViewBags(bool isAdmin, int funcionarioId)
+        {
+            ViewBag.TiposAgendamento = await _context.TiposAgendamento.Where(t => t.Ativo).OrderBy(t => t.Nome).ToListAsync();
+            
+            var queryClientes = _context.Clientes.Where(c => c.Ativo).AsQueryable();
+            if (!isAdmin)
+            {
+                queryClientes = queryClientes.Where(c => c.FuncionarioId == funcionarioId);
+            }
+            ViewBag.Clientes = await queryClientes.OrderBy(c => c.Nome).ToListAsync();
+
+            if (isAdmin)
+            {
+                ViewBag.Funcionarios = await _context.Funcionarios.Where(f => f.Ativo).OrderBy(f => f.Nome).ToListAsync();
+            }
+        }
+
+        /// <summary>
         /// FUNCIONÁRIO/ADMIN: Visualiza detalhes de um agendamento
         /// </summary>
         [HttpGet]

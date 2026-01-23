@@ -1,0 +1,173 @@
+@model AgendaIR.Models.ViewModels.AgendamentoCreateViewModel
+
+@{
+    ViewData["Title"] = "Novo Agendamento";
+    var isAdmin = User.FindFirst("IsAdmin")?.Value == "True";
+}
+
+<div class="page-header-rir">
+    <div>
+        <h2><i class="bi bi-calendar-plus"></i> Novo Agendamento</h2>
+        <p>Crie um novo agendamento para um cliente</p>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-10">
+        <div class="card-rir">
+            <div class="card-rir-body">
+                <form asp-action="CreateAgendamento" method="post" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="alert-rir alert-rir-danger"></div>
+
+                    <!-- Cliente -->
+                    <div class="mb-3">
+                        <label asp-for="ClienteId" class="form-label fw-bold">
+                            <i class="bi bi-person"></i> Cliente <span class="text-danger">*</span>
+                        </label>
+                        <select asp-for="ClienteId" class="form-select" required>
+                            <option value="">-- Selecione um cliente --</option>
+                            @if (ViewBag.Clientes != null)
+                            {
+                                foreach (var cliente in ViewBag.Clientes as List<AgendaIR.Models.Cliente>)
+                                {
+                                    <option value="@cliente.Id">@cliente.Nome - @cliente.CPF</option>
+                                }
+                            }
+                        </select>
+                        <span asp-validation-for="ClienteId" class="text-danger"></span>
+                    </div>
+
+                    <!-- Tipo de Agendamento -->
+                    <div class="mb-3">
+                        <label asp-for="TipoAgendamentoId" class="form-label fw-bold">
+                            <i class="bi bi-list-task"></i> Tipo de Agendamento <span class="text-danger">*</span>
+                        </label>
+                        <select asp-for="TipoAgendamentoId" class="form-select" id="tipoAgendamentoSelect" required>
+                            <option value="">-- Selecione o tipo --</option>
+                            @if (ViewBag.TiposAgendamento != null)
+                            {
+                                foreach (var tipo in ViewBag.TiposAgendamento as List<AgendaIR.Models.TipoAgendamento>)
+                                {
+                                    <option value="@tipo.Id">@tipo.Nome</option>
+                                }
+                            }
+                        </select>
+                        <span asp-validation-for="TipoAgendamentoId" class="text-danger"></span>
+                    </div>
+
+                    <!-- Data e Hora -->
+                    <div class="row">
+                        <div class="col-12 col-md-6 mb-3">
+                            <label asp-for="DataHora" class="form-label fw-bold">
+                                <i class="bi bi-calendar"></i> Data e Hora <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="DataHora" type="datetime-local" class="form-control" required />
+                            <span asp-validation-for="DataHora" class="text-danger"></span>
+                            <small class="form-text text-muted">
+                                Horário: 8h às 18h, Segunda a Sexta
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- Responsável (só aparece para Admin) -->
+                    @if (isAdmin)
+                    {
+                        <div class="mb-3">
+                            <label asp-for="FuncionarioId" class="form-label fw-bold">
+                                <i class="bi bi-person-badge"></i> Funcionário Responsável
+                            </label>
+                            <select asp-for="FuncionarioId" class="form-select">
+                                <option value="">-- Eu serei o responsável --</option>
+                                @if (ViewBag.Funcionarios != null)
+                                {
+                                    foreach (var func in ViewBag.Funcionarios as List<AgendaIR.Models.Funcionario>)
+                                    {
+                                        <option value="@func.Id">@func.Nome</option>
+                                    }
+                                }
+                            </select>
+                            <small class="form-text text-muted">Se não selecionar, você será o responsável</small>
+                        </div>
+                    }
+
+                    <!-- Observações -->
+                    <div class="mb-3">
+                        <label asp-for="Observacoes" class="form-label fw-bold">
+                            <i class="bi bi-chat-left-text"></i> Observações
+                        </label>
+                        <textarea asp-for="Observacoes" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <!-- Documentos Necessários (carregado via AJAX) -->
+                    <div id="documentosContainer" style="display:none;" class="mb-3">
+                        <h5 class="mb-3"><i class="bi bi-paperclip"></i> Documentos Necessários para este Tipo</h5>
+                        <div id="documentosList" class="alert-rir alert-rir-info"></div>
+                    </div>
+
+                    <!-- Upload de documentos -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-file-earmark-arrow-up"></i> Anexar Documentos
+                        </label>
+                        <input type="file" name="documentos" multiple class="form-control" accept=".pdf,.jpg,.jpeg,.png" />
+                        <small class="form-text text-muted">Formatos aceitos: PDF, JPG, PNG</small>
+                    </div>
+
+                    <div class="d-flex justify-content-between gap-2">
+                        <a asp-action="Index" class="btn-rir-secondary">
+                            <i class="bi bi-arrow-left"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn-rir-primary">
+                            <i class="bi bi-save"></i> Salvar Agendamento
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // AJAX: Carregar documentos ao selecionar tipo
+        document.getElementById('tipoAgendamentoSelect').addEventListener('change', function() {
+            const tipoId = this.value;
+            const container = document.getElementById('documentosContainer');
+            const lista = document.getElementById('documentosList');
+
+            if (!tipoId) {
+                container.style.display = 'none';
+                return;
+            }
+
+            // Buscar documentos deste tipo
+            fetch(`/api/documentos/porTipo/${tipoId}`)
+                .then(response => response.json())
+                .then(docs => {
+                    if (docs.length > 0) {
+                        let html = '<ul class="list-group">';
+                        docs.forEach(doc => {
+                            const badge = doc.obrigatorio 
+                                ? '<span class="badge bg-danger ms-2">Obrigatório</span>' 
+                                : '<span class="badge bg-secondary ms-2">Opcional</span>';
+                            html += `<li class="list-group-item d-flex justify-content-between align-items-center">
+                                        ${doc.nome}
+                                        ${badge}
+                                     </li>`;
+                        });
+                        html += '</ul>';
+                        lista.innerHTML = html;
+                        container.style.display = 'block';
+                    } else {
+                        container.style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar documentos:', error);
+                    container.style.display = 'none';
+                });
+        });
+    </script>
+}
