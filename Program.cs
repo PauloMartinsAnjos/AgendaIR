@@ -5,6 +5,11 @@ using AgendaIR.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ===== CONFIGURAÇÃO DE TIMEZONE =====
+// Desabilitar conversão UTC automática do Npgsql
+// Isso garante que DateTime seja salvo e lido como timestamp without time zone
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 // ===== CONFIGURAÇÃO DO BANCO DE DADOS =====
 // Adiciona o Entity Framework com PostgreSQL
 // A connection string vem do appsettings.json

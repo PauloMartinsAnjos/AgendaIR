@@ -53,6 +53,19 @@ namespace AgendaIR.Data
         {
             base.OnModelCreating(modelBuilder);
 
+            // Configurar todas as propriedades DateTime para usar timestamp WITHOUT time zone
+            // Isso evita conversão automática de timezone pelo PostgreSQL
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                foreach (var property in entityType.GetProperties())
+                {
+                    if (property.ClrType == typeof(DateTime) || property.ClrType == typeof(DateTime?))
+                    {
+                        property.SetColumnType("timestamp without time zone");
+                    }
+                }
+            }
+
             // Configurar índice único para Username de Funcionário
             // Isso garante que não existam dois funcionários com o mesmo username
             modelBuilder.Entity<Funcionario>()
