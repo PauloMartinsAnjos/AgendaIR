@@ -875,6 +875,8 @@ namespace AgendaIR.Controllers
             var query = _context.Agendamentos
                 .Include(a => a.Cliente)
                 .Include(a => a.Funcionario)
+                .Include(a => a.DocumentosAnexados)
+                    .ThenInclude(da => da.DocumentoSolicitado)
                 .AsQueryable();
 
             // Se não for admin, verificar se é do funcionário
@@ -899,7 +901,8 @@ namespace AgendaIR.Controllers
                 ClienteNome = agendamento.Cliente?.Nome ?? "",
                 ClienteEmail = agendamento.Cliente?.Email ?? "",
                 ClienteTelefone = agendamento.Cliente?.Telefone ?? "",
-                FuncionarioNome = agendamento.Funcionario?.Nome ?? ""
+                FuncionarioNome = agendamento.Funcionario?.Nome ?? "",
+                DocumentosAnexados = agendamento.DocumentosAnexados?.ToList() ?? new List<DocumentoAnexado>()
             };
 
             return View(viewModel);
