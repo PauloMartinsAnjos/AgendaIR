@@ -8,172 +8,164 @@
     var whatsappLink = $"https://wa.me/{telefoneNumeros}?text={mensagemWhatsApp}";
 }
 
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-10">
-            @* Cabeçalho *@
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h2>
-                        <i class="bi bi-person-circle"></i> Detalhes do Cliente
-                    </h2>
-                    <p class="text-muted mb-0">Visualize as informações completas do cliente</p>
-                </div>
-                <div>
-                    @if (Model.Ativo)
-                    {
-                        <span class="badge bg-success fs-6">
-                            <i class="bi bi-check-circle"></i> Ativo
-                        </span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-secondary fs-6">
-                            <i class="bi bi-x-circle"></i> Inativo
-                        </span>
-                    }
-                </div>
-            </div>
+<!-- PAGE HEADER -->
+<div class="page-header-rir">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+        <div>
+            <h2><i class="bi bi-person-circle"></i> Detalhes do Cliente</h2>
+            <p>Visualize as informações completas do cliente</p>
+        </div>
+        <div>
+            @if (Model.Ativo)
+            {
+                <span class="badge-rir badge-rir-success">
+                    <i class="bi bi-check-circle"></i> Ativo
+                </span>
+            }
+            else
+            {
+                <span class="badge-rir badge-rir-danger">
+                    <i class="bi bi-x-circle"></i> Inativo
+                </span>
+            }
+        </div>
+    </div>
+</div>
 
-            @* Card com dados pessoais *@
-            <div class="card shadow mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">
-                        <i class="bi bi-person-vcard"></i> Dados Pessoais
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Nome Completo</label>
-                            <p class="h5">@Model.Nome</p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">CPF</label>
-                            <p class="h5">@Model.CPF</p>
-                        </div>
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-10">
+        <!-- Dados Pessoais -->
+        <div class="card-rir mb-4">
+            <div class="card-rir-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-person-vcard"></i> Dados Pessoais
+                </h5>
+            </div>
+            <div class="card-rir-body">
+                <div class="row">
+                    <div class="col-12 col-md-6 mb-3">
+                        <label class="text-muted small">Nome Completo</label>
+                        <p class="h5 mb-0">@Model.Nome</p>
                     </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Email</label>
-                            <p class="h5">
-                                <a href="mailto:@Model.Email">
-                                    <i class="bi bi-envelope"></i> @Model.Email
-                                </a>
-                            </p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Telefone/WhatsApp</label>
-                            <p class="h5">
-                                <i class="bi bi-whatsapp text-success"></i> @Model.Telefone
-                            </p>
-                        </div>
+                    <div class="col-12 col-md-6 mb-3">
+                        <label class="text-muted small">CPF</label>
+                        <p class="h5 mb-0">@Model.CPF</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-md-6 mb-3">
+                        <label class="text-muted small">Email</label>
+                        <p class="h5 mb-0">
+                            <a href="mailto:@Model.Email">
+                                <i class="bi bi-envelope"></i> @Model.Email
+                            </a>
+                        </p>
+                    </div>
+                    <div class="col-12 col-md-6 mb-3">
+                        <label class="text-muted small">Telefone/WhatsApp</label>
+                        <p class="h5 mb-0">
+                            <i class="bi bi-whatsapp text-success"></i> @Model.Telefone
+                        </p>
                     </div>
                 </div>
             </div>
+        </div>
 
-            @* Card com informações do sistema *@
-            <div class="card shadow mb-4">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0">
-                        <i class="bi bi-gear"></i> Informações do Sistema
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Funcionário Responsável</label>
-                            <p class="h5">
-                                <span class="badge bg-info fs-6">
-                                    <i class="bi bi-person-badge"></i> @Model.Funcionario?.Nome
-                                </span>
-                            </p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">ID do Cliente</label>
-                            <p class="h5">#@Model.Id</p>
-                        </div>
+        <!-- Informações do Sistema -->
+        <div class="card-rir mb-4">
+            <div class="card-rir-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-gear"></i> Informações do Sistema
+                </h5>
+            </div>
+            <div class="card-rir-body">
+                <div class="row">
+                    <div class="col-12 col-md-6 mb-3">
+                        <label class="text-muted small">Funcionário Responsável</label>
+                        <p class="h5 mb-0">
+                            <span class="badge-rir badge-rir-info">
+                                <i class="bi bi-person-badge"></i> @Model.Funcionario?.Nome
+                            </span>
+                        </p>
                     </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Data de Cadastro</label>
-                            <p class="h5">@Model.DataCriacao.ToString("dd/MM/yyyy HH:mm")</p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Token Gerado Em</label>
-                            <p class="h5">@Model.TokenGeradoEm.ToString("dd/MM/yyyy HH:mm")</p>
-                        </div>
+                    <div class="col-12 col-md-6 mb-3">
+                        <label class="text-muted small">ID do Cliente</label>
+                        <p class="h5 mb-0">#@Model.Id</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-md-6 mb-3">
+                        <label class="text-muted small">Data de Cadastro</label>
+                        <p class="h5 mb-0">@Model.DataCriacao.ToString("dd/MM/yyyy HH:mm")</p>
+                    </div>
+                    <div class="col-12 col-md-6 mb-3">
+                        <label class="text-muted small">Token Gerado Em</label>
+                        <p class="h5 mb-0">@Model.TokenGeradoEm.ToString("dd/MM/yyyy HH:mm")</p>
                     </div>
                 </div>
             </div>
+        </div>
 
-            @* Card com Magic Link *@
-            <div class="card shadow mb-4 border-warning">
-                <div class="card-header bg-warning text-dark">
-                    <h5 class="mb-0">
-                        <i class="bi bi-link-45deg"></i> Link de Acesso (Magic Link)
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="alert alert-info">
-                        <i class="bi bi-info-circle"></i>
+        <!-- Magic Link -->
+        <div class="card-rir mb-4">
+            <div class="card-rir-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-link-45deg"></i> Link de Acesso (Magic Link)
+                </h5>
+            </div>
+            <div class="card-rir-body">
+                <div class="alert-rir alert-rir-info mb-3">
+                    <i class="bi bi-info-circle" style="font-size: 1.5rem;"></i>
+                    <div>
                         Este é o link único que permite ao cliente acessar o sistema sem precisar de senha.
                     </div>
+                </div>
 
-                    @* Campo com magic link *@
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Link de Acesso:</label>
-                        <div class="input-group">
-                            <input type="text" 
-                                   class="form-control" 
-                                   id="magicLinkInput" 
-                                   value="@magicLink" 
-                                   readonly>
-                            <button class="btn btn-primary" 
-                                    type="button" 
-                                    id="copyButton"
-                                    onclick="copyMagicLink()">
-                                <i class="bi bi-clipboard"></i> Copiar
-                            </button>
-                        </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Link de Acesso:</label>
+                    <div class="input-group">
+                        <input type="text" 
+                               class="form-control" 
+                               id="magicLinkInput" 
+                               value="@magicLink" 
+                               readonly>
+                        <button class="btn btn-rir-secondary" 
+                                type="button" 
+                                id="copyButton"
+                                onclick="copyMagicLink()">
+                            <i class="bi bi-clipboard"></i> Copiar
+                        </button>
                     </div>
+                </div>
 
-                    @* Botão WhatsApp *@
-                    <div class="d-grid">
-                        <a href="@whatsappLink" 
-                           target="_blank" 
-                           class="btn btn-success">
-                            <i class="bi bi-whatsapp"></i> Enviar via WhatsApp
-                        </a>
-                    </div>
+                <div class="d-grid">
+                    <a href="@whatsappLink" 
+                       target="_blank" 
+                       class="btn-rir-success">
+                        <i class="bi bi-whatsapp"></i> Enviar via WhatsApp
+                    </a>
                 </div>
             </div>
+        </div>
 
-            @* Ações *@
-            <div class="card shadow">
-                <div class="card-header bg-light">
-                    <h6 class="mb-0">
-                        <i class="bi bi-gear-fill"></i> Ações
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-4 mb-2">
-                            <a asp-action="Index" class="btn btn-secondary w-100">
-                                <i class="bi bi-arrow-left"></i> Voltar para Lista
-                            </a>
-                        </div>
-                        <div class="col-md-4 mb-2">
-                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning w-100">
-                                <i class="bi bi-pencil"></i> Editar Cliente
-                            </a>
-                        </div>
-                        <div class="col-md-4 mb-2">
-                            <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger w-100">
-                                <i class="bi bi-trash"></i> Deletar Cliente
-                            </a>
-                        </div>
-                    </div>
+        <!-- Ações -->
+        <div class="card-rir">
+            <div class="card-rir-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-gear-fill"></i> Ações
+                </h6>
+            </div>
+            <div class="card-rir-body">
+                <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
+                    <a asp-action="Index" class="btn-rir-secondary">
+                        <i class="bi bi-arrow-left"></i> Voltar para Lista
+                    </a>
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn-rir-primary">
+                        <i class="bi bi-pencil"></i> Editar Cliente
+                    </a>
+                    <a asp-action="Delete" asp-route-id="@Model.Id" class="btn-rir-danger">
+                        <i class="bi bi-trash"></i> Deletar Cliente
+                    </a>
                 </div>
             </div>
         </div>
@@ -182,25 +174,24 @@
 
 @section Scripts {
     <script>
-        // Função para copiar o magic link
         function copyMagicLink() {
             const input = document.getElementById('magicLinkInput');
             const button = document.getElementById('copyButton');
             
             input.select();
-            input.setSelectionRange(0, 99999); // Para mobile
+            input.setSelectionRange(0, 99999);
             
             navigator.clipboard.writeText(input.value).then(function() {
-                // Feedback visual
                 const originalHTML = button.innerHTML;
-                button.innerHTML = '<i class="bi bi-check"></i> Copiado!';
-                button.classList.remove('btn-primary');
-                button.classList.add('btn-success');
+                const originalClass = button.className;
+                
+                button.innerHTML = '<i class="bi bi-check-lg"></i> Copiado!';
+                button.classList.remove('btn-rir-secondary');
+                button.classList.add('btn-rir-success');
                 
                 setTimeout(function() {
                     button.innerHTML = originalHTML;
-                    button.classList.remove('btn-success');
-                    button.classList.add('btn-primary');
+                    button.className = originalClass;
                 }, 2000);
             }).catch(function(err) {
                 alert('Erro ao copiar o link: ' + err);

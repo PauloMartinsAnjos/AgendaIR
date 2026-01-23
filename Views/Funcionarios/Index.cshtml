@@ -4,188 +4,243 @@
     ViewData["Title"] = "Gerenciar Funcionários";
 }
 
-<!-- Breadcrumbs -->
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Início</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Funcionários</li>
-    </ol>
-</nav>
-
-<div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <h1 class="h2"><i class="bi bi-people-fill"></i> Gerenciar Funcionários</h1>
-                <a asp-action="Create" class="btn btn-primary">
-                    <i class="bi bi-plus-circle"></i> Novo Funcionário
-                </a>
-            </div>
+<!-- PAGE HEADER -->
+<div class="page-header-rir">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+        <div>
+            <h2><i class="bi bi-people-fill"></i> Gerenciar Funcionários</h2>
+            <p>Controle de acesso e permissões do sistema</p>
         </div>
+        <a asp-action="Create" class="btn-rir-primary">
+            <i class="bi bi-plus-circle"></i> Novo Funcionário
+        </a>
     </div>
-
-    <!-- Mensagens de sucesso/erro -->
-    @if (TempData["Success"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle-fill"></i> @TempData["Success"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="bi bi-exclamation-triangle-fill"></i> @TempData["Error"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-
-    <!-- Tabela de Funcionários -->
-    <div class="card shadow-sm">
-        <div class="card-body">
-            @if (Model.Any())
-            {
-                <div class="table-responsive">
-                    <table class="table table-hover table-striped align-middle">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>Nome</th>
-                                <th>Username</th>
-                                <th>E-mail</th>
-                                <th>CPF</th>
-                                <th class="text-center">Administrador</th>
-                                <th class="text-center">Status</th>
-                                <th class="text-center">Data Criação</th>
-                                <th class="text-center" style="width: 200px;">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in Model)
-                            {
-                                <tr>
-                                    <td>
-                                        <strong>@item.Nome</strong>
-                                    </td>
-                                    <td>
-                                        <code>@item.Username</code>
-                                    </td>
-                                    <td>@item.Email</td>
-                                    <td>@item.CPF</td>
-                                    <td class="text-center">
-                                        @if (item.IsAdmin)
-                                        {
-                                            <span class="badge bg-danger">
-                                                <i class="bi bi-shield-fill-check"></i> Admin
-                                            </span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-secondary">
-                                                <i class="bi bi-person-fill"></i> Funcionário
-                                            </span>
-                                        }
-                                    </td>
-                                    <td class="text-center">
-                                        @if (item.Ativo)
-                                        {
-                                            <span class="badge bg-success">
-                                                <i class="bi bi-check-circle-fill"></i> Ativo
-                                            </span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-warning text-dark">
-                                                <i class="bi bi-x-circle-fill"></i> Inativo
-                                            </span>
-                                        }
-                                    </td>
-                                    <td class="text-center">
-                                        <small>@item.DataCriacao.ToString("dd/MM/yyyy")</small>
-                                    </td>
-                                    <td class="text-center">
-                                        <div class="btn-group" role="group">
-                                            <a asp-action="Details" asp-route-id="@item.Id" 
-                                               class="btn btn-sm btn-info" 
-                                               title="Ver detalhes">
-                                                <i class="bi bi-eye-fill"></i>
-                                            </a>
-                                            <a asp-action="Edit" asp-route-id="@item.Id" 
-                                               class="btn btn-sm btn-warning" 
-                                               title="Editar">
-                                                <i class="bi bi-pencil-fill"></i>
-                                            </a>
-                                            <a asp-action="Delete" asp-route-id="@item.Id" 
-                                               class="btn btn-sm btn-danger" 
-                                               title="Excluir">
-                                                <i class="bi bi-trash-fill"></i>
-                                            </a>
-                                        </div>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
-            else
-            {
-                <div class="alert alert-info" role="alert">
-                    <i class="bi bi-info-circle-fill"></i> 
-                    Nenhum funcionário cadastrado no sistema. 
-                    <a asp-action="Create" class="alert-link">Clique aqui para cadastrar o primeiro funcionário</a>.
-                </div>
-            }
-        </div>
-    </div>
-
-    <!-- Estatísticas -->
-    @if (Model.Any())
-    {
-        <div class="row mt-4">
-            <div class="col-md-3">
-                <div class="card text-white bg-primary">
-                    <div class="card-body">
-                        <h5 class="card-title">Total de Funcionários</h5>
-                        <p class="card-text display-6">@Model.Count()</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card text-white bg-success">
-                    <div class="card-body">
-                        <h5 class="card-title">Funcionários Ativos</h5>
-                        <p class="card-text display-6">@Model.Count(f => f.Ativo)</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card text-white bg-danger">
-                    <div class="card-body">
-                        <h5 class="card-title">Administradores</h5>
-                        <p class="card-text display-6">@Model.Count(f => f.IsAdmin)</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card text-white bg-warning">
-                    <div class="card-body">
-                        <h5 class="card-title">Funcionários Inativos</h5>
-                        <p class="card-text display-6">@Model.Count(f => !f.Ativo)</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    }
 </div>
 
-@section Scripts {
-    <script>
-        // Auto-dismiss alerts after 5 seconds
-        window.setTimeout(function() {
-            $(".alert").fadeTo(500, 0).slideUp(500, function(){
-                $(this).remove();
-            });
-        }, 5000);
-    </script>
+<!-- MENSAGENS -->
+@if (TempData["Success"] != null)
+{
+    <div class="alert-rir alert-rir-success">
+        <i class="bi bi-check-circle-fill" style="font-size: 1.5rem;"></i>
+        <div>
+            <strong>Sucesso!</strong><br />
+            @TempData["Success"]
+        </div>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert-rir alert-rir-danger">
+        <i class="bi bi-exclamation-triangle-fill" style="font-size: 1.5rem;"></i>
+        <div>
+            <strong>Erro!</strong><br />
+            @TempData["Error"]
+        </div>
+    </div>
+}
+
+
+<!-- CONTEÚDO -->
+@if (Model.Any())
+{
+    <!-- TABELA DESKTOP -->
+    <div class="table-responsive-rir desktop-only">
+        <table class="table-rir">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Username</th>
+                    <th>E-mail</th>
+                    <th>CPF</th>
+                    <th>Tipo</th>
+                    <th>Status</th>
+                    <th class="text-center">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td><strong>@item.Nome</strong></td>
+                        <td><code>@item.Username</code></td>
+                        <td>@item.Email</td>
+                        <td>@item.CPF</td>
+                        <td>
+                            @if (item.IsAdmin)
+                            {
+                                <span class="badge-rir badge-rir-danger">
+                                    <i class="bi bi-shield-fill-check"></i> Admin
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge-rir badge-rir-info">
+                                    <i class="bi bi-person-fill"></i> Funcionário
+                                </span>
+                            }
+                        </td>
+                        <td>
+                            @if (item.Ativo)
+                            {
+                                <span class="badge-rir badge-rir-success">
+                                    <i class="bi bi-check-circle"></i> Ativo
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge-rir badge-rir-danger">
+                                    <i class="bi bi-x-circle"></i> Inativo
+                                </span>
+                            }
+                        </td>
+                        <td>
+                            <div class="table-actions">
+                                <a asp-action="Details" asp-route-id="@item.Id" 
+                                   class="btn btn-sm btn-rir-secondary" 
+                                   title="Detalhes">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a asp-action="Edit" asp-route-id="@item.Id" 
+                                   class="btn btn-sm btn-rir-primary" 
+                                   title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@item.Id" 
+                                   class="btn btn-sm btn-rir-danger" 
+                                   title="Deletar">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- CARDS MOBILE -->
+    <div class="mobile-only">
+        @foreach (var item in Model)
+        {
+            <div class="client-card-mobile">
+                <div class="client-card-header">
+                    <div class="client-card-name">
+                        <i class="bi bi-person-circle"></i>
+                        <strong>@item.Nome</strong>
+                    </div>
+                    <div>
+                        @if (item.Ativo)
+                        {
+                            <span class="badge-rir badge-rir-success">
+                                <i class="bi bi-check-circle"></i> Ativo
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge-rir badge-rir-danger">
+                                <i class="bi bi-x-circle"></i> Inativo
+                            </span>
+                        }
+                    </div>
+                </div>
+
+                <div class="client-card-body">
+                    <div class="client-info-row">
+                        <i class="bi bi-person-badge"></i>
+                        <span><code>@item.Username</code></span>
+                    </div>
+                    <div class="client-info-row">
+                        <i class="bi bi-envelope"></i>
+                        <span>@item.Email</span>
+                    </div>
+                    <div class="client-info-row">
+                        <i class="bi bi-card-text"></i>
+                        <span>@item.CPF</span>
+                    </div>
+                    <div class="client-info-row">
+                        <i class="bi bi-shield"></i>
+                        @if (item.IsAdmin)
+                        {
+                            <span class="badge-rir badge-rir-danger">
+                                <i class="bi bi-shield-fill-check"></i> Administrador
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge-rir badge-rir-info">
+                                <i class="bi bi-person-fill"></i> Funcionário
+                            </span>
+                        }
+                    </div>
+                </div>
+
+                <div class="client-card-actions">
+                    <a asp-action="Details" asp-route-id="@item.Id" 
+                       class="btn btn-sm btn-rir-secondary">
+                        <i class="bi bi-eye"></i> Ver
+                    </a>
+                    <a asp-action="Edit" asp-route-id="@item.Id" 
+                       class="btn btn-sm btn-rir-primary">
+                        <i class="bi bi-pencil"></i> Editar
+                    </a>
+                    <a asp-action="Delete" asp-route-id="@item.Id" 
+                       class="btn btn-sm btn-rir-danger">
+                        <i class="bi bi-trash"></i> Excluir
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- ESTATÍSTICAS -->
+    <div class="row mt-4 g-3">
+        <div class="col-6 col-md-3">
+            <div class="card-rir">
+                <div class="card-rir-body text-center">
+                    <h6 class="text-muted mb-2">Total</h6>
+                    <h2 class="mb-0">@Model.Count()</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card-rir">
+                <div class="card-rir-body text-center">
+                    <h6 class="text-muted mb-2">Ativos</h6>
+                    <h2 class="mb-0 text-success">@Model.Count(f => f.Ativo)</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card-rir">
+                <div class="card-rir-body text-center">
+                    <h6 class="text-muted mb-2">Admins</h6>
+                    <h2 class="mb-0 text-danger">@Model.Count(f => f.IsAdmin)</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card-rir">
+                <div class="card-rir-body text-center">
+                    <h6 class="text-muted mb-2">Inativos</h6>
+                    <h2 class="mb-0 text-warning">@Model.Count(f => !f.Ativo)</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card-rir">
+        <div class="card-rir-body">
+            <div class="table-empty">
+                <i class="bi bi-inbox"></i>
+                <h4>Nenhum funcionário cadastrado</h4>
+                <p>
+                    <a asp-action="Create" class="btn-rir-primary">
+                        <i class="bi bi-plus-circle"></i> Cadastrar Primeiro Funcionário
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
 }
