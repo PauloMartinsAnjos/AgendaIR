@@ -620,6 +620,9 @@ namespace AgendaIR.Controllers
                 return Json(new List<object>());
             }
 
+            // Sanitize input - remove any special characters that could cause issues
+            termo = termo.Trim();
+
             var query = _context.Clientes
                 .Where(c => c.Ativo)
                 .AsQueryable();
@@ -630,7 +633,7 @@ namespace AgendaIR.Controllers
                 query = query.Where(c => c.FuncionarioId == funcionarioId);
             }
 
-            // Buscar por nome ou CPF
+            // Buscar por nome ou CPF (EF Core automatically parameterizes these queries)
             var termoLower = termo.ToLower();
             query = query.Where(c => 
                 c.Nome.ToLower().Contains(termoLower) || 

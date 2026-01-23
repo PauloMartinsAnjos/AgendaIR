@@ -725,7 +725,8 @@ namespace AgendaIR.Controllers
                 foreach (var docObrigatorio in docsObrigatorios)
                 {
                     var arquivoKey = $"documento_{docObrigatorio.Id}";
-                    if (!form.Files.Any(f => f.Name == arquivoKey) || form.Files[arquivoKey].Length == 0)
+                    var arquivo = form.Files.FirstOrDefault(f => f.Name == arquivoKey);
+                    if (arquivo == null || arquivo.Length == 0)
                     {
                         ModelState.AddModelError("", $"O documento '{docObrigatorio.Nome}' é obrigatório e não foi anexado.");
                     }

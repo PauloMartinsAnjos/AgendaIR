@@ -119,7 +119,7 @@
                         <label class="form-label fw-bold">
                             <i class="bi bi-file-earmark"></i> Documentos Anexados
                         </label>
-                        <p>@Model.DocumentosAnexados.Count documento(s)</p>
+                        <p>@(Model.DocumentosAnexados?.Count ?? 0) documento(s)</p>
                     </div>
                 </div>
 
