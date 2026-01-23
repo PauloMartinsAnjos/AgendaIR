@@ -30,6 +30,26 @@ namespace AgendaIR.Models
         [StringLength(20)]
         public string Telefone { get; set; } = string.Empty;
 
+        // Telefone residencial do cliente
+        [StringLength(20)]
+        [Display(Name = "Telefone Residencial")]
+        public string? TelefoneResidencial { get; set; }
+
+        // Telefone comercial do cliente
+        [StringLength(20)]
+        [Display(Name = "Telefone Comercial")]
+        public string? TelefoneComercial { get; set; }
+
+        // Observações sobre o cliente
+        [Display(Name = "Observações")]
+        [StringLength(2000, ErrorMessage = "As observações não podem exceder 2000 caracteres")]
+        public string? Observacoes { get; set; }
+
+        // Cor da pasta física no escritório
+        [StringLength(20)]
+        [Display(Name = "Cor da Pasta")]
+        public string? CorDaPasta { get; set; }
+
         // CPF do cliente
         [Required(ErrorMessage = "O CPF é obrigatório")]
         [StringLength(14)]

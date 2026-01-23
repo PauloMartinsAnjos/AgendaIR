@@ -285,6 +285,10 @@ namespace AgendaIR.Controllers
                     Nome = model.Nome,
                     Email = model.Email,
                     Telefone = model.Telefone,
+                    TelefoneResidencial = model.TelefoneResidencial,
+                    TelefoneComercial = model.TelefoneComercial,
+                    Observacoes = model.Observacoes,
+                    CorDaPasta = model.CorDaPasta,
                     CPF = model.CPF,
                     FuncionarioId = model.FuncionarioId,
                     MagicToken = magicToken,
@@ -411,6 +415,10 @@ namespace AgendaIR.Controllers
                 Nome = cliente.Nome,
                 Email = cliente.Email,
                 Telefone = cliente.Telefone,
+                TelefoneResidencial = cliente.TelefoneResidencial,
+                TelefoneComercial = cliente.TelefoneComercial,
+                Observacoes = cliente.Observacoes,
+                CorDaPasta = cliente.CorDaPasta,
                 CPF = cliente.CPF,
                 Ativo = cliente.Ativo,
                 FuncionarioId = cliente.FuncionarioId,
@@ -478,6 +486,10 @@ namespace AgendaIR.Controllers
                     cliente.Nome = model.Nome;
                     cliente.Email = model.Email;
                     cliente.Telefone = model.Telefone;
+                    cliente.TelefoneResidencial = model.TelefoneResidencial;
+                    cliente.TelefoneComercial = model.TelefoneComercial;
+                    cliente.Observacoes = model.Observacoes;
+                    cliente.CorDaPasta = model.CorDaPasta;
                     cliente.CPF = model.CPF;
                     cliente.Ativo = model.Ativo;
                     
@@ -653,6 +665,31 @@ namespace AgendaIR.Controllers
                 .ToListAsync();
 
             return Json(clientes);
+        }
+
+        /// <summary>
+        /// Converte nome da cor para código hexadecimal
+        /// </summary>
+        private string GetCorHex(string? corNome)
+        {
+            if (string.IsNullOrEmpty(corNome))
+                return "#6c757d";
+
+            return corNome.ToLower() switch
+            {
+                "verde" => "#28a745",
+                "azul" => "#007bff",
+                "amarelo" => "#ffc107",
+                "vermelho" => "#dc3545",
+                "rosa" => "#e83e8c",
+                "roxo" => "#6f42c1",
+                "laranja" => "#fd7e14",
+                "preto" => "#343a40",
+                "branco" => "#f8f9fa",
+                "marrom" => "#795548",
+                "cinza" => "#6c757d",
+                _ => "#6c757d"
+            };
         }
     }
 }

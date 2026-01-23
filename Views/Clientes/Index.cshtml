@@ -101,7 +101,32 @@
                     var copyId = $"magicLink{cliente.Id}";
 
                     <tr>
-                        <td><strong>@cliente.Nome</strong></td>
+                        <td>
+                            <strong>@cliente.Nome</strong>
+                            @if (!string.IsNullOrEmpty(cliente.CorDaPasta))
+                            {
+                                var corHex = cliente.CorDaPasta.ToLower() switch
+                                {
+                                    "verde" => "#28a745",
+                                    "azul" => "#007bff",
+                                    "amarelo" => "#ffc107",
+                                    "vermelho" => "#dc3545",
+                                    "rosa" => "#e83e8c",
+                                    "roxo" => "#6f42c1",
+                                    "laranja" => "#fd7e14",
+                                    "preto" => "#343a40",
+                                    "branco" => "#f8f9fa",
+                                    "marrom" => "#795548",
+                                    "cinza" => "#6c757d",
+                                    _ => "#6c757d"
+                                };
+                                <span class="badge ms-2" 
+                                      style="background-color: @corHex; color: white; font-size: 0.7rem;"
+                                      title="Pasta física: @cliente.CorDaPasta">
+                                    📁 @cliente.CorDaPasta
+                                </span>
+                            }
+                        </td>
                         <td>@cliente.Email</td>
                         <td>@cliente.Telefone</td>
                         <td>@cliente.CPF</td>
@@ -184,6 +209,29 @@
                     <div class="client-card-name">
                         <i class="bi bi-person-circle"></i>
                         <strong>@cliente.Nome</strong>
+                        @if (!string.IsNullOrEmpty(cliente.CorDaPasta))
+                        {
+                            var corHex = cliente.CorDaPasta.ToLower() switch
+                            {
+                                "verde" => "#28a745",
+                                "azul" => "#007bff",
+                                "amarelo" => "#ffc107",
+                                "vermelho" => "#dc3545",
+                                "rosa" => "#e83e8c",
+                                "roxo" => "#6f42c1",
+                                "laranja" => "#fd7e14",
+                                "preto" => "#343a40",
+                                "branco" => "#f8f9fa",
+                                "marrom" => "#795548",
+                                "cinza" => "#6c757d",
+                                _ => "#6c757d"
+                            };
+                            <span class="badge ms-1" 
+                                  style="background-color: @corHex; color: white; font-size: 0.65rem;"
+                                  title="Pasta física: @cliente.CorDaPasta">
+                                📁 @cliente.CorDaPasta
+                            </span>
+                        }
                     </div>
                     <div>
                         @if (cliente.Ativo)

@@ -55,6 +55,32 @@
                         </div>
                     </div>
 
+                    <!-- ✅ NOVOS CAMPOS - TELEFONES ADICIONAIS -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="TelefoneResidencial" class="form-label">
+                                <i class="bi bi-telephone"></i> Telefone Residencial
+                            </label>
+                            <input asp-for="TelefoneResidencial" 
+                                   class="form-control" 
+                                   placeholder="(00) 0000-0000" 
+                                   maxlength="20"
+                                   id="telefoneResidencial" />
+                            <span asp-validation-for="TelefoneResidencial" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="TelefoneComercial" class="form-label">
+                                <i class="bi bi-telephone-outbound"></i> Telefone Comercial
+                            </label>
+                            <input asp-for="TelefoneComercial" 
+                                   class="form-control" 
+                                   placeholder="(00) 0000-0000" 
+                                   maxlength="20"
+                                   id="telefoneComercial" />
+                            <span asp-validation-for="TelefoneComercial" class="text-danger"></span>
+                        </div>
+                    </div>
+
                     <div class="row">
                         @* CPF *@
                         <div class="col-12 col-md-6 mb-3">
@@ -106,6 +132,48 @@
                         </div>
                     </div>
 
+                    <!-- ✅ NOVO CAMPO - COR DA PASTA -->
+                    <div class="mb-3">
+                        <label asp-for="CorDaPasta" class="form-label">
+                            <i class="bi bi-folder"></i> Cor da Pasta (Física no Escritório)
+                        </label>
+                        <select asp-for="CorDaPasta" class="form-select">
+                            <option value="">Nenhuma / Não informada</option>
+                            <option value="Verde">🟢 Verde</option>
+                            <option value="Azul">🔵 Azul</option>
+                            <option value="Amarelo">🟡 Amarelo</option>
+                            <option value="Vermelho">🔴 Vermelho</option>
+                            <option value="Rosa">🌸 Rosa</option>
+                            <option value="Roxo">🟣 Roxo</option>
+                            <option value="Laranja">🟠 Laranja</option>
+                            <option value="Preto">⚫ Preto</option>
+                            <option value="Branco">⚪ Branco</option>
+                            <option value="Marrom">🟤 Marrom</option>
+                            <option value="Cinza">⚪ Cinza</option>
+                        </select>
+                        <small class="form-text text-muted">Cor física da pasta do cliente no arquivo</small>
+                        <span asp-validation-for="CorDaPasta" class="text-danger"></span>
+                    </div>
+
+                    <!-- ✅ NOVO CAMPO - OBSERVAÇÕES -->
+                    <div class="mb-3">
+                        <label asp-for="Observacoes" class="form-label">
+                            <i class="bi bi-card-text"></i> Observações
+                        </label>
+                        <textarea asp-for="Observacoes" 
+                                  class="form-control" 
+                                  rows="4" 
+                                  maxlength="2000"
+                                  placeholder="Anotações adicionais sobre o cliente..."
+                                  id="observacoesTextarea"></textarea>
+                        <div class="d-flex justify-content-between">
+                            <span asp-validation-for="Observacoes" class="text-danger"></span>
+                            <small class="form-text text-muted">
+                                <span id="charCount">0</span> / 2000 caracteres
+                            </small>
+                        </div>
+                    </div>
+
                     <div class="alert-rir alert-rir-info mb-3">
                         <i class="bi bi-info-circle" style="font-size: 1.5rem;"></i>
                         <div>
@@ -154,5 +222,41 @@
             }
             e.target.value = value;
         });
+
+        // Máscara para telefone residencial
+        const telefoneResidencial = document.getElementById('telefoneResidencial');
+        if (telefoneResidencial) {
+            telefoneResidencial.addEventListener('input', function (e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length <= 11) {
+                    value = value.replace(/^(\d{2})(\d)/g, '($1) $2');
+                    value = value.replace(/(\d)(\d{4})$/, '$1-$2');
+                }
+                e.target.value = value;
+            });
+        }
+
+        // Máscara para telefone comercial
+        const telefoneComercial = document.getElementById('telefoneComercial');
+        if (telefoneComercial) {
+            telefoneComercial.addEventListener('input', function (e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length <= 11) {
+                    value = value.replace(/^(\d{2})(\d)/g, '($1) $2');
+                    value = value.replace(/(\d)(\d{4})$/, '$1-$2');
+                }
+                e.target.value = value;
+            });
+        }
+
+        // Contador de caracteres para Observações
+        const textarea = document.getElementById('observacoesTextarea');
+        const charCount = document.getElementById('charCount');
+        
+        if (textarea && charCount) {
+            textarea.addEventListener('input', function() {
+                charCount.textContent = this.value.length;
+            });
+        }
     </script>
 }

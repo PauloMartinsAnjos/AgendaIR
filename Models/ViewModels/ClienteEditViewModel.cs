@@ -40,6 +40,34 @@ namespace AgendaIR.Models.ViewModels
         public string Telefone { get; set; } = string.Empty;
 
         /// <summary>
+        /// Telefone residencial do cliente
+        /// </summary>
+        [StringLength(20)]
+        [Display(Name = "Telefone Residencial")]
+        public string? TelefoneResidencial { get; set; }
+
+        /// <summary>
+        /// Telefone comercial do cliente
+        /// </summary>
+        [StringLength(20)]
+        [Display(Name = "Telefone Comercial")]
+        public string? TelefoneComercial { get; set; }
+
+        /// <summary>
+        /// Observações sobre o cliente
+        /// </summary>
+        [Display(Name = "Observações")]
+        [StringLength(2000, ErrorMessage = "As observações não podem exceder 2000 caracteres")]
+        public string? Observacoes { get; set; }
+
+        /// <summary>
+        /// Cor da pasta física no escritório
+        /// </summary>
+        [StringLength(20)]
+        [Display(Name = "Cor da Pasta")]
+        public string? CorDaPasta { get; set; }
+
+        /// <summary>
         /// CPF do cliente
         /// </summary>
         [Required(ErrorMessage = "O CPF é obrigatório")]
