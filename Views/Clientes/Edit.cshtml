@@ -1,310 +1,158 @@
-@model IEnumerable<AgendaIR.Models.Cliente>
+@model AgendaIR.Models.Cliente
 
 @{
-    ViewData["Title"] = "Clientes";
+    ViewData["Title"] = "Editar Cliente";
     var isAdmin = User.FindFirst("IsAdmin")?.Value == "True";
-    var baseUrl = ViewBag.BaseUrl as string ?? "";
 }
 
 <!-- PAGE HEADER -->
 <div class="page-header-rir">
-    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
-        <div>
-            <h2><i class="bi bi-people-fill"></i> Meus Clientes</h2>
-            <p>Gerencie os clientes e seus links de acesso</p>
-        </div>
-        <a asp-action="Create" class="btn-rir-primary">
-            <i class="bi bi-plus-circle"></i> Novo Cliente
-        </a>
+    <div>
+        <h2><i class="bi bi-pencil-square"></i> Editar Cliente</h2>
+        <p>Atualize as informações do cliente</p>
     </div>
 </div>
 
-<!-- FILTRO ADMIN -->
-@if (isAdmin)
-{
-    <div class="card-rir mb-4">
-        <div class="card-rir-body">
-            <form method="get" asp-action="Index" class="row g-3">
-                <div class="col-md-10">
-                    <label for="funcionarioId" class="form-label">
-                        <i class="bi bi-funnel"></i> Filtrar por Funcionário
-                    </label>
-                    <select name="funcionarioId" id="funcionarioId" class="form-select">
-                        <option value="">Todos os funcionários</option>
-                        @{
-                            var funcionarios = ViewBag.Funcionarios as IEnumerable<AgendaIR.Models.Funcionario> ?? Enumerable.Empty<AgendaIR.Models.Funcionario>();
-                        }
-                        @foreach (var func in funcionarios)
-                        {
-                            var selected = ViewBag.FuncionarioIdFiltro != null && (int)ViewBag.FuncionarioIdFiltro == func.Id;
-                            <option value="@func.Id" selected="@selected">@func.Nome</option>
-                        }
-                    </select>
-                </div>
-                <div class="col-md-2 d-flex align-items-end">
-                    <button type="submit" class="btn-rir-primary w-100">
-                        <i class="bi bi-funnel"></i> Filtrar
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-}
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-10">
+        <div class="card-rir">
+            <div class="card-rir-body">
+                <form asp-action="Edit" method="post">
+                    <div asp-validation-summary="ModelOnly" class="alert-rir alert-rir-danger" role="alert"></div>
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="MagicToken" />
+                    <input type="hidden" asp-for="TokenGeradoEm" />
+                    <input type="hidden" asp-for="DataCriacao" />
 
-<!-- MENSAGENS -->
-@if (TempData["Success"] != null)
-{
-    <div class="alert-rir alert-rir-success">
-        <i class="bi bi-check-circle-fill" style="font-size: 1.5rem;"></i>
-        <div>
-            <strong>Sucesso!</strong><br />
-            @TempData["Success"]
-        </div>
-    </div>
-}
-@if (TempData["Error"] != null)
-{
-    <div class="alert-rir alert-rir-danger">
-        <i class="bi bi-exclamation-triangle-fill" style="font-size: 1.5rem;"></i>
-        <div>
-            <strong>Erro!</strong><br />
-            @TempData["Error"]
-        </div>
-    </div>
-}
+                    @* Nome *@
+                    <div class="mb-3">
+                        <label asp-for="Nome" class="form-label fw-bold">
+                            <i class="bi bi-person"></i> Nome Completo
+                        </label>
+                        <input asp-for="Nome" class="form-control" placeholder="Ex: João da Silva" />
+                        <span asp-validation-for="Nome" class="text-danger"></span>
+                    </div>
 
-<!-- CONTEÚDO -->
-@if (Model.Any())
-{
-    <!-- ✅ TABELA DESKTOP (esconde no mobile) -->
-    <div class="table-responsive-rir desktop-only">
-        <table class="table-rir">
-            <thead>
-                <tr>
-                    <th>Nome</th>
-                    <th>Email</th>
-                    <th>Telefone</th>
-                    <th>CPF</th>
-                    @if (isAdmin)
-                    {
-                        <th>Funcionário</th>
-                    }
-                    <th>Status</th>
-                    <th>Magic Link</th>
-                    <th class="text-center">Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var cliente in Model)
-                {
-                    var magicLink = $"{baseUrl}/Auth/LoginMagic?token={cliente.MagicToken}";
-                    var copyId = $"magicLink{cliente.Id}";
+                    <div class="row">
+                        @* Email *@
+                        <div class="col-12 col-md-6 mb-3">
+                            <label asp-for="Email" class="form-label fw-bold">
+                                <i class="bi bi-envelope"></i> Email
+                            </label>
+                            <input asp-for="Email" class="form-control" type="email" placeholder="Ex: joao@email.com" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
 
-                    <tr>
-                        <td><strong>@cliente.Nome</strong></td>
-                        <td>@cliente.Email</td>
-                        <td>@cliente.Telefone</td>
-                        <td>@cliente.CPF</td>
-                        @if (isAdmin)
-                        {
-                            <td>
-                                <span class="badge-rir badge-rir-info">
-                                    <i class="bi bi-person"></i>
-                                    @(cliente.Funcionario?.Nome ?? "Não atribuído")
-                                </span>
-                            </td>
-                        }
-                        <td>
-                            @if (cliente.Ativo)
+                        @* Telefone *@
+                        <div class="col-12 col-md-6 mb-3">
+                            <label asp-for="Telefone" class="form-label fw-bold">
+                                <i class="bi bi-whatsapp"></i> Telefone/WhatsApp
+                            </label>
+                            <input asp-for="Telefone" 
+                                   class="form-control" 
+                                   placeholder="Ex: (11) 98765-4321"
+                                   id="telefone" />
+                            <span asp-validation-for="Telefone" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        @* CPF *@
+                        <div class="col-12 col-md-6 mb-3">
+                            <label asp-for="CPF" class="form-label fw-bold">
+                                <i class="bi bi-card-text"></i> CPF
+                            </label>
+                            <input asp-for="CPF" 
+                                   class="form-control" 
+                                   placeholder="Ex: 123.456.789-00"
+                                   id="cpf" />
+                            <span asp-validation-for="CPF" class="text-danger"></span>
+                        </div>
+
+                        @* Funcionário Responsável *@
+                        <div class="col-12 col-md-6 mb-3">
+                            <label asp-for="FuncionarioId" class="form-label fw-bold">
+                                <i class="bi bi-person-badge"></i> Funcionário Responsável
+                            </label>
+                            
+                            @if (isAdmin)
                             {
-                                <span class="badge-rir badge-rir-success">
-                                    <i class="bi bi-check-circle"></i> Ativo
-                                </span>
+                                <select asp-for="FuncionarioId" class="form-select">
+                                    <option value="">Selecione um funcionário</option>
+                                    @if (ViewBag.Funcionarios != null)
+                                    {
+                                        var funcionarios = ViewBag.Funcionarios as IEnumerable<AgendaIR.Models.Funcionario>;
+                                        if (funcionarios != null)
+                                        {
+                                            foreach (var func in funcionarios)
+                                            {
+                                                <option value="@func.Id">@func.Nome</option>
+                                            }
+                                        }
+                                    }
+                                </select>
+                                <span asp-validation-for="FuncionarioId" class="text-danger"></span>
                             }
                             else
                             {
-                                <span class="badge-rir badge-rir-danger">
-                                    <i class="bi bi-x-circle"></i> Inativo
-                                </span>
+                                var funcionarioNome = Model.Funcionario?.Nome ?? "";
+                                <input type="text" class="form-control" value="@funcionarioNome" readonly disabled />
+                                <input asp-for="FuncionarioId" type="hidden" />
                             }
-                        </td>
-                        <td>
-                            <div class="input-group input-group-sm" style="max-width: 300px;">
-                                <input type="text"
-                                       class="form-control form-control-sm"
-                                       id="@copyId"
-                                       value="@magicLink"
-                                       readonly
-                                       style="font-size: 0.8rem;">
-                                <button class="btn btn-sm btn-rir-secondary"
-                                        type="button"
-                                        onclick="copyMagicLink('@copyId')"
-                                        title="Copiar link">
-                                    <i class="bi bi-clipboard"></i>
-                                </button>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="table-actions">
-                                <a asp-action="Details"
-                                   asp-route-id="@cliente.Id"
-                                   class="btn btn-sm btn-rir-secondary"
-                                   title="Detalhes">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                                <a asp-action="Edit"
-                                   asp-route-id="@cliente.Id"
-                                   class="btn btn-sm btn-rir-primary"
-                                   title="Editar">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                                <a asp-action="Delete"
-                                   asp-route-id="@cliente.Id"
-                                   class="btn btn-sm btn-rir-danger"
-                                   title="Deletar">
-                                    <i class="bi bi-trash"></i>
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-
-    <!-- ✅ CARDS MOBILE (esconde no desktop) -->
-    <div class="mobile-only">
-        @foreach (var cliente in Model)
-        {
-            var magicLink = $"{baseUrl}/Auth/LoginMagic?token={cliente.MagicToken}";
-            var copyIdMobile = $"magicLinkMobile{cliente.Id}";
-
-            <div class="client-card-mobile">
-                <div class="client-card-header">
-                    <div class="client-card-name">
-                        <i class="bi bi-person-circle"></i>
-                        <strong>@cliente.Nome</strong>
-                    </div>
-                    <div>
-                        @if (cliente.Ativo)
-                        {
-                            <span class="badge-rir badge-rir-success">
-                                <i class="bi bi-check-circle"></i> Ativo
-                            </span>
-                        }
-                        else
-                        {
-                            <span class="badge-rir badge-rir-danger">
-                                <i class="bi bi-x-circle"></i> Inativo
-                            </span>
-                        }
-                    </div>
-                </div>
-
-                <div class="client-card-body">
-                    <div class="client-info-row">
-                        <i class="bi bi-envelope"></i>
-                        <span>@cliente.Email</span>
-                    </div>
-                    <div class="client-info-row">
-                        <i class="bi bi-telephone"></i>
-                        <span>@cliente.Telefone</span>
-                    </div>
-                    <div class="client-info-row">
-                        <i class="bi bi-card-text"></i>
-                        <span>@cliente.CPF</span>
-                    </div>
-
-                    @if (isAdmin)
-                    {
-                        <div class="client-info-row">
-                            <i class="bi bi-person-badge"></i>
-                            <span class="badge-rir badge-rir-info">
-                                @(cliente.Funcionario?.Nome ?? "Não atribuído")
-                            </span>
-                        </div>
-                    }
-
-                    <div class="client-info-row">
-                        <i class="bi bi-link-45deg"></i>
-                        <div class="input-group input-group-sm">
-                            <input type="text"
-                                   class="form-control form-control-sm"
-                                   id="@copyIdMobile"
-                                   value="@magicLink"
-                                   readonly
-                                   style="font-size: 0.75rem;">
-                            <button class="btn btn-sm btn-rir-secondary"
-                                    type="button"
-                                    onclick="copyMagicLink('@copyIdMobile')"
-                                    title="Copiar link">
-                                <i class="bi bi-clipboard"></i>
-                            </button>
                         </div>
                     </div>
-                </div>
 
-                <div class="client-card-actions">
-                    <a asp-action="Details"
-                       asp-route-id="@cliente.Id"
-                       class="btn btn-sm btn-rir-secondary">
-                        <i class="bi bi-eye"></i> Ver
-                    </a>
-                    <a asp-action="Edit"
-                       asp-route-id="@cliente.Id"
-                       class="btn btn-sm btn-rir-primary">
-                        <i class="bi bi-pencil"></i> Editar
-                    </a>
-                    <a asp-action="Delete"
-                       asp-route-id="@cliente.Id"
-                       class="btn btn-sm btn-rir-danger">
-                        <i class="bi bi-trash"></i> Deletar
-                    </a>
-                </div>
-            </div>
-        }
-    </div>
-}
-else
-{
-    <div class="card-rir">
-        <div class="card-rir-body">
-            <div class="table-empty">
-                <i class="bi bi-inbox"></i>
-                <h4>Nenhum cliente cadastrado</h4>
-                <p>
-                    <a asp-action="Create" class="btn-rir-primary">
-                        <i class="bi bi-plus-circle"></i> Adicionar Primeiro Cliente
-                    </a>
-                </p>
+                    @* Status Ativo *@
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input asp-for="Ativo" class="form-check-input" type="checkbox" id="ativoSwitch" />
+                            <label class="form-check-label fw-bold" for="ativoSwitch">
+                                <i class="bi bi-toggle-on"></i> Cliente Ativo
+                            </label>
+                        </div>
+                        <small class="form-text text-muted">
+                            Clientes inativos não poderão acessar o sistema usando o Magic Link
+                        </small>
+                    </div>
+
+                    @* Botões *@
+                    <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
+                        <a asp-action="Index" class="btn-rir-secondary">
+                            <i class="bi bi-arrow-left"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn-rir-primary">
+                            <i class="bi bi-save"></i> Salvar Alterações
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
-}
+</div>
 
 @section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
     <script>
-        function copyMagicLink(elementId) {
-            const input = document.getElementById(elementId);
-            input.select();
-            input.setSelectionRange(0, 99999);
+        // Máscara para CPF
+        document.getElementById('cpf').addEventListener('input', function (e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length <= 11) {
+                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            }
+            e.target.value = value;
+        });
 
-            navigator.clipboard.writeText(input.value).then(function() {
-                const button = input.nextElementSibling;
-                const originalHTML = button.innerHTML;
-                const originalClass = button.className;
-
-                button.innerHTML = '<i class="bi bi-check-lg"></i>';
-                button.classList.remove('btn-rir-secondary');
-                button.classList.add('btn-rir-success');
-
-                setTimeout(function() {
-                    button.innerHTML = originalHTML;
-                    button.className = originalClass;
-                }, 2000);
-            }).catch(function(err) {
-                alert('Erro ao copiar: ' + err);
-            });
-        }
+        // Máscara para telefone
+        document.getElementById('telefone').addEventListener('input', function (e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length <= 11) {
+                value = value.replace(/^(\d{2})(\d)/g, '($1) $2');
+                value = value.replace(/(\d)(\d{4})$/, '$1-$2');
+            }
+            e.target.value = value;
+        });
     </script>
 }

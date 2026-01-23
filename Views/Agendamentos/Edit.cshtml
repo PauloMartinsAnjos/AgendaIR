@@ -4,63 +4,59 @@
     ViewData["Title"] = "Editar Agendamento";
 }
 
-<div class="container mt-4">
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <h2><i class="bi bi-pencil-square"></i> Editar Agendamento</h2>
-            <p class="text-muted">Atualize o status e observações do agendamento</p>
-        </div>
+<!-- PAGE HEADER -->
+<div class="page-header-rir">
+    <div>
+        <h2><i class="bi bi-pencil-square"></i> Editar Agendamento</h2>
+        <p>Atualize o status e observações do agendamento</p>
     </div>
+</div>
 
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <div class="card shadow">
-                <div class="card-body">
-                    <form asp-action="Edit" method="post">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" asp-for="Id" />
-                        
-                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-10">
+        <div class="card-rir">
+            <div class="card-rir-body">
+                <form asp-action="Edit" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="Id" />
+                    
+                    <div asp-validation-summary="ModelOnly" class="alert-rir alert-rir-danger" role="alert"></div>
 
-                        <!-- Informações do Cliente (Readonly) -->
-                        <div class="card mb-4 bg-light">
-                            <div class="card-body">
-                                <h5 class="card-title"><i class="bi bi-person"></i> Informações do Cliente</h5>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <p class="mb-1"><strong>Nome:</strong> @Model.ClienteNome</p>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <p class="mb-1"><strong>E-mail:</strong> @Model.ClienteEmail</p>
-                                    </div>
+                    <!-- Informações do Cliente (Readonly) -->
+                    <div class="alert-rir alert-rir-info mb-4">
+                        <i class="bi bi-person" style="font-size: 1.5rem;"></i>
+                        <div>
+                            <strong>Informações do Cliente</strong><br />
+                            <div class="row mt-2">
+                                <div class="col-12 col-md-6 mb-2 mb-md-0">
+                                    <strong>Nome:</strong> @Model.ClienteNome<br />
+                                    <strong>Telefone:</strong> @Model.ClienteTelefone
                                 </div>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <p class="mb-0"><strong>Telefone:</strong> @Model.ClienteTelefone</p>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <p class="mb-0"><strong>Funcionário:</strong> @Model.FuncionarioNome</p>
-                                    </div>
+                                <div class="col-12 col-md-6">
+                                    <strong>E-mail:</strong> @Model.ClienteEmail<br />
+                                    <strong>Funcionário:</strong> @Model.FuncionarioNome
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- Data e Hora (Readonly) -->
-                        <div class="mb-4">
-                            <label class="form-label">
-                                <i class="bi bi-calendar-event"></i> Data e Hora do Agendamento
-                            </label>
-                            <input type="text" class="form-control" 
-                                   value="@Model.DataHora.ToString("dd/MM/yyyy HH:mm")" 
-                                   readonly disabled />
-                            <small class="form-text text-muted">
-                                <i class="bi bi-info-circle"></i> A data e hora não podem ser alteradas após a criação
-                            </small>
-                        </div>
+                    <!-- Data e Hora (Readonly) -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-calendar-event"></i> Data e Hora do Agendamento
+                        </label>
+                        <input type="text" class="form-control" 
+                               value="@Model.DataHora.ToString("dd/MM/yyyy HH:mm")" 
+                               readonly disabled />
+                        <small class="form-text text-muted">
+                            <i class="bi bi-info-circle"></i> A data e hora não podem ser alteradas após a criação
+                        </small>
+                    </div>
 
+                    <div class="row">
                         <!-- Status -->
-                        <div class="mb-4">
-                            <label asp-for="Status" class="form-label">
+                        <div class="col-12 col-md-6 mb-4">
+                            <label asp-for="Status" class="form-label fw-bold">
                                 <i class="bi bi-flag"></i> Status do Agendamento
                             </label>
                             <select asp-for="Status" class="form-select">
@@ -70,56 +66,64 @@
                                 }
                             </select>
                             <span asp-validation-for="Status" class="text-danger"></span>
-                            <small class="form-text text-muted">
-                                <ul class="mb-0 mt-2">
-                                    <li><strong>Pendente:</strong> Agendamento aguardando confirmação</li>
-                                    <li><strong>Confirmado:</strong> Agendamento confirmado e ativo</li>
-                                    <li><strong>Concluído:</strong> Atendimento foi realizado</li>
-                                    <li><strong>Cancelado:</strong> Agendamento foi cancelado</li>
-                                </ul>
-                            </small>
                         </div>
+                    </div>
 
-                        <!-- Observações -->
-                        <div class="mb-4">
-                            <label asp-for="Observacoes" class="form-label">
-                                <i class="bi bi-chat-text"></i> Observações
-                            </label>
-                            <textarea asp-for="Observacoes" class="form-control" rows="5" 
-                                      placeholder="Adicione observações sobre o agendamento, detalhes do atendimento, etc..."></textarea>
-                            <span asp-validation-for="Observacoes" class="text-danger"></span>
-                            <small class="form-text text-muted">
-                                Adicione informações relevantes sobre o agendamento
-                            </small>
+                    <div class="alert-rir alert-rir-info mb-3">
+                        <i class="bi bi-info-circle" style="font-size: 1.5rem;"></i>
+                        <div>
+                            <strong>Status do Agendamento:</strong><br />
+                            <ul class="mb-0 mt-2">
+                                <li><strong>Pendente:</strong> Agendamento aguardando confirmação</li>
+                                <li><strong>Confirmado:</strong> Agendamento confirmado e ativo</li>
+                                <li><strong>Concluído:</strong> Atendimento foi realizado</li>
+                                <li><strong>Cancelado:</strong> Agendamento foi cancelado</li>
+                            </ul>
                         </div>
+                    </div>
 
-                        <!-- Avisos Importantes -->
-                        <div class="alert alert-warning" role="alert">
-                            <h6 class="alert-heading"><i class="bi bi-exclamation-triangle"></i> Importante!</h6>
-                            <ul class="mb-0">
+                    <!-- Observações -->
+                    <div class="mb-4">
+                        <label asp-for="Observacoes" class="form-label fw-bold">
+                            <i class="bi bi-chat-text"></i> Observações
+                        </label>
+                        <textarea asp-for="Observacoes" class="form-control" rows="5" 
+                                  placeholder="Adicione observações sobre o agendamento, detalhes do atendimento, etc..."></textarea>
+                        <span asp-validation-for="Observacoes" class="text-danger"></span>
+                        <small class="form-text text-muted">
+                            Adicione informações relevantes sobre o agendamento
+                        </small>
+                    </div>
+
+                    <!-- Avisos Importantes -->
+                    <div class="alert-rir alert-rir-info mb-4">
+                        <i class="bi bi-exclamation-triangle" style="font-size: 1.5rem;"></i>
+                        <div>
+                            <strong>Importante!</strong><br />
+                            <ul class="mb-0 mt-2">
                                 <li>Alterações no status serão registradas no sistema</li>
                                 <li>O cliente poderá visualizar o status atualizado</li>
                                 <li>Ao marcar como "Concluído", o atendimento será considerado finalizado</li>
                                 <li>Ao marcar como "Cancelado", o evento será removido do Google Calendar</li>
                             </ul>
                         </div>
+                    </div>
 
-                        <!-- Botões de Ação -->
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-between">
-                            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">
-                                <i class="bi bi-arrow-left"></i> Voltar
+                    <!-- Botões de Ação -->
+                    <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
+                        <a asp-action="Details" asp-route-id="@Model.Id" class="btn-rir-secondary">
+                            <i class="bi bi-arrow-left"></i> Voltar
+                        </a>
+                        <div class="d-flex flex-column flex-md-row gap-2">
+                            <a asp-action="Index" class="btn-rir-secondary">
+                                <i class="bi bi-x-circle"></i> Cancelar
                             </a>
-                            <div>
-                                <a asp-action="Index" class="btn btn-outline-secondary">
-                                    <i class="bi bi-x-circle"></i> Cancelar
-                                </a>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="bi bi-check-circle"></i> Salvar Alterações
-                                </button>
-                            </div>
+                            <button type="submit" class="btn-rir-primary">
+                                <i class="bi bi-check-circle"></i> Salvar Alterações
+                            </button>
                         </div>
-                    </form>
-                </div>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

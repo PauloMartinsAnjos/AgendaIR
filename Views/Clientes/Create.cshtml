@@ -5,31 +5,34 @@
     var isAdmin = User.FindFirst("IsAdmin")?.Value == "True";
 }
 
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">
-                        <i class="bi bi-person-plus-fill"></i> Cadastrar Novo Cliente
-                    </h4>
-                </div>
-                <div class="card-body">
-                    <form asp-action="Create" method="post">
-                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+<!-- PAGE HEADER -->
+<div class="page-header-rir">
+    <div>
+        <h2><i class="bi bi-person-plus-fill"></i> Cadastrar Novo Cliente</h2>
+        <p>Preencha os dados do novo cliente</p>
+    </div>
+</div>
 
-                        @* Nome *@
-                        <div class="mb-3">
-                            <label asp-for="Nome" class="form-label">
-                                <i class="bi bi-person"></i> Nome Completo
-                            </label>
-                            <input asp-for="Nome" class="form-control" placeholder="Ex: João da Silva" />
-                            <span asp-validation-for="Nome" class="text-danger"></span>
-                        </div>
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-10">
+        <div class="card-rir">
+            <div class="card-rir-body">
+                <form asp-action="Create" method="post">
+                    <div asp-validation-summary="ModelOnly" class="alert-rir alert-rir-danger" role="alert"></div>
 
+                    @* Nome *@
+                    <div class="mb-3">
+                        <label asp-for="Nome" class="form-label fw-bold">
+                            <i class="bi bi-person"></i> Nome Completo
+                        </label>
+                        <input asp-for="Nome" class="form-control" placeholder="Ex: João da Silva" />
+                        <span asp-validation-for="Nome" class="text-danger"></span>
+                    </div>
+
+                    <div class="row">
                         @* Email *@
-                        <div class="mb-3">
-                            <label asp-for="Email" class="form-label">
+                        <div class="col-12 col-md-6 mb-3">
+                            <label asp-for="Email" class="form-label fw-bold">
                                 <i class="bi bi-envelope"></i> Email
                             </label>
                             <input asp-for="Email" class="form-control" type="email" placeholder="Ex: joao@email.com" />
@@ -37,8 +40,8 @@
                         </div>
 
                         @* Telefone *@
-                        <div class="mb-3">
-                            <label asp-for="Telefone" class="form-label">
+                        <div class="col-12 col-md-6 mb-3">
+                            <label asp-for="Telefone" class="form-label fw-bold">
                                 <i class="bi bi-whatsapp"></i> Telefone/WhatsApp
                             </label>
                             <input asp-for="Telefone" 
@@ -46,14 +49,16 @@
                                    placeholder="Ex: (11) 98765-4321"
                                    id="telefone" />
                             <span asp-validation-for="Telefone" class="text-danger"></span>
-                            <div class="form-text">
+                            <small class="form-text text-muted">
                                 O link de acesso poderá ser enviado diretamente para este WhatsApp
-                            </div>
+                            </small>
                         </div>
+                    </div>
 
+                    <div class="row">
                         @* CPF *@
-                        <div class="mb-3">
-                            <label asp-for="CPF" class="form-label">
+                        <div class="col-12 col-md-6 mb-3">
+                            <label asp-for="CPF" class="form-label fw-bold">
                                 <i class="bi bi-card-text"></i> CPF
                             </label>
                             <input asp-for="CPF" 
@@ -64,8 +69,8 @@
                         </div>
 
                         @* Funcionário Responsável *@
-                        <div class="mb-3">
-                            <label asp-for="FuncionarioId" class="form-label">
+                        <div class="col-12 col-md-6 mb-3">
+                            <label asp-for="FuncionarioId" class="form-label fw-bold">
                                 <i class="bi bi-person-badge"></i> Funcionário Responsável
                             </label>
                             
@@ -74,14 +79,6 @@
                                 @* Admin pode selecionar qualquer funcionário *@
                                 <select asp-for="FuncionarioId" class="form-select">
                                     <option value="">Selecione um funcionário</option>
-                                    @* @if (ViewBag.Funcionarios != null)
-                                    {
-                                        foreach (var func in ViewBag.Funcionarios as IEnumerable<AgendaIR.Models.Funcionario>)
-                                        {
-                                            <option value="@func.Id">@func.Nome</option>
-                                        }
-                                    } *@
-
                                     @if (ViewBag.Funcionarios != null)
                                     {
                                         var funcionarios = ViewBag.Funcionarios as IEnumerable<AgendaIR.Models.Funcionario>;
@@ -102,31 +99,32 @@
                                 var funcionarioNome = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value ?? "";
                                 <input type="text" class="form-control" value="@funcionarioNome" readonly disabled />
                                 <input asp-for="FuncionarioId" type="hidden" />
-                                <div class="form-text">
+                                <small class="form-text text-muted">
                                     Este cliente será vinculado a você
-                                </div>
+                                </small>
                             }
                         </div>
+                    </div>
 
-                        <hr class="my-4" />
-
-                        <div class="alert alert-info">
-                            <i class="bi bi-info-circle"></i>
-                            <strong>Importante:</strong> Após criar o cliente, um link mágico (Magic Link) será gerado automaticamente.
+                    <div class="alert-rir alert-rir-info mb-3">
+                        <i class="bi bi-info-circle" style="font-size: 1.5rem;"></i>
+                        <div>
+                            <strong>Importante:</strong><br />
+                            Após criar o cliente, um link mágico (Magic Link) será gerado automaticamente.
                             Você poderá copiar este link e enviar ao cliente via WhatsApp para que ele acesse o sistema.
                         </div>
+                    </div>
 
-                        @* Botões *@
-                        <div class="d-flex justify-content-between">
-                            <a asp-action="Index" class="btn btn-secondary">
-                                <i class="bi bi-arrow-left"></i> Cancelar
-                            </a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-save"></i> Cadastrar Cliente
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                    @* Botões *@
+                    <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
+                        <a asp-action="Index" class="btn-rir-secondary">
+                            <i class="bi bi-arrow-left"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn-rir-primary">
+                            <i class="bi bi-save"></i> Cadastrar Cliente
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

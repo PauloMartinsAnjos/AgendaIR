@@ -4,173 +4,265 @@
     ViewData["Title"] = "Documentos Solicitados";
 }
 
-<div class="container mt-4">
-    <div class="row mb-4">
-        <div class="col-md-8">
+<!-- PAGE HEADER -->
+<div class="page-header-rir">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+        <div>
             <h2><i class="bi bi-file-earmark-text"></i> Documentos Solicitados</h2>
-            <p class="text-muted">Gerencie a lista global de documentos solicitados aos clientes</p>
+            <p>Gerencie a lista global de documentos solicitados aos clientes</p>
         </div>
-        <div class="col-md-4 text-end">
-            <a asp-action="Create" class="btn btn-primary">
-                <i class="bi bi-plus-circle"></i> Novo Documento
-            </a>
+        <a asp-action="Create" class="btn-rir-primary">
+            <i class="bi bi-plus-circle"></i> Novo Documento
+        </a>
+    </div>
+</div>
+
+<!-- MENSAGENS -->
+@if (TempData["Success"] != null)
+{
+    <div class="alert-rir alert-rir-success">
+        <i class="bi bi-check-circle-fill" style="font-size: 1.5rem;"></i>
+        <div>
+            <strong>Sucesso!</strong><br />
+            @TempData["Success"]
         </div>
     </div>
-
-    @* Mensagens de sucesso/erro *@
-    @if (TempData["Success"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle-fill"></i> @TempData["Success"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert-rir alert-rir-danger">
+        <i class="bi bi-exclamation-triangle-fill" style="font-size: 1.5rem;"></i>
+        <div>
+            <strong>Erro!</strong><br />
+            @TempData["Error"]
         </div>
-    }
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="bi bi-exclamation-triangle-fill"></i> @TempData["Error"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
+    </div>
+}
 
-    @* Informação sobre a lista global *@
-    <div class="alert alert-info mb-4">
-        <i class="bi bi-info-circle"></i>
+<!-- Informação sobre a lista global -->
+<div class="alert-rir alert-rir-info mb-4">
+    <i class="bi bi-info-circle" style="font-size: 1.5rem;"></i>
+    <div>
         <strong>Lista Global:</strong> Estes documentos são solicitados a todos os clientes no momento do agendamento.
         Você pode desativar documentos sem deletá-los do sistema.
     </div>
+</div>
 
     @if (Model != null && Model.Any())
     {
-        <div class="card">
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Nome</th>
-                                <th>Descrição</th>
-                                <th class="text-center">Status</th>
-                                <th class="text-center">Tipo</th>
-                                <th class="text-center">Data de Criação</th>
-                                <th class="text-center">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in Model)
-                            {
-                                <tr class="@(!item.Ativo ? "table-secondary" : "")">
-                                    <td>
-                                        <strong>@item.Nome</strong>
-                                    </td>
-                                    <td>
-                                        @if (!string.IsNullOrEmpty(item.Descricao))
-                                        {
-                                            <small class="text-muted">@item.Descricao</small>
-                                        }
-                                        else
-                                        {
-                                            <small class="text-muted fst-italic">Sem descrição</small>
-                                        }
-                                    </td>
-                                    <td class="text-center">
-                                        @if (item.Ativo)
-                                        {
-                                            <span class="badge bg-success">
-                                                <i class="bi bi-check-circle"></i> Ativo
-                                            </span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-secondary">
-                                                <i class="bi bi-x-circle"></i> Inativo
-                                            </span>
-                                        }
-                                    </td>
-                                    <td class="text-center">
-                                        @if (item.Obrigatorio)
-                                        {
-                                            <span class="badge bg-danger">
-                                                <i class="bi bi-exclamation-circle"></i> Obrigatório
-                                            </span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-info">
-                                                <i class="bi bi-info-circle"></i> Opcional
-                                            </span>
-                                        }
-                                    </td>
-                                    <td class="text-center">
-                                        <small>@item.DataCriacao.ToString("dd/MM/yyyy")</small>
-                                    </td>
-                                    <td class="text-center">
-                                        <div class="btn-group" role="group">
-                                            <a asp-action="Edit" asp-route-id="@item.Id" 
-                                               class="btn btn-sm btn-outline-primary" 
-                                               title="Editar">
-                                                <i class="bi bi-pencil"></i>
-                                            </a>
-                                            
-                                            @* Botão para toggle Ativo *@
-                                            <form asp-action="ToggleAtivo" asp-route-id="@item.Id" 
-                                                  method="post" 
-                                                  class="d-inline"
-                                                  onsubmit="return confirm('@(item.Ativo ? "Desativar" : "Ativar") este documento?');">
-                                                @Html.AntiForgeryToken()
-                                                <button type="submit" 
-                                                        class="btn btn-sm btn-outline-@(item.Ativo ? "warning" : "success")" 
-                                                        title="@(item.Ativo ? "Desativar" : "Ativar")">
-                                                    <i class="bi bi-@(item.Ativo ? "toggle-on" : "toggle-off")"></i>
-                                                </button>
-                                            </form>
+        <!-- ✅ TABELA DESKTOP -->
+        <div class="table-responsive-rir desktop-only">
+            <table class="table-rir">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Descrição</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-center">Tipo</th>
+                        <th class="text-center">Data de Criação</th>
+                        <th class="text-center">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr class="@(!item.Ativo ? "table-secondary" : "")">
+                            <td>
+                                <strong>@item.Nome</strong>
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(item.Descricao))
+                                {
+                                    <small class="text-muted">@item.Descricao</small>
+                                }
+                                else
+                                {
+                                    <small class="text-muted fst-italic">Sem descrição</small>
+                                }
+                            </td>
+                            <td class="text-center">
+                                @if (item.Ativo)
+                                {
+                                    <span class="badge-rir badge-rir-success">
+                                        <i class="bi bi-check-circle"></i> Ativo
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge-rir badge-rir-info">
+                                        <i class="bi bi-x-circle"></i> Inativo
+                                    </span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                @if (item.Obrigatorio)
+                                {
+                                    <span class="badge-rir badge-rir-danger">
+                                        <i class="bi bi-exclamation-circle"></i> Obrigatório
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge-rir badge-rir-info">
+                                        <i class="bi bi-info-circle"></i> Opcional
+                                    </span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <small>@item.DataCriacao.ToString("dd/MM/yyyy")</small>
+                            </td>
+                            <td>
+                                <div class="table-actions">
+                                    <a asp-action="Edit" asp-route-id="@item.Id" 
+                                       class="btn btn-sm btn-rir-primary" 
+                                       title="Editar">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    
+                                    @* Botão para toggle Ativo *@
+                                    <form asp-action="ToggleAtivo" asp-route-id="@item.Id" 
+                                          method="post" 
+                                          class="d-inline"
+                                          onsubmit="return confirm('@(item.Ativo ? "Desativar" : "Ativar") este documento?');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" 
+                                                class="btn btn-sm @(item.Ativo ? "btn-rir-secondary" : "btn-rir-success")" 
+                                                title="@(item.Ativo ? "Desativar" : "Ativar")">
+                                            <i class="bi bi-@(item.Ativo ? "toggle-on" : "toggle-off")"></i>
+                                        </button>
+                                    </form>
 
-                                            <a asp-action="Delete" asp-route-id="@item.Id" 
-                                               class="btn btn-sm btn-outline-danger" 
-                                               title="Deletar">
-                                                <i class="bi bi-trash"></i>
-                                            </a>
-                                        </div>
-                                    </td>
-                                </tr>
+                                    <a asp-action="Delete" asp-route-id="@item.Id" 
+                                       class="btn btn-sm btn-rir-danger" 
+                                       title="Deletar">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ✅ CARDS MOBILE -->
+        <div class="mobile-only">
+            @foreach (var item in Model)
+            {
+                <div class="client-card-mobile @(!item.Ativo ? "opacity-75" : "")">
+                    <div class="client-card-header">
+                        <div class="client-card-name">
+                            <i class="bi bi-file-earmark-text"></i>
+                            <strong>@item.Nome</strong>
+                        </div>
+                        <div>
+                            @if (item.Ativo)
+                            {
+                                <span class="badge-rir badge-rir-success">
+                                    <i class="bi bi-check-circle"></i> Ativo
+                                </span>
                             }
-                        </tbody>
-                    </table>
+                            else
+                            {
+                                <span class="badge-rir badge-rir-info">
+                                    <i class="bi bi-x-circle"></i> Inativo
+                                </span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="client-card-body">
+                        <div class="client-info-row">
+                            <i class="bi bi-text-paragraph"></i>
+                            <span>
+                                @if (!string.IsNullOrEmpty(item.Descricao))
+                                {
+                                    <text>@item.Descricao</text>
+                                }
+                                else
+                                {
+                                    <em class="text-muted">Sem descrição</em>
+                                }
+                            </span>
+                        </div>
+                        <div class="client-info-row">
+                            <i class="bi bi-flag"></i>
+                            <span>
+                                @if (item.Obrigatorio)
+                                {
+                                    <span class="badge-rir badge-rir-danger">
+                                        <i class="bi bi-exclamation-circle"></i> Obrigatório
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge-rir badge-rir-info">
+                                        <i class="bi bi-info-circle"></i> Opcional
+                                    </span>
+                                }
+                            </span>
+                        </div>
+                        <div class="client-info-row">
+                            <i class="bi bi-calendar"></i>
+                            <span>Criado em @item.DataCriacao.ToString("dd/MM/yyyy")</span>
+                        </div>
+                    </div>
+
+                    <div class="client-card-actions">
+                        <a asp-action="Edit" asp-route-id="@item.Id" 
+                           class="btn btn-sm btn-rir-primary">
+                            <i class="bi bi-pencil"></i> Editar
+                        </a>
+                        <form asp-action="ToggleAtivo" asp-route-id="@item.Id" 
+                              method="post" 
+                              class="d-inline"
+                              onsubmit="return confirm('@(item.Ativo ? "Desativar" : "Ativar") este documento?');">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" 
+                                    class="btn btn-sm @(item.Ativo ? "btn-rir-secondary" : "btn-rir-success")">
+                                <i class="bi bi-@(item.Ativo ? "toggle-on" : "toggle-off")"></i> @(item.Ativo ? "Desativar" : "Ativar")
+                            </button>
+                        </form>
+                        <a asp-action="Delete" asp-route-id="@item.Id" 
+                           class="btn btn-sm btn-rir-danger">
+                            <i class="bi bi-trash"></i> Excluir
+                        </a>
+                    </div>
                 </div>
-            </div>
+            }
         </div>
 
         @* Estatísticas *@
         <div class="row mt-4">
-            <div class="col-md-3">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5 class="card-title">@Model.Count()</h5>
-                        <p class="card-text text-muted">Total de Documentos</p>
+            <div class="col-6 col-md-3 mb-3">
+                <div class="card-rir text-center">
+                    <div class="card-rir-body">
+                        <h5>@Model.Count()</h5>
+                        <p class="text-muted mb-0">Total de Documentos</p>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5 class="card-title text-success">@Model.Count(d => d.Ativo)</h5>
-                        <p class="card-text text-muted">Ativos</p>
+            <div class="col-6 col-md-3 mb-3">
+                <div class="card-rir text-center">
+                    <div class="card-rir-body">
+                        <h5 class="text-success">@Model.Count(d => d.Ativo)</h5>
+                        <p class="text-muted mb-0">Ativos</p>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5 class="card-title text-danger">@Model.Count(d => d.Obrigatorio)</h5>
-                        <p class="card-text text-muted">Obrigatórios</p>
+            <div class="col-6 col-md-3 mb-3">
+                <div class="card-rir text-center">
+                    <div class="card-rir-body">
+                        <h5 class="text-danger">@Model.Count(d => d.Obrigatorio)</h5>
+                        <p class="text-muted mb-0">Obrigatórios</p>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5 class="card-title text-info">@Model.Count(d => !d.Obrigatorio)</h5>
-                        <p class="card-text text-muted">Opcionais</p>
+            <div class="col-6 col-md-3 mb-3">
+                <div class="card-rir text-center">
+                    <div class="card-rir-body">
+                        <h5 class="text-info">@Model.Count(d => !d.Obrigatorio)</h5>
+                        <p class="text-muted mb-0">Opcionais</p>
                     </div>
                 </div>
             </div>
@@ -178,9 +270,18 @@
     }
     else
     {
-        <div class="alert alert-warning">
-            <i class="bi bi-exclamation-triangle"></i>
-            Nenhum documento cadastrado. Clique em "Novo Documento" para adicionar o primeiro documento solicitado.
+        <div class="card-rir">
+            <div class="card-rir-body">
+                <div class="table-empty">
+                    <i class="bi bi-inbox"></i>
+                    <h4>Nenhum documento cadastrado</h4>
+                    <p>
+                        <a asp-action="Create" class="btn-rir-primary">
+                            <i class="bi bi-plus-circle"></i> Adicionar Primeiro Documento
+                        </a>
+                    </p>
+                </div>
+            </div>
         </div>
     }
 </div>

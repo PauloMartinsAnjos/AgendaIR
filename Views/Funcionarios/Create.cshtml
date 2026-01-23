@@ -1,156 +1,126 @@
-﻿@model AgendaIR.Models.ViewModels.FuncionarioCreateViewModel
+@model AgendaIR.Models.ViewModels.FuncionarioCreateViewModel
 
 @{
     ViewData["Title"] = "Criar Funcionário";
 }
 
-<!-- Breadcrumbs -->
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Início</a></li>
-        <li class="breadcrumb-item"><a asp-action="Index">Funcionários</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Criar</li>
-    </ol>
-</nav>
-
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <h1 class="h2"><i class="bi bi-person-plus-fill"></i> Criar Novo Funcionário</h1>
-            <p class="text-muted">Preencha os dados abaixo para cadastrar um novo funcionário no sistema.</p>
-        </div>
+<!-- PAGE HEADER -->
+<div class="page-header-rir">
+    <div>
+        <h2><i class="bi bi-person-plus-fill"></i> Criar Novo Funcionário</h2>
+        <p>Preencha os dados para cadastrar um novo funcionário no sistema</p>
     </div>
+</div>
 
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <form asp-action="Create" method="post">
-                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-10">
+        <div class="card-rir">
+            <div class="card-rir-body">
+                <form asp-action="Create" method="post">
+                    <div asp-validation-summary="ModelOnly" class="alert-rir alert-rir-danger" role="alert"></div>
 
-                        <!-- Dados Pessoais -->
-                        <h5 class="card-title mb-3">
-                            <i class="bi bi-person-circle"></i> Dados Pessoais
-                        </h5>
+                    <h5 class="mb-3"><i class="bi bi-person-circle"></i> Dados Pessoais</h5>
 
-                        <div class="row mb-3">
-                            <div class="col-md-12">
-                                <label asp-for="Nome" class="form-label"></label>
-                                <input asp-for="Nome" class="form-control" placeholder="Ex: João da Silva" />
-                                <span asp-validation-for="Nome" class="text-danger"></span>
-                            </div>
+                    <div class="mb-3">
+                        <label asp-for="Nome" class="form-label fw-bold"></label>
+                        <input asp-for="Nome" class="form-control" placeholder="Ex: João da Silva" />
+                        <span asp-validation-for="Nome" class="text-danger"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12 col-md-6 mb-3">
+                            <label asp-for="Email" class="form-label fw-bold"></label>
+                            <input asp-for="Email" class="form-control" placeholder="exemplo@email.com" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
                         </div>
-
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label asp-for="Email" class="form-label"></label>
-                                <input asp-for="Email" class="form-control" placeholder="exemplo@email.com" />
-                                <span asp-validation-for="Email" class="text-danger"></span>
-                            </div>
-                            <div class="col-md-6">
-                                <label asp-for="CPF" class="form-label"></label>
-                                <input asp-for="CPF" class="form-control" placeholder="000.000.000-00" maxlength="14" />
-                                <span asp-validation-for="CPF" class="text-danger"></span>
-                                <small class="form-text text-muted">Formato: 000.000.000-00</small>
-                            </div>
+                        <div class="col-12 col-md-6 mb-3">
+                            <label asp-for="CPF" class="form-label fw-bold"></label>
+                            <input asp-for="CPF" class="form-control" placeholder="000.000.000-00" maxlength="14" id="CPF" />
+                            <span asp-validation-for="CPF" class="text-danger"></span>
                         </div>
+                    </div>
 
-                        <hr class="my-4" />
+                    <hr class="my-4" />
 
-                        <!-- Dados de Acesso -->
-                        <h5 class="card-title mb-3">
-                            <i class="bi bi-key-fill"></i> Dados de Acesso
-                        </h5>
+                    <h5 class="mb-3"><i class="bi bi-key-fill"></i> Dados de Acesso</h5>
 
-                        <div class="row mb-3">
-                            <div class="col-md-12">
-                                <label asp-for="Username" class="form-label"></label>
-                                <input asp-for="Username" class="form-control" placeholder="Ex: joao.silva" />
-                                <span asp-validation-for="Username" class="text-danger"></span>
-                                <small class="form-text text-muted">Nome de usuário para fazer login no sistema</small>
+                    <div class="mb-3">
+                        <label asp-for="Username" class="form-label fw-bold"></label>
+                        <input asp-for="Username" class="form-control" placeholder="Ex: joao.silva" />
+                        <span asp-validation-for="Username" class="text-danger"></span>
+                        <small class="form-text text-muted">Nome de usuário para fazer login no sistema</small>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12 col-md-6 mb-3">
+                            <label asp-for="Senha" class="form-label fw-bold"></label>
+                            <div class="input-group">
+                                <input asp-for="Senha" class="form-control" id="senha" type="password" placeholder="Mínimo 6 caracteres" />
+                                <button class="btn btn-outline-secondary" type="button" id="toggleSenha">
+                                    <i class="bi bi-eye-fill" id="iconSenha"></i>
+                                </button>
                             </div>
+                            <span asp-validation-for="Senha" class="text-danger"></span>
                         </div>
-
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label asp-for="Senha" class="form-label"></label>
-                                <div class="input-group">
-                                    <input asp-for="Senha" class="form-control" id="senha" type="password" placeholder="Mínimo 6 caracteres" />
-                                    <button class="btn btn-outline-secondary" type="button" id="toggleSenha">
-                                        <i class="bi bi-eye-fill" id="iconSenha"></i>
-                                    </button>
-                                </div>
-                                <span asp-validation-for="Senha" class="text-danger"></span>
+                        <div class="col-12 col-md-6 mb-3">
+                            <label asp-for="ConfirmarSenha" class="form-label fw-bold"></label>
+                            <div class="input-group">
+                                <input asp-for="ConfirmarSenha" class="form-control" id="confirmarSenha" type="password" />
+                                <button class="btn btn-outline-secondary" type="button" id="toggleConfirmarSenha">
+                                    <i class="bi bi-eye-fill" id="iconConfirmarSenha"></i>
+                                </button>
                             </div>
-                            <div class="col-md-6">
-                                <label asp-for="ConfirmarSenha" class="form-label"></label>
-                                <div class="input-group">
-                                    <input asp-for="ConfirmarSenha" class="form-control" id="confirmarSenha" type="password" />
-                                    <button class="btn btn-outline-secondary" type="button" id="toggleConfirmarSenha">
-                                        <i class="bi bi-eye-fill" id="iconConfirmarSenha"></i>
-                                    </button>
-                                </div>
-                                <span asp-validation-for="ConfirmarSenha" class="text-danger"></span>
-                            </div>
+                            <span asp-validation-for="ConfirmarSenha" class="text-danger"></span>
                         </div>
+                    </div>
 
-                        <hr class="my-4" />
+                    <hr class="my-4" />
 
-                        <!-- Integração Google Calendar -->
-                        <h5 class="card-title mb-3">
-                            <i class="bi bi-calendar-check"></i> Integração Google Calendar (Opcional)
-                        </h5>
+                    <h5 class="mb-3"><i class="bi bi-calendar-check"></i> Integração Google Calendar (Opcional)</h5>
 
-                        <div class="row mb-3">
-                            <div class="col-md-12">
-                                <label asp-for="GoogleCalendarEmail" class="form-label"></label>
-                                <input asp-for="GoogleCalendarEmail" class="form-control" placeholder="exemplo@gmail.com" />
-                                <span asp-validation-for="GoogleCalendarEmail" class="text-danger"></span>
-                                <small class="form-text text-muted">E-mail da conta do Google Calendar para integração</small>
+                    <div class="mb-3">
+                        <label asp-for="GoogleCalendarEmail" class="form-label fw-bold"></label>
+                        <input asp-for="GoogleCalendarEmail" class="form-control" placeholder="exemplo@gmail.com" />
+                        <span asp-validation-for="GoogleCalendarEmail" class="text-danger"></span>
+                        <small class="form-text text-muted">E-mail da conta do Google Calendar para integração</small>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <h5 class="mb-3"><i class="bi bi-shield-check"></i> Permissões e Status</h5>
+
+                    <div class="row">
+                        <div class="col-12 col-md-6 mb-3">
+                            <div class="form-check form-switch">
+                                <input asp-for="IsAdmin" class="form-check-input" type="checkbox" id="isAdmin" />
+                                <label asp-for="IsAdmin" class="form-check-label fw-bold" for="isAdmin">
+                                    Este funcionário é administrador?
+                                </label>
                             </div>
+                            <small class="form-text text-muted">Administradores têm acesso total ao sistema</small>
                         </div>
-
-                        <hr class="my-4" />
-
-                        <!-- Permissões e Status -->
-                        <h5 class="card-title mb-3">
-                            <i class="bi bi-shield-check"></i> Permissões e Status
-                        </h5>
-
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <div class="form-check form-switch">
-                                    <input asp-for="IsAdmin" class="form-check-input" type="checkbox" id="isAdmin" />
-                                    <label asp-for="IsAdmin" class="form-check-label" for="isAdmin">
-                                        Este funcionário é administrador?
-                                    </label>
-                                </div>
-                                <small class="form-text text-muted">Administradores têm acesso total ao sistema</small>
+                        <div class="col-12 col-md-6 mb-3">
+                            <div class="form-check form-switch">
+                                <input asp-for="Ativo" class="form-check-input" type="checkbox" id="ativo" checked />
+                                <label asp-for="Ativo" class="form-check-label fw-bold" for="ativo">
+                                    Funcionário ativo?
+                                </label>
                             </div>
-                            <div class="col-md-6">
-                                <div class="form-check form-switch">
-                                    <input asp-for="Ativo" class="form-check-input" type="checkbox" id="ativo" checked />
-                                    <label asp-for="Ativo" class="form-check-label" for="ativo">
-                                        Funcionário ativo?
-                                    </label>
-                                </div>
-                                <small class="form-text text-muted">Funcionários inativos não podem fazer login</small>
-                            </div>
+                            <small class="form-text text-muted">Funcionários inativos não podem fazer login</small>
                         </div>
+                    </div>
 
-                        <hr class="my-4" />
+                    <hr class="my-4" />
 
-                        <!-- Botões de Ação -->
-                        <div class="d-flex justify-content-between">
-                            <a asp-action="Index" class="btn btn-secondary">
-                                <i class="bi bi-arrow-left"></i> Cancelar
-                            </a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-save-fill"></i> Criar Funcionário
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                    <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
+                        <a asp-action="Index" class="btn-rir-secondary">
+                            <i class="bi bi-arrow-left"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn-rir-primary">
+                            <i class="bi bi-save-fill"></i> Criar Funcionário
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -160,7 +130,6 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     
     <script>
-        // Toggle password visibility
         document.getElementById('toggleSenha').addEventListener('click', function() {
             const senhaInput = document.getElementById('senha');
             const icon = document.getElementById('iconSenha');
@@ -191,7 +160,6 @@
             }
         });
 
-        // CPF mask
         document.getElementById('CPF').addEventListener('input', function(e) {
             let value = e.target.value.replace(/\D/g, '');
             if (value.length > 11) value = value.slice(0, 11);

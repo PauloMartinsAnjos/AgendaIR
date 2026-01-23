@@ -4,113 +4,113 @@
     ViewData["Title"] = "Novo Agendamento";
 }
 
-<div class="container mt-4">
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <h2><i class="bi bi-calendar-plus"></i> Novo Agendamento</h2>
-            <p class="text-muted">Preencha as informações para agendar seu atendimento IR</p>
-        </div>
+<!-- PAGE HEADER -->
+<div class="page-header-rir">
+    <div>
+        <h2><i class="bi bi-calendar-plus"></i> Novo Agendamento</h2>
+        <p>Preencha as informações para agendar seu atendimento IR</p>
     </div>
+</div>
 
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <div class="card shadow">
-                <div class="card-body">
-                    <form asp-action="Create" method="post" enctype="multipart/form-data">
-                        @Html.AntiForgeryToken()
-                        
-                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-10">
+        <div class="card-rir">
+            <div class="card-rir-body">
+                <form asp-action="Create" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+                    
+                    <div asp-validation-summary="ModelOnly" class="alert-rir alert-rir-danger" role="alert"></div>
 
-                        <!-- Informações do Funcionário Responsável -->
-                        <div class="card mb-4 bg-light">
-                            <div class="card-body">
-                                <h5 class="card-title"><i class="bi bi-person-badge"></i> Funcionário Responsável</h5>
-                                <p class="mb-0"><strong>@Model.FuncionarioNome</strong></p>
-                                <small class="text-muted">Este é o funcionário que irá atendê-lo</small>
-                            </div>
+                    <!-- Informações do Funcionário Responsável -->
+                    <div class="alert-rir alert-rir-info mb-4">
+                        <i class="bi bi-person-badge" style="font-size: 1.5rem;"></i>
+                        <div>
+                            <strong>Funcionário Responsável</strong><br />
+                            <strong>@Model.FuncionarioNome</strong><br />
+                            <small>Este é o funcionário que irá atendê-lo</small>
                         </div>
+                    </div>
 
-                        <!-- Data e Hora -->
-                        <div class="mb-4">
-                            <label asp-for="DataHora" class="form-label">
-                                <i class="bi bi-calendar-event"></i> Data e Hora do Agendamento
-                            </label>
-                            <input asp-for="DataHora" class="form-control" type="datetime-local" />
-                            <span asp-validation-for="DataHora" class="text-danger"></span>
-                            <small class="form-text text-muted">
-                                <i class="bi bi-info-circle"></i> Agendamentos disponíveis de segunda a sexta-feira, das 8h às 18h
-                            </small>
-                        </div>
+                    <!-- Data e Hora -->
+                    <div class="mb-4">
+                        <label asp-for="DataHora" class="form-label fw-bold">
+                            <i class="bi bi-calendar-event"></i> Data e Hora do Agendamento
+                        </label>
+                        <input asp-for="DataHora" class="form-control" type="datetime-local" />
+                        <span asp-validation-for="DataHora" class="text-danger"></span>
+                        <small class="form-text text-muted">
+                            <i class="bi bi-info-circle"></i> Agendamentos disponíveis de segunda a sexta-feira, das 8h às 18h
+                        </small>
+                    </div>
 
-                        <!-- Observações -->
-                        <div class="mb-4">
-                            <label asp-for="Observacoes" class="form-label">
-                                <i class="bi bi-chat-text"></i> Observações (Opcional)
-                            </label>
-                            <textarea asp-for="Observacoes" class="form-control" rows="3" 
-                                      placeholder="Adicione informações adicionais sobre seu agendamento..."></textarea>
-                            <span asp-validation-for="Observacoes" class="text-danger"></span>
-                        </div>
+                    <!-- Observações -->
+                    <div class="mb-4">
+                        <label asp-for="Observacoes" class="form-label fw-bold">
+                            <i class="bi bi-chat-text"></i> Observações (Opcional)
+                        </label>
+                        <textarea asp-for="Observacoes" class="form-control" rows="3" 
+                                  placeholder="Adicione informações adicionais sobre seu agendamento..."></textarea>
+                        <span asp-validation-for="Observacoes" class="text-danger"></span>
+                    </div>
 
-                        <!-- Documentos -->
-                        <div class="mb-4">
-                            <h5><i class="bi bi-file-earmark-arrow-up"></i> Documentos Necessários</h5>
-                            <p class="text-muted">
-                                Faça o upload dos documentos solicitados. 
-                                Documentos marcados com <span class="badge bg-danger">Obrigatório</span> são necessários.
-                            </p>
+                    <!-- Documentos -->
+                    <div class="mb-4">
+                        <h5><i class="bi bi-file-earmark-arrow-up"></i> Documentos Necessários</h5>
+                        <p class="text-muted">
+                            Faça o upload dos documentos solicitados. 
+                            Documentos marcados com <span class="badge-rir badge-rir-danger">Obrigatório</span> são necessários.
+                        </p>
 
-                            @for (int i = 0; i < Model.Documentos.Count; i++)
-                            {
-                                <div class="card mb-3">
-                                    <div class="card-body">
-                                        <div class="row align-items-center">
-                                            <div class="col-md-6">
-                                                <h6 class="mb-1">
-                                                    <i class="bi bi-file-earmark-text"></i> @Model.Documentos[i].Nome
-                                                    @if (Model.Documentos[i].Obrigatorio)
-                                                    {
-                                                        <span class="badge bg-danger ms-2">Obrigatório</span>
-                                                    }
-                                                    else
-                                                    {
-                                                        <span class="badge bg-secondary ms-2">Opcional</span>
-                                                    }
-                                                </h6>
-                                                @if (!string.IsNullOrEmpty(Model.Documentos[i].Descricao))
+                        @for (int i = 0; i < Model.Documentos.Count; i++)
+                        {
+                            <div class="card-rir mb-3">
+                                <div class="card-rir-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-12 col-md-6 mb-3 mb-md-0">
+                                            <h6 class="mb-1">
+                                                <i class="bi bi-file-earmark-text"></i> @Model.Documentos[i].Nome
+                                                @if (Model.Documentos[i].Obrigatorio)
                                                 {
-                                                    <small class="text-muted">@Model.Documentos[i].Descricao</small>
+                                                    <span class="badge-rir badge-rir-danger ms-2">Obrigatório</span>
                                                 }
-                                            </div>
-                                            <div class="col-md-6">
-                                                <input type="hidden" asp-for="Documentos[i].DocumentoSolicitadoId" />
-                                                <input type="hidden" asp-for="Documentos[i].Nome" />
-                                                <input type="hidden" asp-for="Documentos[i].Descricao" />
-                                                <input type="hidden" asp-for="Documentos[i].Obrigatorio" />
-                                                
-                                                <input asp-for="Documentos[i].Arquivo" class="form-control" type="file" 
-                                                       accept=".pdf,.jpg,.jpeg,.png" />
-                                                <small class="form-text text-muted">
-                                                    Formatos aceitos: PDF, JPG, PNG (máx. 10MB)
-                                                </small>
-                                            </div>
+                                                else
+                                                {
+                                                    <span class="badge-rir badge-rir-info ms-2">Opcional</span>
+                                                }
+                                            </h6>
+                                            @if (!string.IsNullOrEmpty(Model.Documentos[i].Descricao))
+                                            {
+                                                <small class="text-muted">@Model.Documentos[i].Descricao</small>
+                                            }
+                                        </div>
+                                        <div class="col-12 col-md-6">
+                                            <input type="hidden" asp-for="Documentos[i].DocumentoSolicitadoId" />
+                                            <input type="hidden" asp-for="Documentos[i].Nome" />
+                                            <input type="hidden" asp-for="Documentos[i].Descricao" />
+                                            <input type="hidden" asp-for="Documentos[i].Obrigatorio" />
+                                            
+                                            <input asp-for="Documentos[i].Arquivo" class="form-control" type="file" 
+                                                   accept=".pdf,.jpg,.jpeg,.png" />
+                                            <small class="form-text text-muted">
+                                                Formatos aceitos: PDF, JPG, PNG (máx. 10MB)
+                                            </small>
                                         </div>
                                     </div>
                                 </div>
-                            }
-                        </div>
+                            </div>
+                        }
+                    </div>
 
-                        <!-- Botões -->
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <a asp-action="MeusAgendamentos" class="btn btn-outline-secondary">
-                                <i class="bi bi-x-circle"></i> Cancelar
-                            </a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-check-circle"></i> Criar Agendamento
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                    <!-- Botões -->
+                    <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
+                        <a asp-action="MeusAgendamentos" class="btn-rir-secondary">
+                            <i class="bi bi-x-circle"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn-rir-primary">
+                            <i class="bi bi-check-circle"></i> Criar Agendamento
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
