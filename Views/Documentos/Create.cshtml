@@ -4,120 +4,120 @@
     ViewData["Title"] = "Novo Documento";
 }
 
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">
-                        <i class="bi bi-plus-circle"></i> Criar Novo Documento Solicitado
-                    </h4>
-                </div>
-                <div class="card-body">
-                    <form asp-action="Create" method="post">
-                        @Html.AntiForgeryToken()
+<!-- PAGE HEADER -->
+<div class="page-header-rir">
+    <div>
+        <h2><i class="bi bi-plus-circle"></i> Criar Novo Documento Solicitado</h2>
+        <p>Adicione um novo documento à lista global</p>
+    </div>
+</div>
 
-                        @* Informação *@
-                        <div class="alert alert-info mb-4">
-                            <i class="bi bi-info-circle"></i>
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-10">
+        <div class="card-rir">
+            <div class="card-rir-body">
+                <form asp-action="Create" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <!-- Informação -->
+                    <div class="alert-rir alert-rir-info mb-4">
+                        <i class="bi bi-info-circle" style="font-size: 1.5rem;"></i>
+                        <div>
                             Este documento será adicionado à lista global de documentos solicitados a todos os clientes.
                         </div>
+                    </div>
 
-                        <div class="row mb-3">
-                            <div class="col-md-12">
-                                <label asp-for="Nome" class="form-label">
-                                    Nome do Documento <span class="text-danger">*</span>
+                    <div class="mb-3">
+                        <label asp-for="Nome" class="form-label fw-bold">
+                            Nome do Documento <span class="text-danger">*</span>
+                        </label>
+                        <input asp-for="Nome" class="form-control" placeholder="Ex: RG, CPF, Comprovante de Residência" />
+                        <span asp-validation-for="Nome" class="text-danger"></span>
+                        <small class="form-text text-muted">
+                            Nome do documento que será exibido para os clientes
+                        </small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Descricao" class="form-label fw-bold">
+                            Descrição/Instruções
+                        </label>
+                        <textarea asp-for="Descricao" 
+                                  class="form-control" 
+                                  rows="3" 
+                                  placeholder="Ex: Envie o RG frente e verso em um único arquivo PDF"></textarea>
+                        <span asp-validation-for="Descricao" class="text-danger"></span>
+                        <small class="form-text text-muted">
+                            Instruções opcionais sobre como o cliente deve enviar o documento
+                        </small>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-12 col-md-6 mb-3 mb-md-0">
+                            <div class="form-check form-switch">
+                                <input asp-for="Obrigatorio" class="form-check-input" type="checkbox" role="switch" />
+                                <label asp-for="Obrigatorio" class="form-check-label fw-bold">
+                                    Documento Obrigatório
                                 </label>
-                                <input asp-for="Nome" class="form-control" placeholder="Ex: RG, CPF, Comprovante de Residência" />
-                                <span asp-validation-for="Nome" class="text-danger"></span>
-                                <small class="form-text text-muted">
-                                    Nome do documento que será exibido para os clientes
-                                </small>
                             </div>
+                            <small class="form-text text-muted">
+                                Se marcado, o cliente DEVE enviar este documento ao fazer um agendamento
+                            </small>
                         </div>
 
-                        <div class="row mb-3">
-                            <div class="col-md-12">
-                                <label asp-for="Descricao" class="form-label">
-                                    Descrição/Instruções
+                        <div class="col-12 col-md-6">
+                            <div class="form-check form-switch">
+                                <input asp-for="Ativo" class="form-check-input" type="checkbox" role="switch" checked />
+                                <label asp-for="Ativo" class="form-check-label fw-bold">
+                                    Documento Ativo
                                 </label>
-                                <textarea asp-for="Descricao" 
-                                          class="form-control" 
-                                          rows="3" 
-                                          placeholder="Ex: Envie o RG frente e verso em um único arquivo PDF"></textarea>
-                                <span asp-validation-for="Descricao" class="text-danger"></span>
-                                <small class="form-text text-muted">
-                                    Instruções opcionais sobre como o cliente deve enviar o documento
-                                </small>
                             </div>
+                            <small class="form-text text-muted">
+                                Apenas documentos ativos são solicitados aos clientes
+                            </small>
                         </div>
+                    </div>
 
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <div class="form-check form-switch">
-                                    <input asp-for="Obrigatorio" class="form-check-input" type="checkbox" role="switch" />
-                                    <label asp-for="Obrigatorio" class="form-check-label">
-                                        Documento Obrigatório
-                                    </label>
-                                </div>
-                                <small class="form-text text-muted">
-                                    Se marcado, o cliente DEVE enviar este documento ao fazer um agendamento
-                                </small>
-                            </div>
-
-                            <div class="col-md-6">
-                                <div class="form-check form-switch">
-                                    <input asp-for="Ativo" class="form-check-input" type="checkbox" role="switch" checked />
-                                    <label asp-for="Ativo" class="form-check-label">
-                                        Documento Ativo
-                                    </label>
-                                </div>
-                                <small class="form-text text-muted">
-                                    Apenas documentos ativos são solicitados aos clientes
-                                </small>
-                            </div>
-                        </div>
-
-                        @* Exemplo de como ficará *@
-                        <div class="alert alert-light border mt-4">
-                            <h6 class="alert-heading">
-                                <i class="bi bi-eye"></i> Pré-visualização:
-                            </h6>
-                            <div class="d-flex justify-content-between align-items-center">
+                    <!-- Pré-visualização -->
+                    <div class="alert-rir alert-rir-info mt-4">
+                        <i class="bi bi-eye" style="font-size: 1.5rem;"></i>
+                        <div>
+                            <strong>Pré-visualização:</strong><br />
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-2">
                                 <div>
                                     <strong id="preview-nome">Nome do Documento</strong>
                                     <br />
                                     <small class="text-muted" id="preview-descricao">Descrição/instruções aparecerão aqui</small>
                                 </div>
                                 <div>
-                                    <span class="badge bg-success me-1" id="preview-ativo" style="display: none;">
+                                    <span class="badge-rir badge-rir-success me-1" id="preview-ativo" style="display: none;">
                                         <i class="bi bi-check-circle"></i> Ativo
                                     </span>
-                                    <span class="badge bg-secondary me-1" id="preview-inativo" style="display: none;">
+                                    <span class="badge-rir badge-rir-info me-1" id="preview-inativo" style="display: none;">
                                         <i class="bi bi-x-circle"></i> Inativo
                                     </span>
-                                    <span class="badge bg-danger" id="preview-obrigatorio" style="display: none;">
+                                    <span class="badge-rir badge-rir-danger" id="preview-obrigatorio" style="display: none;">
                                         <i class="bi bi-exclamation-circle"></i> Obrigatório
                                     </span>
-                                    <span class="badge bg-info" id="preview-opcional" style="display: none;">
+                                    <span class="badge-rir badge-rir-info" id="preview-opcional" style="display: none;">
                                         <i class="bi bi-info-circle"></i> Opcional
                                     </span>
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        <hr class="my-4" />
+                    <hr class="my-4" />
 
-                        <div class="d-flex justify-content-between">
-                            <a asp-action="Index" class="btn btn-secondary">
-                                <i class="bi bi-arrow-left"></i> Cancelar
-                            </a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-save"></i> Salvar Documento
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                    <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
+                        <a asp-action="Index" class="btn-rir-secondary">
+                            <i class="bi bi-arrow-left"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn-rir-primary">
+                            <i class="bi bi-save"></i> Salvar Documento
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

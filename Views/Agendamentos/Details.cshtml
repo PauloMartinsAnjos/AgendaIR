@@ -5,218 +5,227 @@
     var isAdmin = Context.Session.GetString("IsAdmin") == "True";
 }
 
-<div class="container mt-4">
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <h2><i class="bi bi-calendar-check"></i> Detalhes do Agendamento</h2>
-            <p class="text-muted">Visualize todas as informações do agendamento</p>
+<!-- PAGE HEADER -->
+<div class="page-header-rir">
+    <div>
+        <h2><i class="bi bi-calendar-check"></i> Detalhes do Agendamento</h2>
+        <p>Visualize todas as informações do agendamento</p>
+    </div>
+</div>
+
+<!-- MENSAGENS -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert-rir alert-rir-success">
+        <i class="bi bi-check-circle-fill" style="font-size: 1.5rem;"></i>
+        <div>
+            <strong>Sucesso!</strong><br />
+            @TempData["SuccessMessage"]
+        </div>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert-rir alert-rir-danger">
+        <i class="bi bi-exclamation-triangle-fill" style="font-size: 1.5rem;"></i>
+        <div>
+            <strong>Erro!</strong><br />
+            @TempData["ErrorMessage"]
+        </div>
+    </div>
+}
+
+<div class="row">
+    <!-- Informações do Agendamento -->
+    <div class="col-12 col-md-6 mb-4">
+        <div class="card-rir">
+            <div class="card-rir-header">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Informações do Agendamento</h5>
+            </div>
+            <div class="card-rir-body">
+                <table class="table table-borderless">
+                    <tbody>
+                        <tr>
+                            <th width="40%">Status:</th>
+                            <td>
+                                @if (Model.Status == "Pendente")
+                                {
+                                    <span class="badge-rir badge-rir-info">
+                                        <i class="bi bi-clock"></i> Pendente
+                                    </span>
+                                }
+                                else if (Model.Status == "Confirmado")
+                                {
+                                    <span class="badge-rir badge-rir-success">
+                                        <i class="bi bi-check-circle"></i> Confirmado
+                                    </span>
+                                }
+                                else if (Model.Status == "Concluido")
+                                {
+                                    <span class="badge-rir badge-rir-success">
+                                        <i class="bi bi-check-all"></i> Concluído
+                                    </span>
+                                }
+                                else if (Model.Status == "Cancelado")
+                                {
+                                    <span class="badge-rir badge-rir-danger">
+                                        <i class="bi bi-x-circle"></i> Cancelado
+                                    </span>
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Data e Hora:</th>
+                            <td>
+                                <strong>@Model.DataHora.ToString("dd/MM/yyyy")</strong> às 
+                                <strong>@Model.DataHora.ToString("HH:mm")</strong>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Criado em:</th>
+                            <td>@Model.DataCriacao.ToString("dd/MM/yyyy HH:mm")</td>
+                        </tr>
+                        <tr>
+                            <th>Última Atualização:</th>
+                            <td>@Model.DataAtualizacao.ToString("dd/MM/yyyy HH:mm")</td>
+                        </tr>
+                        @if (!string.IsNullOrEmpty(Model.Observacoes))
+                        {
+                            <tr>
+                                <th>Observações:</th>
+                                <td>@Model.Observacoes</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Informações do Cliente -->
+        <div class="card-rir mt-4">
+            <div class="card-rir-header">
+                <h5 class="mb-0"><i class="bi bi-person"></i> Informações do Cliente</h5>
+            </div>
+            <div class="card-rir-body">
+                <table class="table table-borderless">
+                    <tbody>
+                        <tr>
+                            <th width="40%">Nome:</th>
+                            <td><strong>@Model.Cliente?.Nome</strong></td>
+                        </tr>
+                        <tr>
+                            <th>E-mail:</th>
+                            <td>@Model.Cliente?.Email</td>
+                        </tr>
+                        <tr>
+                            <th>Telefone:</th>
+                            <td>@Model.Cliente?.Telefone</td>
+                        </tr>
+                        <tr>
+                            <th>CPF:</th>
+                            <td>@Model.Cliente?.CPF</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Informações do Funcionário -->
+        <div class="card-rir mt-4">
+            <div class="card-rir-header">
+                <h5 class="mb-0"><i class="bi bi-person-badge"></i> Funcionário Responsável</h5>
+            </div>
+            <div class="card-rir-body">
+                <table class="table table-borderless">
+                    <tbody>
+                        <tr>
+                            <th width="40%">Nome:</th>
+                            <td><strong>@Model.Funcionario?.Nome</strong></td>
+                        </tr>
+                        <tr>
+                            <th>E-mail:</th>
+                            <td>@Model.Funcionario?.Email</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
-
-    @if (TempData["ErrorMessage"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="bi bi-exclamation-triangle"></i> @TempData["ErrorMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
-
-    <div class="row">
-        <!-- Informações do Agendamento -->
-        <div class="col-md-6">
-            <div class="card mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Informações do Agendamento</h5>
-                </div>
-                <div class="card-body">
-                    <table class="table table-borderless">
-                        <tbody>
-                            <tr>
-                                <th width="40%">Status:</th>
-                                <td>
-                                    @if (Model.Status == "Pendente")
-                                    {
-                                        <span class="badge bg-warning text-dark">
-                                            <i class="bi bi-clock"></i> Pendente
-                                        </span>
-                                    }
-                                    else if (Model.Status == "Confirmado")
-                                    {
-                                        <span class="badge bg-success">
-                                            <i class="bi bi-check-circle"></i> Confirmado
-                                        </span>
-                                    }
-                                    else if (Model.Status == "Concluido")
-                                    {
-                                        <span class="badge bg-primary">
-                                            <i class="bi bi-check-all"></i> Concluído
-                                        </span>
-                                    }
-                                    else if (Model.Status == "Cancelado")
-                                    {
-                                        <span class="badge bg-danger">
-                                            <i class="bi bi-x-circle"></i> Cancelado
-                                        </span>
-                                    }
-                                </td>
-                            </tr>
-                            <tr>
-                                <th>Data e Hora:</th>
-                                <td>
-                                    <strong>@Model.DataHora.ToString("dd/MM/yyyy")</strong> às 
-                                    <strong>@Model.DataHora.ToString("HH:mm")</strong>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th>Criado em:</th>
-                                <td>@Model.DataCriacao.ToString("dd/MM/yyyy HH:mm")</td>
-                            </tr>
-                            <tr>
-                                <th>Última Atualização:</th>
-                                <td>@Model.DataAtualizacao.ToString("dd/MM/yyyy HH:mm")</td>
-                            </tr>
-                            @if (!string.IsNullOrEmpty(Model.Observacoes))
-                            {
-                                <tr>
-                                    <th>Observações:</th>
-                                    <td>@Model.Observacoes</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
+    <!-- Documentos Anexados -->
+    <div class="col-12 col-md-6 mb-4">
+        <div class="card-rir">
+            <div class="card-rir-header">
+                <h5 class="mb-0"><i class="bi bi-file-earmark-text"></i> Documentos Anexados</h5>
             </div>
-
-            <!-- Informações do Cliente -->
-            <div class="card mb-4">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0"><i class="bi bi-person"></i> Informações do Cliente</h5>
-                </div>
-                <div class="card-body">
-                    <table class="table table-borderless">
-                        <tbody>
-                            <tr>
-                                <th width="40%">Nome:</th>
-                                <td>@Model.Cliente?.Nome</td>
-                            </tr>
-                            <tr>
-                                <th>E-mail:</th>
-                                <td>@Model.Cliente?.Email</td>
-                            </tr>
-                            <tr>
-                                <th>Telefone:</th>
-                                <td>@Model.Cliente?.Telefone</td>
-                            </tr>
-                            <tr>
-                                <th>CPF:</th>
-                                <td>@Model.Cliente?.CPF</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Informações do Funcionário -->
-            <div class="card mb-4">
-                <div class="card-header bg-success text-white">
-                    <h5 class="mb-0"><i class="bi bi-person-badge"></i> Funcionário Responsável</h5>
-                </div>
-                <div class="card-body">
-                    <table class="table table-borderless">
-                        <tbody>
-                            <tr>
-                                <th width="40%">Nome:</th>
-                                <td>@Model.Funcionario?.Nome</td>
-                            </tr>
-                            <tr>
-                                <th>E-mail:</th>
-                                <td>@Model.Funcionario?.Email</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- Documentos Anexados -->
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header bg-warning text-dark">
-                    <h5 class="mb-0"><i class="bi bi-file-earmark-text"></i> Documentos Anexados</h5>
-                </div>
-                <div class="card-body">
-                    @if (Model.DocumentosAnexados != null && Model.DocumentosAnexados.Any())
-                    {
-                        <div class="list-group">
-                            @foreach (var doc in Model.DocumentosAnexados)
-                            {
-                                <div class="list-group-item">
-                                    <div class="d-flex w-100 justify-content-between align-items-center">
-                                        <div>
-                                            <h6 class="mb-1">
-                                                <i class="bi bi-file-earmark-pdf"></i> @doc.DocumentoSolicitado?.Nome
-                                            </h6>
-                                            <p class="mb-1">
-                                                <small class="text-muted">Arquivo: @doc.NomeArquivo</small>
-                                            </p>
-                                            <small class="text-muted">
-                                                Tamanho: @((doc.TamanhoBytes / 1024.0).ToString("0.00")) KB | 
-                                                Enviado em: @doc.DataUpload.ToString("dd/MM/yyyy HH:mm")
-                                            </small>
-                                        </div>
-                                        <div>
-                                            <a asp-action="DownloadDocumento" asp-route-id="@doc.Id" 
-                                               class="btn btn-sm btn-outline-primary" title="Download">
-                                                <i class="bi bi-download"></i> Download
-                                            </a>
-                                        </div>
+            <div class="card-rir-body">
+                @if (Model.DocumentosAnexados != null && Model.DocumentosAnexados.Any())
+                {
+                    <div class="list-group">
+                        @foreach (var doc in Model.DocumentosAnexados)
+                        {
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between align-items-start flex-column flex-md-row gap-2">
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1">
+                                            <i class="bi bi-file-earmark-pdf"></i> @doc.DocumentoSolicitado?.Nome
+                                        </h6>
+                                        <p class="mb-1">
+                                            <small class="text-muted">Arquivo: @doc.NomeArquivo</small>
+                                        </p>
+                                        <small class="text-muted">
+                                            Tamanho: @((doc.TamanhoBytes / 1024.0).ToString("0.00")) KB | 
+                                            Enviado em: @doc.DataUpload.ToString("dd/MM/yyyy HH:mm")
+                                        </small>
+                                    </div>
+                                    <div>
+                                        <a asp-action="DownloadDocumento" asp-route-id="@doc.Id" 
+                                           class="btn btn-sm btn-rir-secondary" title="Download">
+                                            <i class="bi bi-download"></i> Download
+                                        </a>
                                     </div>
                                 </div>
-                            }
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="alert-rir alert-rir-info mb-0">
+                        <i class="bi bi-info-circle" style="font-size: 1.5rem;"></i>
+                        <div>
+                            Nenhum documento foi anexado ainda.
                         </div>
-                    }
-                    else
-                    {
-                        <div class="alert alert-info mb-0">
-                            <i class="bi bi-info-circle"></i> Nenhum documento foi anexado ainda.
-                        </div>
-                    }
-                </div>
+                    </div>
+                }
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Botões de Ação -->
-    <div class="row mt-4">
-        <div class="col-md-12">
-            <div class="d-flex justify-content-between">
-                <a asp-action="Index" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left"></i> Voltar
-                </a>
-                
-                <div>
-                    @if (Model.Status != "Cancelado" && Model.Status != "Concluido")
-                    {
-                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
-                            <i class="bi bi-pencil"></i> Editar
-                        </a>
-                        <form asp-action="Cancelar" asp-route-id="@Model.Id" method="post" class="d-inline"
-                              onsubmit="return confirm('Tem certeza que deseja cancelar este agendamento?');">
-                            @Html.AntiForgeryToken()
-                            <button type="submit" class="btn btn-danger">
-                                <i class="bi bi-x-circle"></i> Cancelar Agendamento
-                            </button>
-                        </form>
-                    }
-                </div>
+<!-- Botões de Ação -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
+            <a asp-action="Index" class="btn-rir-secondary">
+                <i class="bi bi-arrow-left"></i> Voltar
+            </a>
+            
+            <div class="d-flex flex-column flex-md-row gap-2">
+                @if (Model.Status != "Cancelado" && Model.Status != "Concluido")
+                {
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn-rir-primary">
+                        <i class="bi bi-pencil"></i> Editar
+                    </a>
+                    <form asp-action="Cancelar" asp-route-id="@Model.Id" method="post" class="d-inline"
+                          onsubmit="return confirm('Tem certeza que deseja cancelar este agendamento?');">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn-rir-danger">
+                            <i class="bi bi-x-circle"></i> Cancelar Agendamento
+                        </button>
+                    </form>
+                }
             </div>
         </div>
     </div>
