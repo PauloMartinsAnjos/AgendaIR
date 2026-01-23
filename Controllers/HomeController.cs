@@ -1,7 +1,10 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
+using AgendaIR.Data;
 using AgendaIR.Models;
+using AgendaIR.Models.ViewModels;
 
 namespace AgendaIR.Controllers;
 
@@ -12,10 +15,12 @@ namespace AgendaIR.Controllers;
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
+    private readonly ApplicationDbContext _context;
 
-    public HomeController(ILogger<HomeController> logger)
+    public HomeController(ILogger<HomeController> logger, ApplicationDbContext context)
     {
         _logger = logger;
+        _context = context;
     }
 
     /// <summary>
@@ -24,7 +29,7 @@ public class HomeController : Controller
     /// </summary>
     public IActionResult Index()
     {
-        // Se usuário está autenticado, redirecionar para a área apropriada
+        // Se usuário está autenticado, mostrar dashboard ou redirecionar
         if (User.Identity?.IsAuthenticated == true)
         {
             var userType = User.FindFirst("UserType")?.Value;
@@ -35,12 +40,100 @@ public class HomeController : Controller
                 return RedirectToAction("MeusAgendamentos", "Agendamentos");
             }
             
-            // Funcionário/Admin vão para lista de agendamentos
-            return RedirectToAction("Index", "Agendamentos");
+            // Funcionário/Admin vão para a dashboard
+            return RedirectToAction("Dashboard");
         }
 
         // Se não está autenticado, mostrar página de boas-vindas
          return RedirectToAction("Login", "Auth");
+    }
+
+    /// <summary>
+    /// Dashboard com estatísticas e gráficos do sistema
+    /// Disponível apenas para funcionários e administradores
+    /// </summary>
+    [Authorize]
+    public async Task<IActionResult> Dashboard()
+    {
+        var userType = User.FindFirst("UserType")?.Value;
+        
+        // Clientes não têm acesso à dashboard
+        if (userType == "Cliente")
+        {
+            return RedirectToAction("MeusAgendamentos", "Agendamentos");
+        }
+
+        // Criar ViewModel com dados da dashboard
+        var viewModel = new DashboardViewModel();
+
+        // ===== KPIs =====
+        // Total de agendamentos
+        viewModel.TotalAgendamentos = await _context.Agendamentos.CountAsync();
+
+        // Total de clientes ativos
+        viewModel.TotalClientes = await _context.Clientes.CountAsync(c => c.Ativo);
+
+        // Total de funcionários ativos
+        viewModel.TotalFuncionarios = await _context.Funcionarios.CountAsync(f => f.Ativo);
+
+        // ===== Agendamentos por Status =====
+        viewModel.AgendamentosConcluidos = await _context.Agendamentos
+            .CountAsync(a => a.Status == "Concluído" || a.Status == "Concluido");
+
+        viewModel.AgendamentosPendentes = await _context.Agendamentos
+            .CountAsync(a => a.Status == "Pendente");
+
+        viewModel.AgendamentosConfirmados = await _context.Agendamentos
+            .CountAsync(a => a.Status == "Confirmado");
+
+        viewModel.AgendamentosCancelados = await _context.Agendamentos
+            .CountAsync(a => a.Status == "Cancelado");
+
+        // Taxa de conclusão
+        viewModel.TaxaConclusao = viewModel.TotalAgendamentos > 0
+            ? Math.Round((decimal)viewModel.AgendamentosConcluidos / viewModel.TotalAgendamentos * 100, 1)
+            : 0;
+
+        // ===== Top Status =====
+        viewModel.TopStatus = await _context.Agendamentos
+            .GroupBy(a => a.Status)
+            .Select(g => new StatusCount
+            {
+                Nome = g.Key,
+                Quantidade = g.Count()
+            })
+            .OrderByDescending(s => s.Quantidade)
+            .Take(5)
+            .ToListAsync();
+
+        // ===== Últimos 7 Dias =====
+        var seteDiasAtras = DateTime.Now.AddDays(-7).Date;
+        var agendamentosPorDia = await _context.Agendamentos
+            .Where(a => a.DataCriacao >= seteDiasAtras)
+            .GroupBy(a => a.DataCriacao.Date)
+            .Select(g => new
+            {
+                Data = g.Key,
+                Quantidade = g.Count()
+            })
+            .OrderBy(d => d.Data)
+            .ToListAsync();
+
+        // Preencher todos os 7 dias (incluindo dias sem agendamentos)
+        viewModel.UltimosSeteDias = new List<AgendamentoDia>();
+        for (int i = 6; i >= 0; i--)
+        {
+            var dia = DateTime.Now.AddDays(-i).Date;
+            var agendamentoDia = agendamentosPorDia.FirstOrDefault(a => a.Data == dia);
+            
+            viewModel.UltimosSeteDias.Add(new AgendamentoDia
+            {
+                Dia = dia.ToString("dd/MM"),
+                Quantidade = agendamentoDia?.Quantidade ?? 0
+            });
+        }
+
+        return View(viewModel);
     }
 
     /// <summary>

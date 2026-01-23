@@ -1,0 +1,315 @@
+@model AgendaIR.Models.ViewModels.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<!-- Dashboard Styles -->
+<link rel="stylesheet" href="~/css/rir-design/dashboard.css" />
+
+<div class="dashboard-container">
+    <!-- Header -->
+    <div class="page-header-rir">
+        <h1><i class="bi bi-speedometer2"></i> Dashboard</h1>
+        <p>Visão geral do sistema de agendamentos</p>
+    </div>
+
+    <!-- KPI Cards Row -->
+    <div class="row g-3 mb-4">
+        <!-- Card 1: Total Agendamentos -->
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="kpi-card kpi-primary">
+                <div class="kpi-icon">
+                    <i class="bi bi-calendar-check"></i>
+                </div>
+                <div class="kpi-content">
+                    <h3>@Model.TotalAgendamentos</h3>
+                    <p>Total de Agendamentos</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 2: Total Clientes -->
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="kpi-card kpi-success">
+                <div class="kpi-icon">
+                    <i class="bi bi-people"></i>
+                </div>
+                <div class="kpi-content">
+                    <h3>@Model.TotalClientes</h3>
+                    <p>Clientes Cadastrados</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 3: Total Funcionários -->
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="kpi-card kpi-info">
+                <div class="kpi-icon">
+                    <i class="bi bi-person-badge"></i>
+                </div>
+                <div class="kpi-content">
+                    <h3>@Model.TotalFuncionarios</h3>
+                    <p>Funcionários Ativos</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 4: Taxa de Conclusão -->
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="kpi-card kpi-success">
+                <div class="kpi-icon">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <div class="kpi-content">
+                    <h3>@Model.TaxaConclusao.ToString("F1")%</h3>
+                    <p>Taxa de Conclusão</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row g-3">
+        <!-- Chart 1: Status (Donut) -->
+        <div class="col-12 col-lg-4">
+            <div class="chart-card">
+                <div class="chart-card-header">
+                    <h5><i class="bi bi-pie-chart"></i> Status dos Agendamentos</h5>
+                </div>
+                <div class="chart-card-body">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart 2: Top Status (Bar) -->
+        <div class="col-12 col-lg-8">
+            <div class="chart-card">
+                <div class="chart-card-header">
+                    <h5><i class="bi bi-bar-chart"></i> Distribuição por Status</h5>
+                </div>
+                <div class="chart-card-body">
+                    <canvas id="statusBarChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart 3: Tendência (Line) -->
+        <div class="col-12">
+            <div class="chart-card">
+                <div class="chart-card-header">
+                    <h5><i class="bi bi-graph-up"></i> Tendência dos Últimos 7 Dias</h5>
+                </div>
+                <div class="chart-card-body">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    
+    <script>
+        // Dados do servidor
+        const statusData = {
+            concluidos: @Model.AgendamentosConcluidos,
+            pendentes: @Model.AgendamentosPendentes,
+            confirmados: @Model.AgendamentosConfirmados,
+            cancelados: @Model.AgendamentosCancelados
+        };
+
+        const topStatusData = {
+            labels: [@Html.Raw(string.Join(",", Model.TopStatus.Select(s => $"'{s.Nome}'")))],
+            values: [@string.Join(",", Model.TopStatus.Select(s => s.Quantidade))]
+        };
+
+        const trendData = {
+            labels: [@Html.Raw(string.Join(",", Model.UltimosSeteDias.Select(d => $"'{d.Dia}'")))],
+            values: [@string.Join(",", Model.UltimosSeteDias.Select(d => d.Quantidade))]
+        };
+
+        // Configuração padrão para todos os gráficos
+        Chart.defaults.font.family = "'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+        Chart.defaults.font.size = 13;
+
+        // Gráfico 1: Status (Donut)
+        const statusChartCtx = document.getElementById('statusChart');
+        if (statusChartCtx) {
+            new Chart(statusChartCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Concluídos', 'Pendentes', 'Confirmados', 'Cancelados'],
+                    datasets: [{
+                        data: [
+                            statusData.concluidos, 
+                            statusData.pendentes,
+                            statusData.confirmados,
+                            statusData.cancelados
+                        ],
+                        backgroundColor: [
+                            '#28a745', // verde
+                            '#ffc107', // amarelo
+                            '#007bff', // azul
+                            '#dc3545'  // vermelho
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                usePointStyle: true,
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Gráfico 2: Top Status (Bar)
+        const statusBarChartCtx = document.getElementById('statusBarChart');
+        if (statusBarChartCtx) {
+            new Chart(statusBarChartCtx, {
+                type: 'bar',
+                data: {
+                    labels: topStatusData.labels,
+                    datasets: [{
+                        label: 'Agendamentos',
+                        data: topStatusData.values,
+                        backgroundColor: '#F58634',
+                        borderRadius: 8,
+                        barThickness: 50,
+                        maxBarThickness: 60
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Quantidade: ${context.parsed.y}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1,
+                                font: {
+                                    size: 11
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: {
+                                    size: 11
+                                }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Gráfico 3: Tendência (Line)
+        const trendChartCtx = document.getElementById('trendChart');
+        if (trendChartCtx) {
+            new Chart(trendChartCtx, {
+                type: 'line',
+                data: {
+                    labels: trendData.labels,
+                    datasets: [{
+                        label: 'Agendamentos',
+                        data: trendData.values,
+                        borderColor: '#F58634',
+                        backgroundColor: 'rgba(245, 134, 52, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#F58634',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Agendamentos: ${context.parsed.y}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1,
+                                font: {
+                                    size: 11
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: {
+                                    size: 11
+                                }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+}
