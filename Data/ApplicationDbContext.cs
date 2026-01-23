@@ -46,6 +46,11 @@ namespace AgendaIR.Data
         public DbSet<DocumentoAnexado> DocumentosAnexados { get; set; }
 
         /// <summary>
+        /// Tabela de Tipos de Agendamento
+        /// </summary>
+        public DbSet<TipoAgendamento> TiposAgendamento { get; set; }
+
+        /// <summary>
         /// OnModelCreating é chamado quando o Entity Framework está criando o modelo do banco
         /// Aqui podemos configurar relacionamentos, índices, restrições, etc.
         /// </summary>
@@ -184,6 +189,18 @@ namespace AgendaIR.Data
                     Ativo = true,
                     DataCriacao = DateTime.UtcNow
                 }
+            );
+
+            // Seed de tipos de agendamento
+            modelBuilder.Entity<TipoAgendamento>().HasData(
+                new TipoAgendamento { Id = 1, Nome = "Declaração IR", Descricao = "Declaração de Imposto de Renda", Ativo = true, DataCriacao = DateTime.UtcNow },
+                new TipoAgendamento { Id = 2, Nome = "Declaração IR Retificadora", Descricao = "Retificação de declaração de IR", Ativo = true, DataCriacao = DateTime.UtcNow },
+                new TipoAgendamento { Id = 3, Nome = "Consultoria Tributária", Descricao = "Consultoria sobre questões tributárias", Ativo = true, DataCriacao = DateTime.UtcNow },
+                new TipoAgendamento { Id = 4, Nome = "Abertura de MEI", Descricao = "Abertura de Microempreendedor Individual", Ativo = true, DataCriacao = DateTime.UtcNow },
+                new TipoAgendamento { Id = 5, Nome = "Contabilidade Mensal", Descricao = "Serviços contábeis mensais", Ativo = true, DataCriacao = DateTime.UtcNow },
+                new TipoAgendamento { Id = 6, Nome = "Regularização Fiscal", Descricao = "Regularização de pendências fiscais", Ativo = true, DataCriacao = DateTime.UtcNow },
+                new TipoAgendamento { Id = 7, Nome = "Planejamento Tributário", Descricao = "Planejamento estratégico tributário", Ativo = true, DataCriacao = DateTime.UtcNow },
+                new TipoAgendamento { Id = 8, Nome = "Outros", Descricao = "Outros serviços", Ativo = true, DataCriacao = DateTime.UtcNow }
             );
         }
     }

@@ -1,0 +1,141 @@
+@model IEnumerable<AgendaIR.Models.TipoAgendamento>
+
+@{
+    ViewData["Title"] = "Tipos de Agendamento";
+}
+
+<!-- PAGE HEADER -->
+<div class="page-header-rir">
+    <div>
+        <h2><i class="bi bi-list-task"></i> Tipos de Agendamento</h2>
+        <p>Gerencie os tipos de agendamento disponíveis</p>
+    </div>
+    <a asp-action="Create" class="btn-rir-primary">
+        <i class="bi bi-plus-circle"></i> Novo Tipo
+    </a>
+</div>
+
+<!-- MESSAGES -->
+@if (TempData["Success"] != null)
+{
+    <div class="alert-rir alert-rir-success" role="alert">
+        <i class="bi bi-check-circle"></i> @TempData["Success"]
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert-rir alert-rir-danger" role="alert">
+        <i class="bi bi-exclamation-triangle"></i> @TempData["Error"]
+    </div>
+}
+
+<!-- TABLE -->
+<div class="card-rir">
+    <div class="card-rir-body">
+        @if (Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table-rir">
+                    <thead>
+                        <tr>
+                            <th><i class="bi bi-tag"></i> Nome</th>
+                            <th><i class="bi bi-text-left"></i> Descrição</th>
+                            <th><i class="bi bi-calendar"></i> Criado em</th>
+                            <th><i class="bi bi-toggle-on"></i> Status</th>
+                            <th class="text-end"><i class="bi bi-gear"></i> Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var tipo in Model)
+                        {
+                            <tr>
+                                <td class="fw-bold">@tipo.Nome</td>
+                                <td>@(tipo.Descricao ?? "-")</td>
+                                <td>@tipo.DataCriacao.ToString("dd/MM/yyyy")</td>
+                                <td>
+                                    @if (tipo.Ativo)
+                                    {
+                                        <span class="badge-rir badge-rir-success">
+                                            <i class="bi bi-check-circle"></i> Ativo
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge-rir badge-rir-danger">
+                                            <i class="bi bi-x-circle"></i> Inativo
+                                        </span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <div class="btn-group-rir">
+                                        <a asp-action="Edit" asp-route-id="@tipo.Id" 
+                                           class="btn-icon-rir btn-icon-rir-warning"
+                                           title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        @if (tipo.Ativo)
+                                        {
+                                            <button type="button" 
+                                                    class="btn-icon-rir btn-icon-rir-danger"
+                                                    onclick="confirmDelete(@tipo.Id, '@tipo.Nome')"
+                                                    title="Desativar">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="empty-state-rir">
+                <i class="bi bi-inbox"></i>
+                <h3>Nenhum tipo cadastrado</h3>
+                <p>Comece criando seu primeiro tipo de agendamento</p>
+                <a asp-action="Create" class="btn-rir-primary">
+                    <i class="bi bi-plus-circle"></i> Criar Primeiro Tipo
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- DELETE MODAL -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-exclamation-triangle"></i> Confirmar Desativação</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Deseja realmente desativar o tipo de agendamento <strong id="tipoNome"></strong>?</p>
+                <p class="text-muted">Este tipo não será mais exibido nas opções, mas agendamentos existentes não serão afetados.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-rir-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="deleteForm" method="post" style="display:inline;">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn-rir-danger">
+                        <i class="bi bi-trash"></i> Desativar
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmDelete(id, nome) {
+            document.getElementById('tipoNome').textContent = nome;
+            document.getElementById('deleteForm').action = '/TiposAgendamento/Delete/' + id;
+            new bootstrap.Modal(document.getElementById('deleteModal')).show();
+        }
+    </script>
+}
