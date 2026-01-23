@@ -1,75 +1,198 @@
 using Google.Apis.Auth.OAuth2;
+using Google.Apis.Auth.OAuth2.Flows;
+using Google.Apis.Auth.OAuth2.Responses;
 using Google.Apis.Calendar.v3;
 using Google.Apis.Calendar.v3.Data;
 using Google.Apis.Services;
+using Google.Apis.Util.Store;
+using Microsoft.EntityFrameworkCore;
+using AgendaIR.Data;
 
 namespace AgendaIR.Services
 {
     /// <summary>
-    /// Serviço responsável pela integração com o Google Calendar
-    /// Permite criar, atualizar e deletar eventos no calendário dos funcionários
+    /// Serviço responsável pela integração REAL com o Google Calendar
+    /// Usa OAuth 2.0 para autenticação e criação de eventos
     /// </summary>
     public class GoogleCalendarService
     {
         private readonly ILogger<GoogleCalendarService> _logger;
         private readonly IConfiguration _configuration;
+        private readonly ApplicationDbContext _context;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public GoogleCalendarService(ILogger<GoogleCalendarService> logger, IConfiguration configuration)
+        public GoogleCalendarService(
+            ILogger<GoogleCalendarService> logger,
+            IConfiguration configuration,
+            ApplicationDbContext context,
+            IHttpContextAccessor httpContextAccessor)
         {
             _logger = logger;
             _configuration = configuration;
+            _context = context;
+            _httpContextAccessor = httpContextAccessor;
+        }
+
+        /// <summary>
+        /// Verifica se o Google Calendar está configurado
+        /// </summary>
+        private bool IsConfigured()
+        {
+            var clientId = _configuration["GoogleCalendar:ClientId"];
+            var clientSecret = _configuration["GoogleCalendar:ClientSecret"];
+
+            return !string.IsNullOrEmpty(clientId) && !string.IsNullOrEmpty(clientSecret);
+        }
+
+        /// <summary>
+        /// Obtém as credenciais do funcionário ou inicia fluxo de autorização
+        /// </summary>
+        private async Task<UserCredential?> GetCredentialAsync(string funcionarioEmail)
+        {
+            if (!IsConfigured())
+            {
+                _logger.LogWarning("Google Calendar não configurado no appsettings.json");
+                return null;
+            }
+
+            try
+            {
+                // Buscar token do funcionário no banco
+                var funcionario = await _context.Funcionarios
+                    .FirstOrDefaultAsync(f => f.GoogleCalendarEmail == funcionarioEmail);
+
+                if (funcionario == null)
+                {
+                    _logger.LogWarning($"Funcionário com email {funcionarioEmail} não encontrado");
+                    return null;
+                }
+
+                // Se já tem token, usar ele
+                if (!string.IsNullOrEmpty(funcionario.GoogleCalendarToken))
+                {
+                    _logger.LogInformation($"Token encontrado para {funcionarioEmail}");
+
+                    var tokenResponse = System.Text.Json.JsonSerializer.Deserialize<TokenResponse>(
+                        funcionario.GoogleCalendarToken
+                    );
+
+                    if (tokenResponse != null)
+                    {
+                        var clientId = _configuration["GoogleCalendar:ClientId"];
+                        var clientSecret = _configuration["GoogleCalendar:ClientSecret"];
+
+                        if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret))
+                        {
+                            _logger.LogError("ClientId ou ClientSecret não configurados");
+                            return null;
+                        }
+
+                        var flow = new GoogleAuthorizationCodeFlow(new GoogleAuthorizationCodeFlow.Initializer
+                        {
+                            ClientSecrets = new ClientSecrets
+                            {
+                                ClientId = clientId,
+                                ClientSecret = clientSecret
+                            },
+                            Scopes = new[] { CalendarService.Scope.Calendar }
+                        });
+
+                        var credential = new UserCredential(flow, funcionarioEmail, tokenResponse);
+
+                        // ✅ CORRIGIDO: Usar IsStale ao invés de IsExpired
+                        if (tokenResponse.IsStale)
+                        {
+                            _logger.LogInformation("Token expirado, tentando renovar...");
+
+                            if (await credential.RefreshTokenAsync(CancellationToken.None))
+                            {
+                                // Salvar novo token
+                                var novoToken = System.Text.Json.JsonSerializer.Serialize(credential.Token);
+                                funcionario.GoogleCalendarToken = novoToken;
+                                await _context.SaveChangesAsync();
+
+                                _logger.LogInformation("Token renovado com sucesso!");
+                            }
+                            else
+                            {
+                                _logger.LogWarning("Falha ao renovar token, necessária nova autorização");
+                                return null;
+                            }
+                        }
+
+                        return credential;
+                    }
+                }
+
+                _logger.LogWarning($"Funcionário {funcionarioEmail} não possui token. Necessária autorização OAuth.");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Erro ao obter credenciais para {funcionarioEmail}");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Cria um CalendarService autenticado
+        /// </summary>
+        private async Task<CalendarService?> GetCalendarServiceAsync(string funcionarioEmail)
+        {
+            var credential = await GetCredentialAsync(funcionarioEmail);
+
+            if (credential == null)
+            {
+                return null;
+            }
+
+            return new CalendarService(new BaseClientService.Initializer()
+            {
+                HttpClientInitializer = credential,
+                ApplicationName = _configuration["GoogleCalendar:ApplicationName"] ?? "AgendaIR"
+            });
         }
 
         /// <summary>
         /// Cria um evento no Google Calendar do funcionário
         /// </summary>
-        /// <param name="funcionarioEmail">Email do calendário do funcionário</param>
-        /// <param name="clienteNome">Nome do cliente</param>
-        /// <param name="dataHora">Data e hora do agendamento</param>
-        /// <param name="duracao">Duração em minutos (padrão: 60)</param>
-        /// <returns>ID do evento criado no Google Calendar</returns>
         public async Task<string?> CriarEventoAsync(string funcionarioEmail, string clienteNome, DateTime dataHora, int duracao = 60)
         {
             try
             {
-                // NOTA: Esta é uma implementação simplificada
-                // Em produção, você precisaria:
-                // 1. Configurar OAuth 2.0 no Google Cloud Console
-                // 2. Obter e armazenar tokens de acesso por funcionário
-                // 3. Implementar refresh token quando necessário
-
-                _logger.LogInformation($"Tentando criar evento no Google Calendar para {funcionarioEmail}");
-
-                // Por enquanto, retornamos um ID fictício
-                // Em produção, isso seria substituído pela chamada real à API
-                var eventoId = $"evt_{Guid.NewGuid():N}";
-
-                _logger.LogWarning("Google Calendar não está totalmente configurado. Evento simulado criado.");
-
-                return eventoId;
-
-                /* IMPLEMENTAÇÃO COMPLETA (comentada - requer configuração OAuth):
-                
-                var credential = await GetUserCredentialAsync(funcionarioEmail);
-                
-                var service = new CalendarService(new BaseClientService.Initializer()
+                if (string.IsNullOrEmpty(funcionarioEmail))
                 {
-                    HttpClientInitializer = credential,
-                    ApplicationName = _configuration["GoogleCalendar:ApplicationName"]
-                });
+                    _logger.LogWarning("Email do funcionário vazio, não é possível criar evento");
+                    return null;
+                }
 
+                _logger.LogInformation($"📅 Criando evento no Google Calendar para {funcionarioEmail}");
+
+                var service = await GetCalendarServiceAsync(funcionarioEmail);
+
+                if (service == null)
+                {
+                    _logger.LogWarning($"⚠️ Não foi possível obter CalendarService - Funcionário precisa autorizar OAuth");
+
+                    // Redirecionar para autorização OAuth
+                    IniciarFluxoOAuth(funcionarioEmail);
+
+                    return null;
+                }
+
+                // ✅ CORRIGIDO: Usar DateTimeDateTimeOffset ao invés de DateTime
                 var evento = new Event
                 {
                     Summary = $"Agendamento IR - {clienteNome}",
                     Description = $"Atendimento de declaração de IR para o cliente {clienteNome}",
                     Start = new EventDateTime
                     {
-                        DateTime = dataHora,
+                        DateTimeDateTimeOffset = new DateTimeOffset(dataHora),
                         TimeZone = "America/Sao_Paulo"
                     },
                     End = new EventDateTime
                     {
-                        DateTime = dataHora.AddMinutes(duracao),
+                        DateTimeDateTimeOffset = new DateTimeOffset(dataHora.AddMinutes(duracao)),
                         TimeZone = "America/Sao_Paulo"
                     },
                     Reminders = new Event.RemindersData
@@ -83,15 +206,25 @@ namespace AgendaIR.Services
                     }
                 };
 
+                _logger.LogInformation($"🔄 Enviando requisição para Google Calendar API...");
+
                 var request = service.Events.Insert(evento, "primary");
                 var createdEvent = await request.ExecuteAsync();
 
+                _logger.LogInformation($"✅ Evento criado com sucesso! ID: {createdEvent.Id}");
+
                 return createdEvent.Id;
-                */
+            }
+            catch (Google.GoogleApiException gex)
+            {
+                _logger.LogError($"❌ Erro da API do Google: {gex.Message}");
+                _logger.LogError($"   Status Code: {gex.HttpStatusCode}");
+                _logger.LogError($"   Error: {gex.Error?.Message}");
+                return null;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao criar evento no Google Calendar");
+                _logger.LogError(ex, "❌ Erro ao criar evento no Google Calendar");
                 return null;
             }
         }
@@ -103,32 +236,39 @@ namespace AgendaIR.Services
         {
             try
             {
-                _logger.LogInformation($"Tentando atualizar evento {eventId} no Google Calendar");
-
-                // Implementação simulada
-                _logger.LogWarning("Google Calendar não está totalmente configurado. Atualização simulada.");
-                
-                return true;
-
-                /* IMPLEMENTAÇÃO COMPLETA (comentada):
-                
-                var credential = await GetUserCredentialAsync(funcionarioEmail);
-                
-                var service = new CalendarService(new BaseClientService.Initializer()
+                if (string.IsNullOrEmpty(funcionarioEmail) || string.IsNullOrEmpty(eventId))
                 {
-                    HttpClientInitializer = credential,
-                    ApplicationName = _configuration["GoogleCalendar:ApplicationName"]
-                });
+                    return false;
+                }
+
+                _logger.LogInformation($"Atualizando evento {eventId} no Google Calendar");
+
+                var service = await GetCalendarServiceAsync(funcionarioEmail);
+
+                if (service == null)
+                {
+                    _logger.LogWarning("Não foi possível obter CalendarService");
+                    return false;
+                }
 
                 var evento = await service.Events.Get("primary", eventId).ExecuteAsync();
-                
-                evento.Start.DateTime = novaDataHora;
-                evento.End.DateTime = novaDataHora.AddMinutes(duracao);
+
+                // ✅ CORRIGIDO: Usar DateTimeDateTimeOffset
+                if (evento.Start != null)
+                {
+                    evento.Start.DateTimeDateTimeOffset = new DateTimeOffset(novaDataHora);
+                }
+
+                if (evento.End != null)
+                {
+                    evento.End.DateTimeDateTimeOffset = new DateTimeOffset(novaDataHora.AddMinutes(duracao));
+                }
 
                 await service.Events.Update(evento, "primary", eventId).ExecuteAsync();
-                
+
+                _logger.LogInformation($"✅ Evento {eventId} atualizado com sucesso!");
+
                 return true;
-                */
             }
             catch (Exception ex)
             {
@@ -144,27 +284,26 @@ namespace AgendaIR.Services
         {
             try
             {
-                _logger.LogInformation($"Tentando deletar evento {eventId} do Google Calendar");
-
-                // Implementação simulada
-                _logger.LogWarning("Google Calendar não está totalmente configurado. Deleção simulada.");
-                
-                return true;
-
-                /* IMPLEMENTAÇÃO COMPLETA (comentada):
-                
-                var credential = await GetUserCredentialAsync(funcionarioEmail);
-                
-                var service = new CalendarService(new BaseClientService.Initializer()
+                if (string.IsNullOrEmpty(funcionarioEmail) || string.IsNullOrEmpty(eventId))
                 {
-                    HttpClientInitializer = credential,
-                    ApplicationName = _configuration["GoogleCalendar:ApplicationName"]
-                });
+                    return false;
+                }
+
+                _logger.LogInformation($"Deletando evento {eventId} do Google Calendar");
+
+                var service = await GetCalendarServiceAsync(funcionarioEmail);
+
+                if (service == null)
+                {
+                    _logger.LogWarning("Não foi possível obter CalendarService");
+                    return false;
+                }
 
                 await service.Events.Delete("primary", eventId).ExecuteAsync();
-                
+
+                _logger.LogInformation($"✅ Evento {eventId} deletado com sucesso!");
+
                 return true;
-                */
             }
             catch (Exception ex)
             {
@@ -180,34 +319,35 @@ namespace AgendaIR.Services
         {
             try
             {
+                if (string.IsNullOrEmpty(funcionarioEmail))
+                {
+                    return true; // Se não tem email, não verificar (permite agendamento)
+                }
+
                 _logger.LogInformation($"Verificando disponibilidade para {funcionarioEmail} em {dataHora}");
 
-                // Implementação simulada - sempre retorna disponível
-                // Em produção, isso verificaria eventos existentes no Google Calendar
-                _logger.LogWarning("Google Calendar não está totalmente configurado. Disponibilidade simulada como TRUE.");
-                
-                return true;
+                var service = await GetCalendarServiceAsync(funcionarioEmail);
 
-                /* IMPLEMENTAÇÃO COMPLETA (comentada):
-                
-                var credential = await GetUserCredentialAsync(funcionarioEmail);
-                
-                var service = new CalendarService(new BaseClientService.Initializer()
+                if (service == null)
                 {
-                    HttpClientInitializer = credential,
-                    ApplicationName = _configuration["GoogleCalendar:ApplicationName"]
-                });
+                    _logger.LogWarning("Não foi possível obter CalendarService, assumindo disponível");
+                    return true; // Se não conseguir verificar, permite
+                }
 
                 var request = service.Events.List("primary");
-                request.TimeMin = dataHora;
-                request.TimeMax = dataHora.AddMinutes(duracao);
+
+                // ✅ CORRIGIDO: Usar TimeMinDateTimeOffset e TimeMaxDateTimeOffset
+                request.TimeMinDateTimeOffset = new DateTimeOffset(dataHora);
+                request.TimeMaxDateTimeOffset = new DateTimeOffset(dataHora.AddMinutes(duracao));
                 request.SingleEvents = true;
 
                 var events = await request.ExecuteAsync();
-                
-                // Se não há eventos no período, está disponível
-                return events.Items.Count == 0;
-                */
+
+                var disponivel = events.Items.Count == 0;
+
+                _logger.LogInformation($"Disponibilidade: {(disponivel ? "LIVRE" : "OCUPADO")} ({events.Items.Count} eventos encontrados)");
+
+                return disponivel;
             }
             catch (Exception ex)
             {
@@ -216,23 +356,118 @@ namespace AgendaIR.Services
             }
         }
 
-        /* MÉTODO AUXILIAR PARA OAUTH (comentado - requer configuração):
-        
-        private async Task<UserCredential> GetUserCredentialAsync(string userEmail)
+        /// <summary>
+        /// Inicia fluxo OAuth para autorização
+        /// </summary>
+        private void IniciarFluxoOAuth(string funcionarioEmail)
         {
-            // Aqui você carregaria o token OAuth armazenado para este usuário
-            // E retornaria as credenciais configuradas
-            
-            using var stream = new FileStream(_configuration["GoogleCalendar:CredentialsPath"], FileMode.Open, FileAccess.Read);
-            
-            var credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
-                GoogleClientSecrets.Load(stream).Secrets,
-                new[] { CalendarService.Scope.Calendar },
-                userEmail,
-                CancellationToken.None);
+            try
+            {
+                var httpContext = _httpContextAccessor.HttpContext;
 
-            return credential;
+                if (httpContext == null)
+                {
+                    _logger.LogWarning("HttpContext não disponível");
+                    return;
+                }
+
+                var clientId = _configuration["GoogleCalendar:ClientId"];
+                var redirectUri = _configuration["GoogleCalendar:RedirectUri"];
+
+                // ✅ CORRIGIDO: Validar antes de usar
+                if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(redirectUri))
+                {
+                    _logger.LogError("ClientId ou RedirectUri não configurados");
+                    return;
+                }
+
+                var state = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(funcionarioEmail));
+
+                var authUrl = $"https://accounts.google.com/o/oauth2/v2/auth?" +
+                              $"client_id={Uri.EscapeDataString(clientId)}" +
+                              $"&redirect_uri={Uri.EscapeDataString(redirectUri)}" +
+                              $"&response_type=code" +
+                              $"&scope={Uri.EscapeDataString("https://www.googleapis.com/auth/calendar")}" +
+                              $"&state={state}" +
+                              $"&access_type=offline" +
+                              $"&prompt=consent";
+
+                _logger.LogInformation($"🔐 Redirecionando para autorização OAuth: {authUrl}");
+
+                // Armazenar URL na sessão para redirecionar depois
+                httpContext.Session.SetString("OAuthRedirectUrl", authUrl);
+
+                // ✅ CORRIGIDO: Usar .Append ao invés de .Add
+                httpContext.Response.Headers.Append("X-OAuth-Required", "true");
+                httpContext.Response.Headers.Append("X-OAuth-Url", authUrl);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao iniciar fluxo OAuth");
+            }
         }
-        */
+
+        /// <summary>
+        /// Processa o código de autorização OAuth retornado pelo Google
+        /// </summary>
+        public async Task<bool> ProcessarCodigoOAuthAsync(string code, string state)
+        {
+            try
+            {
+                var funcionarioEmail = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(state));
+
+                _logger.LogInformation($"Processando código OAuth para {funcionarioEmail}");
+
+                var clientId = _configuration["GoogleCalendar:ClientId"];
+                var clientSecret = _configuration["GoogleCalendar:ClientSecret"];
+                var redirectUri = _configuration["GoogleCalendar:RedirectUri"];
+
+                if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret) || string.IsNullOrEmpty(redirectUri))
+                {
+                    _logger.LogError("Configurações OAuth incompletas");
+                    return false;
+                }
+
+                var flow = new GoogleAuthorizationCodeFlow(new GoogleAuthorizationCodeFlow.Initializer
+                {
+                    ClientSecrets = new ClientSecrets
+                    {
+                        ClientId = clientId,
+                        ClientSecret = clientSecret
+                    },
+                    Scopes = new[] { CalendarService.Scope.Calendar }
+                });
+
+                var tokenResponse = await flow.ExchangeCodeForTokenAsync(
+                    funcionarioEmail,
+                    code,
+                    redirectUri,
+                    CancellationToken.None
+                );
+
+                // Salvar token no banco de dados
+                var funcionario = await _context.Funcionarios
+                    .FirstOrDefaultAsync(f => f.GoogleCalendarEmail == funcionarioEmail);
+
+                if (funcionario != null)
+                {
+                    funcionario.GoogleCalendarToken = System.Text.Json.JsonSerializer.Serialize(tokenResponse);
+                    await _context.SaveChangesAsync();
+
+                    _logger.LogInformation($"✅ Token OAuth salvo para {funcionarioEmail}");
+                    return true;
+                }
+                else
+                {
+                    _logger.LogWarning($"Funcionário {funcionarioEmail} não encontrado no banco");
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao processar código OAuth");
+                return false;
+            }
+        }
     }
 }

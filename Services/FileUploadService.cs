@@ -1,134 +1,132 @@
+using System.IO.Compression;
+
 namespace AgendaIR.Services
 {
     /// <summary>
-    /// Serviço responsável por fazer upload e gerenciar arquivos de documentos
-    /// Lida com validação, armazenamento e organização dos arquivos
+    /// Serviço para processar upload de arquivos
+    /// Agora comprime arquivos antes de salvar no banco de dados
     /// </summary>
     public class FileUploadService
     {
-        private readonly IWebHostEnvironment _environment;
         private readonly ILogger<FileUploadService> _logger;
-
-        // Tamanho máximo permitido para upload (10MB em bytes)
-        private const long MaxFileSize = 10 * 1024 * 1024; // 10MB
-
-        // Extensões de arquivo permitidas
+        private readonly long _maxFileSize = 10 * 1024 * 1024; // 10MB
         private readonly string[] _allowedExtensions = { ".pdf", ".jpg", ".jpeg", ".png" };
 
-        /// <summary>
-        /// Construtor que recebe dependências injetadas
-        /// </summary>
-        public FileUploadService(IWebHostEnvironment environment, ILogger<FileUploadService> logger)
+        public FileUploadService(ILogger<FileUploadService> logger)
         {
-            _environment = environment;
             _logger = logger;
         }
 
         /// <summary>
-        /// Faz upload de um arquivo e retorna o caminho onde foi salvo
+        /// Processa o arquivo: valida, lê e comprime
         /// </summary>
-        /// <param name="file">Arquivo enviado pelo usuário</param>
-        /// <param name="agendamentoId">ID do agendamento (usado para organizar pastas)</param>
-        /// <returns>Caminho relativo do arquivo salvo</returns>
-        public async Task<(bool Success, string? FilePath, string? ErrorMessage)> UploadFileAsync(IFormFile file, int agendamentoId)
+        public async Task<FileUploadResult> ProcessarArquivoAsync(IFormFile arquivo)
         {
             try
             {
-                // Validar se o arquivo foi enviado
-                if (file == null || file.Length == 0)
+                // Validar tamanho
+                if (arquivo.Length > _maxFileSize)
                 {
-                    return (false, null, "Nenhum arquivo foi enviado");
+                    return new FileUploadResult
+                    {
+                        Success = false,
+                        ErrorMessage = $"O arquivo excede o tamanho máximo de {_maxFileSize / 1024 / 1024}MB"
+                    };
                 }
 
-                // Validar tamanho do arquivo
-                if (file.Length > MaxFileSize)
-                {
-                    return (false, null, $"Arquivo muito grande. Tamanho máximo: {MaxFileSize / 1024 / 1024}MB");
-                }
-
-                // Validar extensão do arquivo
-                var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+                // Validar extensão
+                var extension = Path.GetExtension(arquivo.FileName).ToLowerInvariant();
                 if (!_allowedExtensions.Contains(extension))
                 {
-                    return (false, null, $"Tipo de arquivo não permitido. Permitidos: {string.Join(", ", _allowedExtensions)}");
+                    return new FileUploadResult
+                    {
+                        Success = false,
+                        ErrorMessage = $"Extensão {extension} não permitida. Use: {string.Join(", ", _allowedExtensions)}"
+                    };
                 }
 
-                // Criar estrutura de pastas: uploads/agendamento_{id}/
-                var uploadFolder = Path.Combine(_environment.WebRootPath, "uploads", $"agendamento_{agendamentoId}");
-                
-                // Criar pasta se não existir
-                if (!Directory.Exists(uploadFolder))
+                // Ler arquivo para memória
+                byte[] conteudoOriginal;
+                using (var memoryStream = new MemoryStream())
                 {
-                    Directory.CreateDirectory(uploadFolder);
+                    await arquivo.CopyToAsync(memoryStream);
+                    conteudoOriginal = memoryStream.ToArray();
                 }
 
-                // Gerar nome único para o arquivo
-                // Formato: {timestamp}_{guid}{extensão}
-                var uniqueFileName = $"{DateTime.UtcNow:yyyyMMddHHmmss}_{Guid.NewGuid():N}{extension}";
-                var filePath = Path.Combine(uploadFolder, uniqueFileName);
+                // Comprimir usando GZip
+                byte[] conteudoComprimido = ComprimirArquivo(conteudoOriginal);
 
-                // Salvar o arquivo no disco
-                using (var stream = new FileStream(filePath, FileMode.Create))
+                var taxaCompressao = (1 - ((double)conteudoComprimido.Length / conteudoOriginal.Length)) * 100;
+
+                _logger.LogInformation(
+                    $"✓ Arquivo '{arquivo.FileName}' processado: " +
+                    $"Original: {conteudoOriginal.Length:N0} bytes, " +
+                    $"Comprimido: {conteudoComprimido.Length:N0} bytes " +
+                    $"(redução de {taxaCompressao:F1}%)"
+                );
+
+                return new FileUploadResult
                 {
-                    await file.CopyToAsync(stream);
-                }
-
-                // Retornar caminho relativo (sem wwwroot)
-                var relativePath = Path.Combine("uploads", $"agendamento_{agendamentoId}", uniqueFileName);
-                
-                _logger.LogInformation($"Arquivo {file.FileName} salvo com sucesso em {relativePath}");
-                
-                return (true, relativePath, null);
+                    Success = true,
+                    ConteudoComprimido = conteudoComprimido,
+                    TamanhoOriginal = conteudoOriginal.Length,
+                    TamanhoComprimido = conteudoComprimido.Length,
+                    NomeArquivo = arquivo.FileName
+                };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao fazer upload do arquivo");
-                return (false, null, "Erro ao salvar arquivo: " + ex.Message);
+                _logger.LogError(ex, $"Erro ao processar arquivo '{arquivo.FileName}'");
+                return new FileUploadResult
+                {
+                    Success = false,
+                    ErrorMessage = $"Erro ao processar arquivo: {ex.Message}"
+                };
             }
         }
 
         /// <summary>
-        /// Deleta um arquivo do servidor
+        /// Comprime array de bytes usando GZip
         /// </summary>
-        /// <param name="relativePath">Caminho relativo do arquivo</param>
-        public bool DeleteFile(string relativePath)
+        private byte[] ComprimirArquivo(byte[] dados)
         {
-            try
+            using var outputStream = new MemoryStream();
+            using (var gzipStream = new GZipStream(outputStream, CompressionLevel.Optimal))
             {
-                var fullPath = Path.Combine(_environment.WebRootPath, relativePath);
-                
-                if (File.Exists(fullPath))
-                {
-                    File.Delete(fullPath);
-                    _logger.LogInformation($"Arquivo deletado: {relativePath}");
-                    return true;
-                }
-                
-                return false;
+                gzipStream.Write(dados, 0, dados.Length);
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Erro ao deletar arquivo: {relativePath}");
-                return false;
-            }
+            return outputStream.ToArray();
         }
 
         /// <summary>
-        /// Obtém o tamanho formatado de um arquivo em bytes
+        /// Descomprime array de bytes usando GZip
         /// </summary>
-        public string FormatFileSize(long bytes)
+        public byte[] DescomprimirArquivo(byte[] dadosComprimidos)
         {
-            string[] sizes = { "B", "KB", "MB", "GB" };
-            double len = bytes;
-            int order = 0;
-            
-            while (len >= 1024 && order < sizes.Length - 1)
-            {
-                order++;
-                len = len / 1024;
-            }
+            using var inputStream = new MemoryStream(dadosComprimidos);
+            using var gzipStream = new GZipStream(inputStream, CompressionMode.Decompress);
+            using var outputStream = new MemoryStream();
 
-            return $"{len:0.##} {sizes[order]}";
+            gzipStream.CopyTo(outputStream);
+            return outputStream.ToArray();
         }
+    }
+
+    /// <summary>
+    /// Resultado do processamento de upload
+    /// </summary>
+    public class FileUploadResult
+    {
+        public bool Success { get; set; }
+        public string? ErrorMessage { get; set; }
+
+        // ✅ NOVOS campos para trabalhar com bytes
+        public byte[]? ConteudoComprimido { get; set; }
+        public long TamanhoOriginal { get; set; }
+        public long TamanhoComprimido { get; set; }
+        public string? NomeArquivo { get; set; }
+
+        // ⚠️ DEPRECATED - manter por compatibilidade
+        public string? FilePath { get; set; }
     }
 }

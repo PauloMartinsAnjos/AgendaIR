@@ -1,0 +1,377 @@
+﻿/* ==============================================
+   LAYOUT RIR - PALETA LARANJA OFICIAL
+   RGB(245, 134, 52) = #F58634
+   ============================================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 16px;
+    color: #373435;
+    background-color: #FCF8F6;
+    line-height: 1.6;
+}
+
+/* ===== CONTAINER PRINCIPAL ===== */
+.app-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* ===== SIDEBAR - GRADIENTE LARANJA VIBRANTE ===== */
+.sidebar {
+    width: 260px;
+    background: linear-gradient(180deg, #F7A05C 0%, #F58634 100%);
+    color: white;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 4px 0 15px rgba(245, 134, 52, 0.15);
+    overflow-y: auto;
+}
+
+.sidebar-header {
+    padding: 2rem 1.5rem;
+    text-align: center;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-logo {
+    max-width: 150px;
+    height: auto;
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.1));
+}
+
+.sidebar-menu {
+    list-style: none;
+    padding: 1.5rem 0;
+    margin: 0;
+}
+
+.sidebar-item {
+    margin: 0.25rem 1rem;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    padding: 0.9rem 1.5rem;
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+    .sidebar-link:hover {
+        background-color: rgba(255, 255, 255, 0.25);
+        color: white;
+        text-decoration: none;
+        transform: translateX(5px);
+    }
+
+    .sidebar-link.active {
+        background-color: rgba(255, 255, 255, 0.3);
+        color: white;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+.sidebar-icon {
+    margin-right: 12px;
+    font-size: 1.2rem;
+}
+
+/* ===== WRAPPER PRINCIPAL ===== */
+.main-wrapper {
+    flex: 1;
+    margin-left: 260px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ===== HEADER - BRANCO/BEGE CLARO ===== */
+.header {
+    height: 70px;
+    background: linear-gradient(90deg, #FEF5ED 0%, #FFFFFF 100%);
+    color: #373435;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    border-bottom: 2px solid #FBD4AC;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.header-breadcrumb {
+    color: #B86527;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+    .header-breadcrumb i {
+        color: #F58634;
+    }
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.header-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    background: rgba(245, 134, 52, 0.08);
+    transition: all 0.2s;
+}
+
+    .header-user:hover {
+        background: rgba(245, 134, 52, 0.15);
+    }
+
+.header-avatar {
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(135deg, #F58634 0%, #F7A05C 100%);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+    box-shadow: 0 2px 8px rgba(245, 134, 52, 0.25);
+}
+
+.header-user-info {
+    display: flex;
+    flex-direction: column;
+}
+
+    .header-user-info span {
+        color: #373435;
+        display: block;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .header-user-info small {
+        color: #B86527;
+        opacity: 0.9;
+    }
+
+/* ===== MAIN CONTENT ===== */
+.main-content {
+    padding: 2rem;
+    flex: 1;
+    background: #FCF8F6;
+}
+
+/* ===== FOOTER - BRANCO/BEGE CLARO ===== */
+.footer {
+    padding: 1.5rem;
+    background: linear-gradient(90deg, #FEF5ED 0%, #FFFFFF 100%);
+    text-align: center;
+    border-top: 2px solid #FBD4AC;
+    color: #B86527;
+    font-weight: 600;
+}
+
+/* ===== BOTÃO SAIR ===== */
+.btn-outline-light {
+    border: 2px solid #FBD4AC !important;
+    color: #7B431A !important;
+    background: #FDEAD6 !important;
+    border-radius: 8px !important;
+    padding: 0.5rem 1rem !important;
+    font-weight: 600 !important;
+    transition: all 0.2s !important;
+}
+
+    .btn-outline-light:hover {
+        background: #F58634 !important;
+        border-color: #F58634 !important;
+        color: white !important;
+        transform: translateY(-2px);
+    }
+
+/* ===== BOTÃO MENU MOBILE (hamburguer) ===== */
+.mobile-menu-toggle {
+    display: none;
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1001;
+    width: 45px;
+    height: 45px;
+    background: linear-gradient(135deg, #F58634 0%, #F7A05C 100%);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(245, 134, 52, 0.3);
+    transition: all 0.3s;
+}
+
+    .mobile-menu-toggle:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 16px rgba(245, 134, 52, 0.4);
+    }
+
+    .mobile-menu-toggle:active {
+        transform: scale(0.95);
+    }
+
+/* ===== OVERLAY PARA FECHAR MENU ===== */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+    .sidebar-overlay.active {
+        display: block;
+        opacity: 1;
+    }
+
+/* ===== RESPONSIVO - TABLET E MOBILE ===== */
+@media (max-width: 768px) {
+    /* Mostrar botão hamburger */
+    .mobile-menu-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* ✅ SIDEBAR MOBILE - ALTURA COMPLETA */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 280px;
+        height: 100vh;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        z-index: 1000;
+        overflow-y: auto;
+    }
+
+        /* Sidebar aberta */
+        .sidebar.open {
+            transform: translateX(0);
+        }
+
+    /* Conteúdo ocupa tela toda */
+    .main-wrapper {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    /* Header ajustado */
+    .header {
+        padding: 0 1rem 0 70px;
+        left: 0;
+        right: 0;
+        width: 100%;
+    }
+
+    /* Esconder info do usuário */
+    .header-user-info {
+        display: none;
+    }
+
+    /* Botão sair menor */
+    .btn-outline-light {
+        padding: 0.4rem 0.8rem !important;
+        font-size: 0.85rem !important;
+    }
+
+    /* Main content */
+    .main-content {
+        padding: 1.5rem 1rem;
+    }
+
+    /* Footer */
+    .footer {
+        padding: 1rem;
+        font-size: 0.85rem;
+    }
+}
+
+/* ===== RESPONSIVO - CELULARES PEQUENOS ===== */
+@media (max-width: 576px) {
+    /* Botão hamburger menor */
+    .mobile-menu-toggle {
+        width: 40px;
+        height: 40px;
+        top: 12px;
+        left: 12px;
+        font-size: 1.3rem;
+    }
+
+    /* Sidebar um pouco menor em telas pequenas */
+    .sidebar {
+        width: 260px;
+    }
+
+    /* Header */
+    .header {
+        height: 60px;
+        padding: 0 0.75rem 0 60px;
+    }
+
+    .header-breadcrumb {
+        font-size: 0.8rem;
+    }
+
+    .header-avatar {
+        width: 32px;
+        height: 32px;
+        font-size: 0.85rem;
+    }
+
+    /* Main content */
+    .main-content {
+        padding: 1rem 0.75rem;
+    }
+
+    /* Footer */
+    .footer {
+        font-size: 0.75rem;
+        padding: 0.75rem;
+    }
+}
+
+/* ===== CELULARES MUITO PEQUENOS ===== */
+@media (max-width: 375px) {
+    .sidebar {
+        width: 240px;
+    }
+
+    .mobile-menu-toggle {
+        width: 38px;
+        height: 38px;
+        font-size: 1.2rem;
+    }
+}

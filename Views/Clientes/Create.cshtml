@@ -74,11 +74,23 @@
                                 @* Admin pode selecionar qualquer funcionário *@
                                 <select asp-for="FuncionarioId" class="form-select">
                                     <option value="">Selecione um funcionário</option>
-                                    @if (ViewBag.Funcionarios != null)
+                                    @* @if (ViewBag.Funcionarios != null)
                                     {
                                         foreach (var func in ViewBag.Funcionarios as IEnumerable<AgendaIR.Models.Funcionario>)
                                         {
                                             <option value="@func.Id">@func.Nome</option>
+                                        }
+                                    } *@
+
+                                    @if (ViewBag.Funcionarios != null)
+                                    {
+                                        var funcionarios = ViewBag.Funcionarios as IEnumerable<AgendaIR.Models.Funcionario>;
+                                        if (funcionarios != null)
+                                        {
+                                            foreach (var func in funcionarios)
+                                            {
+                                                <option value="@func.Id">@func.Nome</option>
+                                            }
                                         }
                                     }
                                 </select>

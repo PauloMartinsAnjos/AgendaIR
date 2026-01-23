@@ -27,6 +27,9 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 // ===== CONFIGURAÇÃO DE AUTORIZAÇÃO =====
 builder.Services.AddAuthorization();
 
+// ===== ADICIONAR HttpContextAccessor =====
+builder.Services.AddHttpContextAccessor();
+
 // ===== REGISTRO DE SERVIÇOS =====
 // Registrar nossos serviços customizados para injeção de dependência
 builder.Services.AddScoped<MagicLinkService>();
@@ -47,7 +50,21 @@ builder.Services.AddControllersWithViews();
 
 // ===== ADICIONAR HttpContextAccessor =====
 // Permite acessar o contexto HTTP em qualquer lugar da aplicação
-builder.Services.AddHttpContextAccessor();
+// ===== ADICIONAR MVC COM CONFIGURAÇÕES DE UPLOAD =====
+builder.Services.AddControllersWithViews()
+    .AddMvcOptions(options =>
+    {
+        // Aumentar limite de upload para 50MB
+        options.MaxModelBindingCollectionSize = 1024;
+    });
+
+// ===== CONFIGURAR LIMITES DE UPLOAD =====
+builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 52428800; // 50MB em bytes
+    options.ValueLengthLimit = 52428800;
+    options.MultipartHeadersLengthLimit = 52428800;
+});
 
 var app = builder.Build();
 

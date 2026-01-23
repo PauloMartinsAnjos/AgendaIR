@@ -1,0 +1,437 @@
+﻿/* ==============================================
+   COMPONENTS - Botões, Cards, Badges, Alerts
+   RGB(245, 134, 52) = #F58634
+   ============================================== */
+
+/* ===== BOTÕES ===== */
+.btn-rir-primary {
+    background: linear-gradient(135deg, #F58634 0%, #F7A05C 100%);
+    border: none;
+    border-radius: 10px;
+    padding: 10px 24px;
+    font-weight: 700;
+    color: white;
+    transition: all 0.3s;
+    box-shadow: 0 2px 8px rgba(245, 134, 52, 0.2);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+    .btn-rir-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(245, 134, 52, 0.3);
+        color: white;
+        background: linear-gradient(135deg, #F7A05C 0%, #F58634 100%);
+    }
+
+.btn-rir-secondary {
+    background: white;
+    border: 2px solid #F58634;
+    border-radius: 10px;
+    padding: 10px 24px;
+    font-weight: 700;
+    color: #F58634;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+    .btn-rir-secondary:hover {
+        background: #FEF5ED;
+        color: #F58634;
+        transform: translateY(-2px);
+    }
+
+.btn-rir-danger {
+    background: white;
+    border: 2px solid #ef4444;
+    border-radius: 10px;
+    padding: 10px 24px;
+    font-weight: 700;
+    color: #ef4444;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+    .btn-rir-danger:hover {
+        background: #ef4444;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+.btn-rir-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border: none;
+    border-radius: 10px;
+    padding: 10px 24px;
+    font-weight: 700;
+    color: white;
+    transition: all 0.3s;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+    .btn-rir-success:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        color: white;
+    }
+
+/* ===== CARDS ===== */
+.card-rir {
+    background: white;
+    border-radius: 16px;
+    border: 2px solid #FBD4AC;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s;
+    overflow: hidden;
+}
+
+    .card-rir:hover {
+        box-shadow: 0 8px 24px rgba(245, 134, 52, 0.12);
+        transform: translateY(-2px);
+    }
+
+.card-rir-header {
+    background: linear-gradient(135deg, #FEF5ED 0%, #FDEAD6 100%);
+    padding: 1.5rem;
+    border-bottom: 2px solid #FBD4AC;
+}
+
+    .card-rir-header h2,
+    .card-rir-header h3,
+    .card-rir-header h4 {
+        color: #7B431A;
+        margin: 0;
+        font-weight: 700;
+    }
+
+.card-rir-body {
+    padding: 1.5rem;
+}
+
+.card-rir-footer {
+    background: #FEFEFE;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #F9BA84;
+}
+
+/* ===== BADGES ===== */
+.badge-rir {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.badge-rir-primary {
+    background: #FDEAD6;
+    color: #F58634;
+}
+
+.badge-rir-success {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.badge-rir-warning {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.badge-rir-danger {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.badge-rir-info {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+/* ===== ALERTS ===== */
+.alert-rir {
+    border-radius: 12px;
+    border: none;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: start;
+    gap: 12px;
+}
+
+.alert-rir-success {
+    background: #d1fae5;
+    color: #065f46;
+    border-left: 4px solid #10b981;
+}
+
+.alert-rir-danger {
+    background: #fee2e2;
+    color: #991b1b;
+    border-left: 4px solid #ef4444;
+}
+
+.alert-rir-warning {
+    background: #fef3c7;
+    color: #92400e;
+    border-left: 4px solid #f59e0b;
+}
+
+.alert-rir-info {
+    background: #FDEAD6;
+    color: #7B431A;
+    border-left: 4px solid #F58634;
+}
+
+/* ===== PAGE HEADER ===== */
+.page-header-rir {
+    background: linear-gradient(135deg, #FEF5ED 0%, #FFFFFF 100%);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-top: 0;
+    margin-bottom: 2rem;
+    border: 2px solid #FBD4AC;
+}
+
+    .page-header-rir h1,
+    .page-header-rir h2 {
+        color: #7B431A;
+        margin: 0 0 0.5rem 0;
+        font-weight: 700;
+    }
+
+    .page-header-rir p {
+        color: #B86527;
+        margin: 0;
+        font-weight: 500;
+    }
+
+    .page-header-rir .actions {
+        margin-top: 1.5rem;
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+/* ===== LOADING SPINNER ===== */
+.spinner-rir {
+    border: 3px solid #FDEAD6;
+    border-top: 3px solid #F58634;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* ==============================================
+   MOBILE - CARDS DE CLIENTES
+   ============================================== */
+
+/* Mostrar/esconder baseado no tamanho da tela */
+.desktop-only {
+    display: block;
+}
+
+.mobile-only {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .desktop-only {
+        display: none !important;
+    }
+
+    .mobile-only {
+        display: block !important;
+    }
+}
+
+/* Card de cliente mobile */
+.client-card-mobile {
+    background: white;
+    border-radius: 12px;
+    border: 2px solid #FBD4AC;
+    margin-bottom: 1rem;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.client-card-header {
+    background: linear-gradient(135deg, #FEF5ED 0%, #FDEAD6 100%);
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    border-bottom: 2px solid #FBD4AC;
+}
+
+.client-card-name {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #7B431A;
+    font-size: 1rem;
+}
+
+    .client-card-name i {
+        font-size: 1.5rem;
+        color: #F58634;
+    }
+
+.client-card-body {
+    padding: 1rem;
+}
+
+.client-info-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #FBD4AC;
+    font-size: 0.9rem;
+}
+
+    .client-info-row:last-child {
+        border-bottom: none;
+    }
+
+    .client-info-row i {
+        color: #F58634;
+        font-size: 1.1rem;
+        width: 20px;
+        text-align: center;
+        margin-top: 2px;
+        flex-shrink: 0;
+    }
+
+    .client-info-row > div,
+    .client-info-row > span {
+        color: #373435;
+        flex: 1;
+        word-break: break-word;
+    }
+
+    .client-info-row .input-group {
+        flex: 1;
+    }
+
+.client-card-actions {
+    padding: 1rem;
+    background: #FEFEFE;
+    border-top: 1px solid #FBD4AC;
+    display: flex;
+    gap: 0.5rem;
+}
+
+    .client-card-actions .btn {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.25rem;
+        font-size: 0.85rem;
+        padding: 0.6rem 0.5rem;
+    }
+
+/* Ajustes para telas muito pequenas */
+@media (max-width: 375px) {
+    .client-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .client-card-actions {
+        flex-direction: column;
+    }
+
+        .client-card-actions .btn {
+            width: 100%;
+        }
+}
+
+/* ==============================================
+   RESPONSIVIDADE - COMPONENTES
+   ============================================== */
+
+@media (max-width: 768px) {
+    /* Page header mobile */
+    .page-header-rir {
+        padding: 1.5rem;
+        border-radius: 12px;
+    }
+
+        .page-header-rir h2 {
+            font-size: 1.5rem;
+        }
+
+    /* Botões mobile */
+    .btn-rir-primary,
+    .btn-rir-secondary,
+    .btn-rir-danger,
+    .btn-rir-success {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+    }
+
+    /* Cards mobile */
+    .card-rir {
+        border-radius: 12px;
+    }
+
+    .card-rir-body {
+        padding: 1rem;
+    }
+
+    /* Alerts mobile */
+    .alert-rir {
+        padding: 0.875rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    /* Badges mobile */
+    .badge-rir {
+        font-size: 12px;
+        padding: 5px 12px;
+    }
+}
+
+@media (max-width: 576px) {
+    .page-header-rir {
+        padding: 1rem;
+    }
+
+        .page-header-rir h2 {
+            font-size: 1.25rem;
+        }
+
+        .page-header-rir p {
+            font-size: 0.9rem;
+        }
+}

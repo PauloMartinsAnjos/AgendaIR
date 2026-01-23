@@ -4,6 +4,7 @@ using AgendaIR.Data;
 using AgendaIR.Models;
 using AgendaIR.Models.ViewModels;
 using AgendaIR.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AgendaIR.Controllers
 {
@@ -11,6 +12,7 @@ namespace AgendaIR.Controllers
     /// Controller responsável por gerenciar agendamentos
     /// Implementa funcionalidades diferentes para Clientes, Funcionários e Administradores
     /// </summary>
+    [Authorize]
     public class AgendamentosController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -33,11 +35,16 @@ namespace AgendaIR.Controllers
         #region Métodos Auxiliares
 
         /// <summary>
-        /// Obtém o ID do usuário logado da sessão
+        /// Obtém o ID do usuário logado dos Claims
         /// </summary>
         private int? GetUsuarioId()
         {
-            return HttpContext.Session.GetInt32("UsuarioId");
+            var claim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (claim != null && int.TryParse(claim.Value, out int userId))
+            {
+                return userId;
+            }
+            return null;
         }
 
         /// <summary>
@@ -45,7 +52,7 @@ namespace AgendaIR.Controllers
         /// </summary>
         private string? GetUserType()
         {
-            return HttpContext.Session.GetString("UserType");
+            return User.FindFirst("UserType")?.Value;
         }
 
         /// <summary>
@@ -53,7 +60,7 @@ namespace AgendaIR.Controllers
         /// </summary>
         private bool IsAdmin()
         {
-            return HttpContext.Session.GetString("IsAdmin") == "True";
+            return User.FindFirst("IsAdmin")?.Value == "True";
         }
 
         /// <summary>
@@ -215,19 +222,31 @@ namespace AgendaIR.Controllers
                 return NotFound();
             }
 
-            // Recarregar lista de documentos para exibir em caso de erro
-            model.Documentos = await _context.DocumentosSolicitados
+            // ✅ CORREÇÃO: Guardar referência aos documentos ANTES de recarregar
+            var documentosEnviados = model.Documentos;
+
+            // Recarregar informações dos documentos do banco (SEM perder os arquivos)
+            var documentosNoBanco = await _context.DocumentosSolicitados
                 .Where(d => d.Ativo)
                 .OrderByDescending(d => d.Obrigatorio)
                 .ThenBy(d => d.Nome)
-                .Select(d => new DocumentoUploadViewModel
+                .ToListAsync();
+
+            // ✅ CORREÇÃO: Reconstruir a lista MANTENDO os arquivos que foram enviados
+            model.Documentos = documentosNoBanco.Select(d =>
+            {
+                // Procurar se este documento foi enviado
+                var docEnviado = documentosEnviados?.FirstOrDefault(de => de.DocumentoSolicitadoId == d.Id);
+
+                return new DocumentoUploadViewModel
                 {
                     DocumentoSolicitadoId = d.Id,
                     Nome = d.Nome,
                     Descricao = d.Descricao,
-                    Obrigatorio = d.Obrigatorio
-                })
-                .ToListAsync();
+                    Obrigatorio = d.Obrigatorio,
+                    Arquivo = docEnviado?.Arquivo  // ✅ MANTÉM o arquivo enviado!
+                };
+            }).ToList();
 
             model.FuncionarioNome = cliente.Funcionario?.Nome ?? "Não atribuído";
 
@@ -245,21 +264,24 @@ namespace AgendaIR.Controllers
             }
 
             // Validar que todos os documentos obrigatórios foram enviados
-            var documentosObrigatorios = await _context.DocumentosSolicitados
-                .Where(d => d.Ativo && d.Obrigatorio)
-                .Select(d => d.Id)
-                .ToListAsync();
+            var documentosObrigatorios = documentosNoBanco.Where(d => d.Obrigatorio).ToList();
 
-            foreach (var docId in documentosObrigatorios)
+            _logger.LogInformation($"Validando {documentosObrigatorios.Count} documentos obrigatórios");
+
+            foreach (var docObrigatorio in documentosObrigatorios)
             {
-                var documento = model.Documentos.FirstOrDefault(d => d.DocumentoSolicitadoId == docId);
-                if (documento?.Arquivo == null || documento.Arquivo.Length == 0)
+                // Procurar o documento correspondente no model
+                var documentoEnviado = model.Documentos.FirstOrDefault(d => d.DocumentoSolicitadoId == docObrigatorio.Id);
+
+                // Verificar se o arquivo foi enviado
+                if (documentoEnviado?.Arquivo == null || documentoEnviado.Arquivo.Length == 0)
                 {
-                    var nomeDoc = await _context.DocumentosSolicitados
-                        .Where(d => d.Id == docId)
-                        .Select(d => d.Nome)
-                        .FirstOrDefaultAsync();
-                    ModelState.AddModelError("", $"O documento '{nomeDoc}' é obrigatório");
+                    _logger.LogWarning($"Documento obrigatório '{docObrigatorio.Nome}' (ID: {docObrigatorio.Id}) não foi enviado");
+                    ModelState.AddModelError("", $"O documento '{docObrigatorio.Nome}' é obrigatório");
+                }
+                else
+                {
+                    _logger.LogInformation($"✓ Documento '{docObrigatorio.Nome}' OK: {documentoEnviado.Arquivo.FileName}");
                 }
             }
 
@@ -280,12 +302,27 @@ namespace AgendaIR.Controllers
                 return View(model);
             }
 
+            // ✅ CORREÇÃO: Converter DataHora para UTC (PostgreSQL exige UTC)
+            DateTime dataHoraUtc;
+            try
+            {
+                // Tentar converter assumindo timezone do Brasil
+                var brasiliaTz = TimeZoneInfo.FindSystemTimeZoneById("E. South America Standard Time");
+                dataHoraUtc = TimeZoneInfo.ConvertTimeToUtc(model.DataHora, brasiliaTz);
+            }
+            catch
+            {
+                // Fallback: apenas marcar como UTC
+                dataHoraUtc = DateTime.SpecifyKind(model.DataHora, DateTimeKind.Utc);
+                _logger.LogWarning("Não foi possível converter timezone, usando SpecifyKind como fallback");
+            }
+
             // Criar o agendamento
             var agendamento = new Agendamento
             {
                 ClienteId = clienteId.Value,
                 FuncionarioId = cliente.FuncionarioId,
-                DataHora = model.DataHora,
+                DataHora = dataHoraUtc,
                 Status = "Pendente",
                 Observacoes = model.Observacoes,
                 DataCriacao = DateTime.UtcNow,
@@ -295,51 +332,152 @@ namespace AgendaIR.Controllers
             _context.Agendamentos.Add(agendamento);
             await _context.SaveChangesAsync();
 
-            // Criar evento no Google Calendar
-            var eventId = await _calendarService.CriarEventoAsync(
-                cliente.Funcionario?.GoogleCalendarEmail ?? "",
-                cliente.Nome,
-                model.DataHora
-            );
+            _logger.LogInformation($"✓ Agendamento {agendamento.Id} criado com sucesso para {dataHoraUtc:yyyy-MM-dd HH:mm} UTC");
 
-            if (eventId != null)
+            // ===== INTEGRAÇÃO COM GOOGLE CALENDAR COM LOGS DETALHADOS =====
+            var funcionarioEmail = cliente.Funcionario?.GoogleCalendarEmail;
+
+            _logger.LogInformation($"");
+            _logger.LogInformation($"📅 ========================================");
+            _logger.LogInformation($"📅 INICIANDO INTEGRAÇÃO GOOGLE CALENDAR");
+            _logger.LogInformation($"📅 ========================================");
+            _logger.LogInformation($"   Cliente: {cliente.Nome}");
+            _logger.LogInformation($"   Funcionário: {cliente.Funcionario?.Nome ?? "Não atribuído"}");
+            _logger.LogInformation($"   Funcionário ID: {cliente.FuncionarioId}");
+            _logger.LogInformation($"   Email do Funcionário: '{funcionarioEmail ?? "VAZIO!!!"}'");
+            _logger.LogInformation($"   Data/Hora: {model.DataHora:yyyy-MM-dd HH:mm}");
+            _logger.LogInformation($"");
+
+            if (string.IsNullOrEmpty(funcionarioEmail))
             {
-                agendamento.GoogleCalendarEventId = eventId;
-                await _context.SaveChangesAsync();
+                _logger.LogWarning($"⚠️ ========================================");
+                _logger.LogWarning($"⚠️ ATENÇÃO: EMAIL NÃO CONFIGURADO!");
+                _logger.LogWarning($"⚠️ ========================================");
+                _logger.LogWarning($"⚠️ Funcionário: '{cliente.Funcionario?.Nome ?? "desconhecido"}' (ID: {cliente.FuncionarioId})");
+                _logger.LogWarning($"⚠️ NÃO possui email do Google Calendar configurado!");
+                _logger.LogWarning($"⚠️ ");
+                _logger.LogWarning($"⚠️ O agendamento foi SALVO no banco de dados,");
+                _logger.LogWarning($"⚠️ mas o evento NÃO será criado no Google Calendar!");
+                _logger.LogWarning($"⚠️ ");
+                _logger.LogWarning($"⚠️ SOLUÇÃO:");
+                _logger.LogWarning($"⚠️ 1. Faça login como Admin");
+                _logger.LogWarning($"⚠️ 2. Vá em: Funcionários > Editar");
+                _logger.LogWarning($"⚠️ 3. Preencha o campo 'Google Calendar Email'");
+                _logger.LogWarning($"⚠️ 4. Use um email do Google Workspace");
+                _logger.LogWarning($"⚠️ ========================================");
+                _logger.LogInformation($"");
+            }
+            else
+            {
+                _logger.LogInformation($"✓ Email válido encontrado!");
+                _logger.LogInformation($"✓ Chamando GoogleCalendarService.CriarEventoAsync...");
+                _logger.LogInformation($"");
+
+                var eventId = await _calendarService.CriarEventoAsync(
+                    funcionarioEmail,
+                    cliente.Nome,
+                    model.DataHora
+                );
+
+                if (eventId != null)
+                {
+                    agendamento.GoogleCalendarEventId = eventId;
+                    await _context.SaveChangesAsync();
+
+                    _logger.LogInformation($"✅ ========================================");
+                    _logger.LogInformation($"✅ SUCESSO! EVENTO CRIADO NO GOOGLE CALENDAR");
+                    _logger.LogInformation($"✅ ========================================");
+                    _logger.LogInformation($"✅ Event ID: {eventId}");
+                    _logger.LogInformation($"✅ Email: {funcionarioEmail}");
+                    _logger.LogInformation($"✅ Cliente: {cliente.Nome}");
+                    _logger.LogInformation($"✅ Data/Hora: {model.DataHora:yyyy-MM-dd HH:mm}");
+                    _logger.LogInformation($"✅ ");
+                    _logger.LogInformation($"✅ O evento agora está visível em:");
+                    _logger.LogInformation($"✅ https://calendar.google.com");
+                    _logger.LogInformation($"✅ ========================================");
+                    _logger.LogInformation($"");
+                }
+                else
+                {
+                    _logger.LogError($"");
+                    _logger.LogError($"❌ ========================================");
+                    _logger.LogError($"❌ ERRO: FALHA AO CRIAR EVENTO!");
+                    _logger.LogError($"❌ ========================================");
+                    _logger.LogError($"❌ O GoogleCalendarService retornou NULL");
+                    _logger.LogError($"❌ ");
+                    _logger.LogError($"❌ Email usado: {funcionarioEmail}");
+                    _logger.LogError($"❌ Cliente: {cliente.Nome}");
+                    _logger.LogError($"❌ Data/Hora: {model.DataHora:yyyy-MM-dd HH:mm}");
+                    _logger.LogError($"❌ ");
+                    _logger.LogError($"❌ POSSÍVEIS CAUSAS:");
+                    _logger.LogError($"❌ 1. Email não é do Google Workspace");
+                    _logger.LogError($"❌ 2. Credenciais no appsettings.json incorretas");
+                    _logger.LogError($"❌ 3. ClientId ou ClientSecret inválidos");
+                    _logger.LogError($"❌ 4. RedirectUri não corresponde ao Google Cloud");
+                    _logger.LogError($"❌ 5. Usuário não autorizou o acesso");
+                    _logger.LogError($"❌ 6. API do Google Calendar não ativada");
+                    _logger.LogError($"❌ ");
+                    _logger.LogError($"❌ VERIFICAR:");
+                    _logger.LogError($"❌ - appsettings.json tem ClientId e ClientSecret?");
+                    _logger.LogError($"❌ - Google Cloud Console > Credentials está OK?");
+                    _logger.LogError($"❌ - Google Cloud Console > OAuth consent screen configurado?");
+                    _logger.LogError($"❌ ========================================");
+                    _logger.LogError($"");
+                }
             }
 
-            // Fazer upload dos documentos anexados
+            // ✅ NOVO: Fazer upload dos documentos anexados (COM COMPRESSÃO)
+            int documentosSalvos = 0;
+            long totalOriginal = 0;
+            long totalComprimido = 0;
+
             foreach (var documento in model.Documentos)
             {
                 if (documento.Arquivo != null && documento.Arquivo.Length > 0)
                 {
-                    var uploadResult = await _fileUploadService.UploadFileAsync(
-                        documento.Arquivo,
-                        agendamento.Id
-                    );
+                    _logger.LogInformation($"Processando arquivo: {documento.Arquivo.FileName}");
 
-                    if (uploadResult.Success)
+                    // ✅ Processar e comprimir arquivo
+                    var uploadResult = await _fileUploadService.ProcessarArquivoAsync(documento.Arquivo);
+
+                    if (uploadResult.Success && uploadResult.ConteudoComprimido != null)
                     {
+                        // ✅ Salvar no banco de dados (comprimido)
                         var documentoAnexado = new DocumentoAnexado
                         {
                             AgendamentoId = agendamento.Id,
                             DocumentoSolicitadoId = documento.DocumentoSolicitadoId,
                             NomeArquivo = documento.Arquivo.FileName,
-                            CaminhoArquivo = uploadResult.FilePath!,
-                            TamanhoBytes = documento.Arquivo.Length,
+                            ConteudoComprimido = uploadResult.ConteudoComprimido,  // ✅ Bytes comprimidos
+                            TamanhoOriginalBytes = uploadResult.TamanhoOriginal,
+                            TamanhoComprimidoBytes = uploadResult.TamanhoComprimido,
                             DataUpload = DateTime.UtcNow
                         };
 
                         _context.DocumentosAnexados.Add(documentoAnexado);
+                        documentosSalvos++;
+                        totalOriginal += uploadResult.TamanhoOriginal;
+                        totalComprimido += uploadResult.TamanhoComprimido;
+
+                        _logger.LogInformation(
+                            $"✓ '{documento.Arquivo.FileName}': " +
+                            $"{uploadResult.TamanhoOriginal:N0} → {uploadResult.TamanhoComprimido:N0} bytes"
+                        );
                     }
                     else
                     {
-                        _logger.LogError($"Erro ao fazer upload do arquivo: {uploadResult.ErrorMessage}");
+                        _logger.LogError($"❌ Erro ao processar '{documento.Arquivo.FileName}': {uploadResult.ErrorMessage}");
                     }
                 }
             }
 
             await _context.SaveChangesAsync();
+
+            var reducao = totalOriginal > 0 ? (1 - ((double)totalComprimido / totalOriginal)) * 100 : 0;
+            _logger.LogInformation(
+                $"🎉 {documentosSalvos} documentos salvos | " +
+                $"Total: {totalOriginal:N0} → {totalComprimido:N0} bytes ({reducao:F1}% de redução)"
+            );
 
             TempData["SuccessMessage"] = "Agendamento criado com sucesso!";
             return RedirectToAction(nameof(MeusAgendamentos));
@@ -384,7 +522,7 @@ namespace AgendaIR.Controllers
             }
 
             // Verificar se faltam mais de 24 horas
-            var horasRestantes = (agendamento.DataHora - DateTime.Now).TotalHours;
+            var horasRestantes = (agendamento.DataHora - DateTime.UtcNow).TotalHours;
             if (horasRestantes < 24)
             {
                 TempData["ErrorMessage"] = "Você só pode cancelar agendamentos com mais de 24 horas de antecedência.";
@@ -731,6 +869,7 @@ namespace AgendaIR.Controllers
 
         /// <summary>
         /// FUNCIONÁRIO/ADMIN: Faz download de um documento anexado
+        /// ✅ NOVO: Com descompressão automática
         /// </summary>
         [HttpGet]
         public async Task<IActionResult> DownloadDocumento(int id)
@@ -768,20 +907,27 @@ namespace AgendaIR.Controllers
                 return NotFound();
             }
 
-            // Obter caminho completo do arquivo
-            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", documento.CaminhoArquivo);
-
-            if (!System.IO.File.Exists(filePath))
+            // ✅ Descomprimir arquivo
+            byte[] conteudoDescomprimido;
+            try
             {
-                TempData["ErrorMessage"] = "Arquivo não encontrado no servidor.";
+                conteudoDescomprimido = _fileUploadService.DescomprimirArquivo(documento.ConteudoComprimido);
+
+                _logger.LogInformation(
+                    $"Download: '{documento.NomeArquivo}' " +
+                    $"({documento.TamanhoComprimidoBytes:N0} → {conteudoDescomprimido.Length:N0} bytes)"
+                );
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Erro ao descomprimir '{documento.NomeArquivo}'");
+                TempData["ErrorMessage"] = "Erro ao processar o arquivo.";
                 return RedirectToAction(nameof(Details), new { id = documento.AgendamentoId });
             }
 
             // Retornar arquivo para download
-            var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
             var contentType = GetContentType(documento.NomeArquivo);
-
-            return File(fileBytes, contentType, documento.NomeArquivo);
+            return File(conteudoDescomprimido, contentType, documento.NomeArquivo);
         }
 
         /// <summary>

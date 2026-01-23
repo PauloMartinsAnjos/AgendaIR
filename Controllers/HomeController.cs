@@ -40,7 +40,7 @@ public class HomeController : Controller
         }
 
         // Se não está autenticado, mostrar página de boas-vindas
-        return View();
+         return RedirectToAction("Login", "Auth");
     }
 
     /// <summary>

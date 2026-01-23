@@ -1,88 +1,208 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - AgendaIR</title>
+
+    <!-- Bootstrap -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap" rel="stylesheet">
+
+    <!-- RIR Design System (ordem importante!) -->
+    <link rel="stylesheet" href="~/css/rir-design/variables.css" />
+    <link rel="stylesheet" href="~/css/rir-design/layout.css" />
+    <link rel="stylesheet" href="~/css/rir-design/components.css" />
+    <link rel="stylesheet" href="~/css/rir-design/tables.css" />
+    <link rel="stylesheet" href="~/css/rir-design/forms.css" />
+
+    <!-- CSS do Projeto (por último para sobrescrever se necessário) -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/AgendaIR.styles.css" asp-append-version="true" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">AgendaIR</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        @if (User.Identity?.IsAuthenticated == true && User.FindFirst("UserType")?.Value == "Funcionario")
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Clientes" asp-action="Index">
-                                    <i class="bi bi-people"></i> Clientes
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Documentos" asp-action="Index">
-                                    <i class="bi bi-file-earmark-text"></i> Documentos
-                                </a>
-                            </li>
-                            @if (User.FindFirst("IsAdmin")?.Value == "True")
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Funcionarios" asp-action="Index">
-                                        <i class="bi bi-person-badge"></i> Funcionários
-                                    </a>
-                                </li>
-                            }
-                        }
-                    </ul>
-                    @if (User.Identity?.IsAuthenticated == true)
-                    {
-                        <ul class="navbar-nav">
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle text-dark" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="bi bi-person-circle"></i> @User.Identity.Name
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                    <li>
-                                        <form asp-controller="Auth" asp-action="Logout" method="post" class="d-inline">
-                                            @Html.AntiForgeryToken()
-                                            <button type="submit" class="dropdown-item">
-                                                <i class="bi bi-box-arrow-right"></i> Sair
-                                            </button>
-                                        </form>
-                                    </li>
-                                </ul>
-                            </li>
-                        </ul>
-                    }
-                </div>
+    <!-- ✅ BOTÃO MENU MOBILE -->
+    <button class="mobile-menu-toggle" id="mobileMenuBtn" aria-label="Abrir menu">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- ✅ OVERLAY PARA FECHAR MENU -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="app-container">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <img src="~/images/logo/logo-rir.png" alt="RIR Contábil" class="sidebar-logo" />
             </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+
+            <nav>
+                <ul class="sidebar-menu">
+                    <li class="sidebar-item">
+                        <a asp-controller="Home" asp-action="Index"
+                           class="sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")">
+                            <i class="bi bi-house-door sidebar-icon"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+
+                    <li class="sidebar-item">
+                        <a asp-controller="Agendamentos" asp-action="Index"
+                           class="sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Agendamentos" ? "active" : "")">
+                            <i class="bi bi-calendar-check sidebar-icon"></i>
+                            <span>Agendamentos</span>
+                        </a>
+                    </li>
+
+                    <li class="sidebar-item">
+                        <a asp-controller="Clientes" asp-action="Index"
+                           class="sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Clientes" ? "active" : "")">
+                            <i class="bi bi-people sidebar-icon"></i>
+                            <span>Clientes</span>
+                        </a>
+                    </li>
+
+                    @if (User.FindFirst("IsAdmin")?.Value == "True")
+                    {
+                        <li class="sidebar-item" style="margin-top: 2rem; padding-top: 1rem; border-top: 2px solid rgba(255, 255, 255, 0.2);">
+                            <a asp-controller="Funcionarios" asp-action="Index"
+                               class="sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Funcionarios" ? "active" : "")">
+                                <i class="bi bi-person-badge sidebar-icon"></i>
+                                <span>Funcionários</span>
+                            </a>
+                        </li>
+
+                        <li class="sidebar-item">
+                            <a asp-controller="Documentos" asp-action="Index"
+                               class="sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Documentos" ? "active" : "")">
+                                <i class="bi bi-file-earmark-text sidebar-icon"></i>
+                                <span>Documentos</span>
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- CONTEÚDO PRINCIPAL -->
+        <div class="main-wrapper">
+
+            <!-- HEADER -->
+            <header class="header">
+                <div class="header-breadcrumb">
+                    <i class="bi bi-house-door"></i>
+                    <span>/ @ViewData["Title"]</span>
+                </div>
+
+                <div class="header-actions">
+                    <div class="header-user">
+                        <div class="header-avatar">
+                            @{
+                                var userName = User.Identity?.Name ?? "U";
+                                var initials = string.Join("", userName.Split(' ').Take(2).Select(n => n[0]));
+                            }
+                            @initials
+                        </div>
+                        <div class="header-user-info">
+                            <span style="display:block; font-weight:600; font-size:0.9rem;">@userName</span>
+                            <small style="opacity:0.9">@(User.FindFirst("IsAdmin")?.Value == "True" ? "Administrador" : "Funcionário")</small>
+                        </div>
+                    </div>
+
+                    <form asp-controller="Auth" asp-action="Logout" method="post" style="margin: 0;">
+                        <button type="submit" class="btn btn-sm btn-outline-light">
+                            <i class="bi bi-box-arrow-right"></i> Sair
+                        </button>
+                    </form>
+                </div>
+            </header>
+
+            <!-- MAIN CONTENT -->
+            <main class="main-content">
+                @RenderBody()
+            </main>
+
+            <!-- FOOTER -->
+            <footer class="footer">
+                <p style="margin: 0;">&copy; @DateTime.Now.Year - RIR Contábil. Todos os direitos reservados.</p>
+            </footer>
+        </div>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - AgendaIR - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
+    <!-- Scripts -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <!-- ✅ SCRIPT MENU MOBILE -->
+    <script>
+        (function() {
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+
+            if (!mobileMenuBtn || !sidebar || !overlay) return;
+
+            // Função para fechar o menu
+            function closeMenu() {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('active');
+                const icon = mobileMenuBtn.querySelector('i');
+                if (icon) {
+                    icon.classList.remove('bi-x');
+                    icon.classList.add('bi-list');
+                }
+            }
+
+            // Função para abrir o menu
+            function openMenu() {
+                sidebar.classList.add('open');
+                overlay.classList.add('active');
+                const icon = mobileMenuBtn.querySelector('i');
+                if (icon) {
+                    icon.classList.remove('bi-list');
+                    icon.classList.add('bi-x');
+                }
+            }
+
+            // Toggle menu ao clicar no botão
+            mobileMenuBtn.addEventListener('click', function() {
+                if (sidebar.classList.contains('open')) {
+                    closeMenu();
+                } else {
+                    openMenu();
+                }
+            });
+
+            // Fechar ao clicar no overlay
+            overlay.addEventListener('click', closeMenu);
+
+            // Fechar ao clicar em um link do menu (apenas em mobile)
+            const menuLinks = document.querySelectorAll('.sidebar-link');
+            menuLinks.forEach(function(link) {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth <= 768) {
+                        setTimeout(closeMenu, 200);
+                    }
+                });
+            });
+
+            // Fechar menu ao pressionar ESC
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && sidebar.classList.contains('open')) {
+                    closeMenu();
+                }
+            });
+        })();
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

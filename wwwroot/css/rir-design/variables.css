@@ -1,0 +1,45 @@
+﻿/* ==============================================
+   RIR CONTÁBIL - DESIGN SYSTEM
+   Baseado na Identidade Visual Oficial
+   RGB(245, 134, 52) = #F58634
+   ============================================== */
+
+:root {
+    /* ===== CORES PRIMÁRIAS ===== */
+    --primary: #F58634; /* Laranja CORRETO RGB(245, 134, 52) */
+    --primary-dark: #373435;
+    --primary-light: #FF9D55;
+    /* ===== CORES COMPLEMENTARES ===== */
+    --secondary: #7B431A;
+    --secondary-light: #B86527;
+    /* ===== TONS DE LARANJA (derivados do correto) ===== */
+    --orange-100: #F58634; /* Base - RGB(245, 134, 52) */
+    --orange-80: #F7A05C; /* 80% */
+    --orange-60: #F9BA84; /* 60% */
+    --orange-40: #FBD4AC; /* 40% */
+    --orange-20: #FDEAD6; /* 20% */
+    --orange-10: #FEF5ED; /* 10% */
+    /* ===== TONS DE MARROM ===== */
+    --brown-100: #7B431A;
+    --brown-80: #8F6040;
+    --brown-60: #A88670;
+    --brown-40: #C4AA9A;
+    --brown-20: #E8DCD4;
+    /* ===== TONS DE CINZA ===== */
+    --gray-100: #373435;
+    --gray-80: #6B6869;
+    --gray-60: #9C9A9B;
+    --gray-40: #CECCCCD;
+    --gray-20: #EAEAEA;
+    --gray-10: #F5F5F5;
+    /* ===== CORES SEMÂNTICAS ===== */
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --info: #3b82f6;
+    /* ===== TIPOGRAFIA ===== */
+    --font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-weight-regular: 400;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    --font-weight-black * 

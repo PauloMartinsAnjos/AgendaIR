@@ -1,0 +1,119 @@
+﻿@{
+    ViewData["Title"] = "Autorização Concluída";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>@ViewData["Title"]</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .success-container {
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+            max-width: 500px;
+        }
+
+        .success-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: scaleIn 0.5s ease-out;
+        }
+
+        @@keyframes scaleIn {
+            from {
+                transform: scale(0);
+            }
+
+            to {
+                transform: scale(1);
+            }
+        }
+
+        h1 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        p {
+            color: #4a5568;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+            .btn:hover {
+                background: #5568d3;
+            }
+
+        .countdown {
+            color: #718096;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="success-container">
+        <div class="success-icon">✅</div>
+        <h1>Autorização Concluída!</h1>
+        <p>
+            O Google Calendar foi autorizado com sucesso!<br>
+            A partir de agora, todos os agendamentos serão sincronizados automaticamente.
+        </p>
+        @if (ViewBag.CloseWindow == true)
+        {
+            <p class="countdown">Esta janela será fechada em <span id="countdown">3</span> segundos...</p>
+            <script>
+                let seconds = 3;
+                const countdownElement = document.getElementById('countdown');
+
+                const interval = setInterval(() => {
+                    seconds--;
+                    if (countdownElement) {
+                        countdownElement.textContent = seconds;
+                    }
+
+                    if (seconds <= 0) {
+                        clearInterval(interval);
+                        window.close();
+
+                        // Se não conseguir fechar, redirecionar
+                        setTimeout(() => {
+                            window.location.href = '/';
+                        }, 500);
+                    }
+                }, 1000);
+            </script>
+        }
+        else
+        {
+            <a href="/" class="btn">Voltar para Home</a>
+        }
+    </div>
+</body>
+</html>

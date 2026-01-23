@@ -1,0 +1,102 @@
+﻿/* ==============================================
+   FORMS - Formulários Modernos
+   ============================================== */
+
+.form-rir {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    border: 2px solid #FBD4AC;
+}
+
+    .form-rir .form-label {
+        color: #7B431A;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        display: block;
+    }
+
+        .form-rir .form-label i {
+            color: #F58634;
+            margin-right: 0.5rem;
+        }
+
+    .form-rir .form-control,
+    .form-rir .form-select {
+        border: 2px solid #FBD4AC;
+        border-radius: 10px;
+        padding: 12px 16px;
+        font-size: 1rem;
+        transition: all 0.3s;
+        background: #FEFEFE;
+    }
+
+        .form-rir .form-control:focus,
+        .form-rir .form-select:focus {
+            border-color: #F58634;
+            box-shadow: 0 0 0 0.2rem rgba(245, 134, 52, 0.15);
+            background: white;
+            outline: none;
+        }
+
+        .form-rir .form-control::placeholder {
+            color: #C4C1C2;
+        }
+
+    .form-rir .form-check-input {
+        border: 2px solid #FBD4AC;
+        border-radius: 6px;
+        width: 20px;
+        height: 20px;
+    }
+
+        .form-rir .form-check-input:checked {
+            background-color: #F58634;
+            border-color: #F58634;
+        }
+
+        .form-rir .form-check-input:focus {
+            box-shadow: 0 0 0 0.2rem rgba(245, 134, 52, 0.15);
+        }
+
+    .form-rir .form-check-label {
+        color: #6B6869;
+        font-weight: 500;
+        margin-left: 0.5rem;
+    }
+
+    .form-rir .text-danger {
+        color: #ef4444;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+        display: block;
+    }
+
+    .form-rir .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-rir .form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 2px solid #FDEAD6;
+    }
+
+/* Input Group */
+.input-group-rir {
+    display: flex;
+    gap: 0;
+}
+
+    .input-group-rir .form-control {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+
+    .input-group-rir .btn {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
