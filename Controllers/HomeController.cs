@@ -78,16 +78,16 @@ public class HomeController : Controller
 
         // ===== Agendamentos por Status =====
         viewModel.AgendamentosConcluidos = await _context.Agendamentos
-            .CountAsync(a => a.Status == "Concluído" || a.Status == "Concluido");
+            .CountAsync(a => a.Status.ToLower() == "concluído" || a.Status.ToLower() == "concluido");
 
         viewModel.AgendamentosPendentes = await _context.Agendamentos
-            .CountAsync(a => a.Status == "Pendente");
+            .CountAsync(a => a.Status.ToLower() == "pendente");
 
         viewModel.AgendamentosConfirmados = await _context.Agendamentos
-            .CountAsync(a => a.Status == "Confirmado");
+            .CountAsync(a => a.Status.ToLower() == "confirmado");
 
         viewModel.AgendamentosCancelados = await _context.Agendamentos
-            .CountAsync(a => a.Status == "Cancelado");
+            .CountAsync(a => a.Status.ToLower() == "cancelado");
 
         // Taxa de conclusão
         viewModel.TaxaConclusao = viewModel.TotalAgendamentos > 0
