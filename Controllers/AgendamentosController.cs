@@ -69,7 +69,7 @@ namespace AgendaIR.Controllers
         private (bool IsValid, string ErrorMessage) ValidarDataHoraAgendamento(DateTime dataHora)
         {
             // Verificar se a data é futura
-            if (dataHora <= DateTime.Now)
+            if (dataHora <= DateTime.UtcNow)
             {
                 return (false, "A data e hora devem ser futuras");
             }

@@ -107,7 +107,7 @@ public class HomeController : Controller
             .ToListAsync();
 
         // ===== Últimos 7 Dias =====
-        var seteDiasAtras = DateTime.Now.AddDays(-7).Date;
+        var seteDiasAtras = DateTime.UtcNow.AddDays(-7).Date;
         var agendamentosPorDia = await _context.Agendamentos
             .Where(a => a.DataCriacao >= seteDiasAtras)
             .GroupBy(a => a.DataCriacao.Date)
@@ -123,7 +123,7 @@ public class HomeController : Controller
         viewModel.UltimosSeteDias = new List<AgendamentoDia>();
         for (int i = 6; i >= 0; i--)
         {
-            var dia = DateTime.Now.AddDays(-i).Date;
+            var dia = DateTime.UtcNow.AddDays(-i).Date;
             var agendamentoDia = agendamentosPorDia.FirstOrDefault(a => a.Data == dia);
             
             viewModel.UltimosSeteDias.Add(new AgendamentoDia
