@@ -302,27 +302,12 @@ namespace AgendaIR.Controllers
                 return View(model);
             }
 
-            // ✅ CORREÇÃO: Converter DataHora para UTC (PostgreSQL exige UTC)
-            DateTime dataHoraUtc;
-            try
-            {
-                // Tentar converter assumindo timezone do Brasil
-                var brasiliaTz = TimeZoneInfo.FindSystemTimeZoneById("E. South America Standard Time");
-                dataHoraUtc = TimeZoneInfo.ConvertTimeToUtc(model.DataHora, brasiliaTz);
-            }
-            catch
-            {
-                // Fallback: apenas marcar como UTC
-                dataHoraUtc = DateTime.SpecifyKind(model.DataHora, DateTimeKind.Utc);
-                _logger.LogWarning("Não foi possível converter timezone, usando SpecifyKind como fallback");
-            }
-
             // Criar o agendamento
             var agendamento = new Agendamento
             {
                 ClienteId = clienteId.Value,
                 FuncionarioId = cliente.FuncionarioId,
-                DataHora = dataHoraUtc,
+                DataHora = model.DataHora,
                 Status = "Pendente",
                 Observacoes = model.Observacoes,
                 DataCriacao = DateTime.UtcNow,
@@ -332,7 +317,7 @@ namespace AgendaIR.Controllers
             _context.Agendamentos.Add(agendamento);
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation($"✓ Agendamento {agendamento.Id} criado com sucesso para {dataHoraUtc:yyyy-MM-dd HH:mm} UTC");
+            _logger.LogInformation($"✓ Agendamento {agendamento.Id} criado com sucesso para {model.DataHora:yyyy-MM-dd HH:mm}");
 
             // ===== INTEGRAÇÃO COM GOOGLE CALENDAR COM LOGS DETALHADOS =====
             var funcionarioEmail = cliente.Funcionario?.GoogleCalendarEmail;
