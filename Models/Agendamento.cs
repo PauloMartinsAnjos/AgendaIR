@@ -21,6 +21,18 @@ namespace AgendaIR.Models
         [Required]
         public int FuncionarioId { get; set; }
 
+        /// <summary>
+        /// Tipo de agendamento (obrigatório)
+        /// </summary>
+        [Required(ErrorMessage = "O tipo de agendamento é obrigatório")]
+        [Display(Name = "Tipo de Agendamento")]
+        public int TipoAgendamentoId { get; set; }
+
+        /// <summary>
+        /// Relacionamento com tipo de agendamento
+        /// </summary>
+        public TipoAgendamento TipoAgendamento { get; set; } = null!;
+
         // Data e hora do agendamento
         [Required(ErrorMessage = "A data e hora são obrigatórias")]
         public DateTime DataHora { get; set; }

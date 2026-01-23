@@ -120,6 +120,20 @@ namespace AgendaIR.Data
                 .HasForeignKey(da => da.DocumentoSolicitadoId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // Configurar relacionamento TipoAgendamento -> DocumentosSolicitado
+            modelBuilder.Entity<DocumentoSolicitado>()
+                .HasOne(d => d.TipoAgendamento)
+                .WithMany(t => t.DocumentosSolicitados)
+                .HasForeignKey(d => d.TipoAgendamentoId)
+                .OnDelete(DeleteBehavior.SetNull); // Se tipo for deletado, documento vira genérico
+
+            // Configurar relacionamento TipoAgendamento -> Agendamento
+            modelBuilder.Entity<Agendamento>()
+                .HasOne(a => a.TipoAgendamento)
+                .WithMany(t => t.Agendamentos)
+                .HasForeignKey(a => a.TipoAgendamentoId)
+                .OnDelete(DeleteBehavior.Restrict); // Não pode deletar tipo se houver agendamentos
+
             // Seed data: Criar usuário administrador inicial
             // Este é o primeiro usuário que pode acessar o sistema
             SeedData(modelBuilder);
@@ -147,7 +161,7 @@ namespace AgendaIR.Data
                     CPF = "000.000.000-00",
                     IsAdmin = true,
                     Ativo = true,
-                    DataCriacao = DateTime.UtcNow
+                    DataCriacao = new DateTime(2026, 1, 1)
                 }
             );
 
@@ -160,7 +174,7 @@ namespace AgendaIR.Data
                     Descricao = "Envie o RG frente e verso em um único arquivo PDF ou imagem",
                     Obrigatorio = true,
                     Ativo = true,
-                    DataCriacao = DateTime.UtcNow
+                    DataCriacao = new DateTime(2026, 1, 1)
                 },
                 new DocumentoSolicitado
                 {
@@ -169,7 +183,7 @@ namespace AgendaIR.Data
                     Descricao = "Envie uma cópia do CPF",
                     Obrigatorio = true,
                     Ativo = true,
-                    DataCriacao = DateTime.UtcNow
+                    DataCriacao = new DateTime(2026, 1, 1)
                 },
                 new DocumentoSolicitado
                 {
@@ -178,7 +192,7 @@ namespace AgendaIR.Data
                     Descricao = "Conta de luz, água ou telefone dos últimos 3 meses",
                     Obrigatorio = true,
                     Ativo = true,
-                    DataCriacao = DateTime.UtcNow
+                    DataCriacao = new DateTime(2026, 1, 1)
                 },
                 new DocumentoSolicitado
                 {
@@ -187,20 +201,20 @@ namespace AgendaIR.Data
                     Descricao = "Informe de rendimentos do ano anterior",
                     Obrigatorio = false,
                     Ativo = true,
-                    DataCriacao = DateTime.UtcNow
+                    DataCriacao = new DateTime(2026, 1, 1)
                 }
             );
 
             // Seed de tipos de agendamento
             modelBuilder.Entity<TipoAgendamento>().HasData(
-                new TipoAgendamento { Id = 1, Nome = "Declaração IR", Descricao = "Declaração de Imposto de Renda", Ativo = true, DataCriacao = DateTime.UtcNow },
-                new TipoAgendamento { Id = 2, Nome = "Declaração IR Retificadora", Descricao = "Retificação de declaração de IR", Ativo = true, DataCriacao = DateTime.UtcNow },
-                new TipoAgendamento { Id = 3, Nome = "Consultoria Tributária", Descricao = "Consultoria sobre questões tributárias", Ativo = true, DataCriacao = DateTime.UtcNow },
-                new TipoAgendamento { Id = 4, Nome = "Abertura de MEI", Descricao = "Abertura de Microempreendedor Individual", Ativo = true, DataCriacao = DateTime.UtcNow },
-                new TipoAgendamento { Id = 5, Nome = "Contabilidade Mensal", Descricao = "Serviços contábeis mensais", Ativo = true, DataCriacao = DateTime.UtcNow },
-                new TipoAgendamento { Id = 6, Nome = "Regularização Fiscal", Descricao = "Regularização de pendências fiscais", Ativo = true, DataCriacao = DateTime.UtcNow },
-                new TipoAgendamento { Id = 7, Nome = "Planejamento Tributário", Descricao = "Planejamento estratégico tributário", Ativo = true, DataCriacao = DateTime.UtcNow },
-                new TipoAgendamento { Id = 8, Nome = "Outros", Descricao = "Outros serviços", Ativo = true, DataCriacao = DateTime.UtcNow }
+                new TipoAgendamento { Id = 1, Nome = "Declaração IR", Descricao = "Declaração de Imposto de Renda", Ativo = true, DataCriacao = new DateTime(2026, 1, 1) },
+                new TipoAgendamento { Id = 2, Nome = "Declaração IR Retificadora", Descricao = "Retificação de declaração de IR", Ativo = true, DataCriacao = new DateTime(2026, 1, 1) },
+                new TipoAgendamento { Id = 3, Nome = "Consultoria Tributária", Descricao = "Consultoria sobre questões tributárias", Ativo = true, DataCriacao = new DateTime(2026, 1, 1) },
+                new TipoAgendamento { Id = 4, Nome = "Abertura de MEI", Descricao = "Abertura de Microempreendedor Individual", Ativo = true, DataCriacao = new DateTime(2026, 1, 1) },
+                new TipoAgendamento { Id = 5, Nome = "Contabilidade Mensal", Descricao = "Serviços contábeis mensais", Ativo = true, DataCriacao = new DateTime(2026, 1, 1) },
+                new TipoAgendamento { Id = 6, Nome = "Regularização Fiscal", Descricao = "Regularização de pendências fiscais", Ativo = true, DataCriacao = new DateTime(2026, 1, 1) },
+                new TipoAgendamento { Id = 7, Nome = "Planejamento Tributário", Descricao = "Planejamento estratégico tributário", Ativo = true, DataCriacao = new DateTime(2026, 1, 1) },
+                new TipoAgendamento { Id = 8, Nome = "Outros", Descricao = "Outros serviços", Ativo = true, DataCriacao = new DateTime(2026, 1, 1) }
             );
         }
     }

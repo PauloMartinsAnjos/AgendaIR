@@ -28,6 +28,17 @@ namespace AgendaIR.Models
         // Se true, o cliente DEVE anexar este documento ao fazer um agendamento
         public bool Obrigatorio { get; set; }
 
+        /// <summary>
+        /// Tipo de agendamento relacionado (nullable - doc pode ser genérico)
+        /// </summary>
+        [Display(Name = "Tipo de Agendamento")]
+        public int? TipoAgendamentoId { get; set; }
+
+        /// <summary>
+        /// Relacionamento com tipo de agendamento
+        /// </summary>
+        public TipoAgendamento? TipoAgendamento { get; set; }
+
         // Indica se o documento está ativo
         // Permite desativar documentos sem deletá-los do banco
         public bool Ativo { get; set; } = true;
