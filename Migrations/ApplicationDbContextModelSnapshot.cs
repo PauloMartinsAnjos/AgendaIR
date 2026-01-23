@@ -314,7 +314,7 @@ namespace AgendaIR.Migrations
                             Email = "admin@agendair.com",
                             IsAdmin = true,
                             Nome = "Administrador do Sistema",
-                            SenhaHash = "$2a$11$YNvtn6qLFbBdglbhvBoWqOrPeR0qXl1nnScc7pn8.0rbD4ZPiZO2C",
+                            SenhaHash = "$2a$11$Ka6kbcg7eEwN7HvmysLtjewPEKgoxgkGVAnmhcoN7oOmhp/MKDTrG",
                             Username = "admin"
                         });
                 });

@@ -95,6 +95,8 @@ body {
     margin-left: 260px;
     display: flex;
     flex-direction: column;
+    min-height: 100vh;
+    width: calc(100% - 260px);
 }
 
 /* ===== HEADER - BRANCO/BEGE CLARO ===== */
@@ -175,18 +177,25 @@ body {
 /* ===== MAIN CONTENT ===== */
 .main-content {
     padding: 2rem;
-    flex: 1;
+    flex: 1 0 auto;
     background: #FCF8F6;
+    min-height: calc(100vh - 70px - 80px); /* 70px header + ~80px footer */
 }
 
 /* ===== FOOTER - BRANCO/BEGE CLARO ===== */
 .footer {
+    width: 100%;
     padding: 1.5rem;
     background: linear-gradient(90deg, #FEF5ED 0%, #FFFFFF 100%);
     text-align: center;
     border-top: 2px solid #FBD4AC;
     color: #B86527;
     font-weight: 600;
+    margin-top: auto;
+    flex-shrink: 0;
+    position: relative;
+    left: 0;
+    bottom: 0;
 }
 
 /* ===== BOTÃO SAIR ===== */

@@ -62,14 +62,6 @@
                     </li>
 
                     <li class="sidebar-item">
-                        <a asp-controller="Agendamentos" asp-action="CreateAgendamento"
-                           class="sidebar-link @(ViewContext.RouteData.Values["action"]?.ToString() == "CreateAgendamento" ? "active" : "")">
-                            <i class="bi bi-calendar-plus sidebar-icon"></i>
-                            <span>Novo Agendamento</span>
-                        </a>
-                    </li>
-
-                    <li class="sidebar-item">
                         <a asp-controller="Clientes" asp-action="Index"
                            class="sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Clientes" ? "active" : "")">
                             <i class="bi bi-people sidebar-icon"></i>

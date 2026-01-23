@@ -6,27 +6,37 @@
 
 <!-- PAGE HEADER -->
 <div class="page-header-rir">
-    <div>
-        <h2><i class="bi bi-list-task"></i> Tipos de Agendamento</h2>
-        <p>Gerencie os tipos de agendamento disponíveis</p>
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+        <div>
+            <h2><i class="bi bi-list-task"></i> Tipos de Agendamento</h2>
+            <p>Gerencie os tipos de agendamento disponíveis</p>
+        </div>
+        <a asp-action="Create" class="btn-rir-primary">
+            <i class="bi bi-plus-circle"></i> Novo Tipo
+        </a>
     </div>
-    <a asp-action="Create" class="btn-rir-primary">
-        <i class="bi bi-plus-circle"></i> Novo Tipo
-    </a>
 </div>
 
 <!-- MESSAGES -->
 @if (TempData["Success"] != null)
 {
     <div class="alert-rir alert-rir-success" role="alert">
-        <i class="bi bi-check-circle"></i> @TempData["Success"]
+        <i class="bi bi-check-circle"></i>
+        <div>
+            <strong>Sucesso!</strong><br />
+            @TempData["Success"]
+        </div>
     </div>
 }
 
 @if (TempData["Error"] != null)
 {
     <div class="alert-rir alert-rir-danger" role="alert">
-        <i class="bi bi-exclamation-triangle"></i> @TempData["Error"]
+        <i class="bi bi-exclamation-triangle"></i>
+        <div>
+            <strong>Erro!</strong><br />
+            @TempData["Error"]
+        </div>
     </div>
 }
 
@@ -39,48 +49,62 @@
                 <table class="table-rir">
                     <thead>
                         <tr>
-                            <th><i class="bi bi-tag"></i> Nome</th>
-                            <th><i class="bi bi-text-left"></i> Descrição</th>
-                            <th><i class="bi bi-calendar"></i> Criado em</th>
-                            <th><i class="bi bi-toggle-on"></i> Status</th>
-                            <th class="text-end"><i class="bi bi-gear"></i> Ações</th>
+                            <th>Nome</th>
+                            <th class="d-none d-md-table-cell">Descrição</th>
+                            <th class="d-none d-lg-table-cell">Criado em</th>
+                            <th>Status</th>
+                            <th class="text-end">Ações</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var tipo in Model)
                         {
                             <tr>
-                                <td class="fw-bold">@tipo.Nome</td>
-                                <td>@(tipo.Descricao ?? "-")</td>
-                                <td>@tipo.DataCriacao.ToString("dd/MM/yyyy")</td>
+                                <td>
+                                    <strong>@tipo.Nome</strong>
+                                    <div class="d-md-none text-muted small mt-1">
+                                        @(tipo.Descricao ?? "-")
+                                    </div>
+                                    <div class="d-lg-none text-muted small mt-1">
+                                        <i class="bi bi-calendar"></i> @tipo.DataCriacao.ToString("dd/MM/yyyy")
+                                    </div>
+                                </td>
+                                <td class="d-none d-md-table-cell">
+                                    <span class="text-muted">@(tipo.Descricao ?? "-")</span>
+                                </td>
+                                <td class="d-none d-lg-table-cell">
+                                    <span class="text-muted">
+                                        <i class="bi bi-calendar"></i> @tipo.DataCriacao.ToString("dd/MM/yyyy")
+                                    </span>
+                                </td>
                                 <td>
                                     @if (tipo.Ativo)
                                     {
-                                        <span class="badge-rir badge-rir-success">
+                                        <span class="badge bg-success">
                                             <i class="bi bi-check-circle"></i> Ativo
                                         </span>
                                     }
                                     else
                                     {
-                                        <span class="badge-rir badge-rir-danger">
+                                        <span class="badge bg-danger">
                                             <i class="bi bi-x-circle"></i> Inativo
                                         </span>
                                     }
                                 </td>
                                 <td class="text-end">
-                                    <div class="btn-group-rir">
-                                        <a asp-action="Edit" asp-route-id="@tipo.Id" 
-                                           class="btn-icon-rir btn-icon-rir-warning"
+                                    <div class="btn-group" role="group">
+                                        <a asp-action="Edit" asp-route-id="@tipo.Id"
+                                           class="btn btn-sm btn-warning"
                                            title="Editar">
-                                            <i class="bi bi-pencil"></i>
+                                            <i class="bi bi-pencil-fill"></i>
                                         </a>
                                         @if (tipo.Ativo)
                                         {
-                                            <button type="button" 
-                                                    class="btn-icon-rir btn-icon-rir-danger"
-                                                    onclick="confirmDelete(@tipo.Id, '@tipo.Nome')"
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-warning"
+                                                    onclick="confirmDelete(@tipo.Id, '@tipo.Nome.Replace("'", "\\'")' )"
                                                     title="Desativar">
-                                                <i class="bi bi-trash"></i>
+                                                <i class="bi bi-toggle-off"></i>
                                             </button>
                                         }
                                     </div>
@@ -93,11 +117,11 @@
         }
         else
         {
-            <div class="empty-state-rir">
-                <i class="bi bi-inbox"></i>
-                <h3>Nenhum tipo cadastrado</h3>
-                <p>Comece criando seu primeiro tipo de agendamento</p>
-                <a asp-action="Create" class="btn-rir-primary">
+            <div class="alert-rir alert-rir-info text-center">
+                <i class="bi bi-inbox" style="font-size: 3rem; opacity: 0.5;"></i>
+                <h4 class="mt-3">Nenhum tipo cadastrado</h4>
+                <p class="text-muted">Comece criando seu primeiro tipo de agendamento</p>
+                <a asp-action="Create" class="btn-rir-primary mt-2">
                     <i class="bi bi-plus-circle"></i> Criar Primeiro Tipo
                 </a>
             </div>
@@ -106,23 +130,30 @@
 </div>
 
 <!-- DELETE MODAL -->
-<div class="modal fade" id="deleteModal" tabindex="-1">
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-exclamation-triangle"></i> Confirmar Desativação</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="bi bi-exclamation-triangle-fill"></i> Confirmar Desativação
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
             </div>
             <div class="modal-body">
                 <p>Deseja realmente desativar o tipo de agendamento <strong id="tipoNome"></strong>?</p>
-                <p class="text-muted">Este tipo não será mais exibido nas opções, mas agendamentos existentes não serão afetados.</p>
+                <div class="alert alert-warning">
+                    <i class="bi bi-info-circle-fill"></i>
+                    Este tipo não será mais exibido nas opções, mas agendamentos existentes não serão afetados.
+                </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn-rir-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle-fill"></i> Cancelar
+                </button>
                 <form id="deleteForm" method="post" style="display:inline;">
                     @Html.AntiForgeryToken()
-                    <button type="submit" class="btn-rir-danger">
-                        <i class="bi bi-trash"></i> Desativar
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-toggle-off"></i> Desativar
                     </button>
                 </form>
             </div>
@@ -135,7 +166,22 @@
         function confirmDelete(id, nome) {
             document.getElementById('tipoNome').textContent = nome;
             document.getElementById('deleteForm').action = '/TiposAgendamento/Delete/' + id;
-            new bootstrap.Modal(document.getElementById('deleteModal')).show();
+            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            modal.show();
         }
+
+        // Auto-hide success/error messages
+        document.addEventListener('DOMContentLoaded', function() {
+            const alerts = document.querySelectorAll('.alert-rir-success, .alert-rir-danger');
+            alerts.forEach(function(alert) {
+                setTimeout(function() {
+                    alert.style.transition = 'opacity 0.5s';
+                    alert.style.opacity = '0';
+                    setTimeout(function() {
+                        alert.remove();
+                    }, 500);
+                }, 5000);
+            });
+        });
     </script>
 }
