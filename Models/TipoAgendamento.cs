@@ -27,9 +27,5 @@ namespace AgendaIR.Models
 
         [Display(Name = "Data de Criação")]
         public DateTime DataCriacao { get; set; }
-
-        // Relacionamentos (para futuros PRs)
-        public List<DocumentoSolicitado> DocumentosSolicitados { get; set; } = new();
-        public List<Agendamento> Agendamentos { get; set; } = new();
     }
 }

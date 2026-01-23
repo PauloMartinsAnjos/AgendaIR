@@ -72,7 +72,7 @@ namespace AgendaIR.Controllers
                     return View(tipo);
                 }
 
-                tipo.DataCriacao = DateTime.Now;
+                tipo.DataCriacao = DateTime.UtcNow;
                 tipo.Ativo = true;
 
                 _context.Add(tipo);

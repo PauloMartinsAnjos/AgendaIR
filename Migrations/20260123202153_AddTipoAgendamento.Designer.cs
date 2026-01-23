@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AgendaIR.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260123201913_AddTipoAgendamento")]
+    [Migration("20260123202153_AddTipoAgendamento")]
     partial class AddTipoAgendamento
     {
         /// <inheritdoc />
@@ -61,16 +61,11 @@ namespace AgendaIR.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
-                    b.Property<int?>("TipoAgendamentoId")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
 
                     b.HasIndex("ClienteId");
 
                     b.HasIndex("FuncionarioId");
-
-                    b.HasIndex("TipoAgendamentoId");
 
                     b.ToTable("Agendamentos");
                 });
@@ -204,12 +199,7 @@ namespace AgendaIR.Migrations
                     b.Property<bool>("Obrigatorio")
                         .HasColumnType("boolean");
 
-                    b.Property<int?>("TipoAgendamentoId")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("TipoAgendamentoId");
 
                     b.ToTable("DocumentosSolicitados");
 
@@ -218,7 +208,7 @@ namespace AgendaIR.Migrations
                         {
                             Id = 1,
                             Ativo = true,
-                            DataCriacao = new DateTime(2026, 1, 23, 20, 19, 13, 77, DateTimeKind.Utc).AddTicks(7304),
+                            DataCriacao = new DateTime(2026, 1, 23, 20, 21, 52, 861, DateTimeKind.Utc).AddTicks(488),
                             Descricao = "Envie o RG frente e verso em um único arquivo PDF ou imagem",
                             Nome = "RG (Frente e Verso)",
                             Obrigatorio = true
@@ -227,7 +217,7 @@ namespace AgendaIR.Migrations
                         {
                             Id = 2,
                             Ativo = true,
-                            DataCriacao = new DateTime(2026, 1, 23, 20, 19, 13, 77, DateTimeKind.Utc).AddTicks(7307),
+                            DataCriacao = new DateTime(2026, 1, 23, 20, 21, 52, 861, DateTimeKind.Utc).AddTicks(491),
                             Descricao = "Envie uma cópia do CPF",
                             Nome = "CPF",
                             Obrigatorio = true
@@ -236,7 +226,7 @@ namespace AgendaIR.Migrations
                         {
                             Id = 3,
                             Ativo = true,
-                            DataCriacao = new DateTime(2026, 1, 23, 20, 19, 13, 77, DateTimeKind.Utc).AddTicks(7309),
+                            DataCriacao = new DateTime(2026, 1, 23, 20, 21, 52, 861, DateTimeKind.Utc).AddTicks(493),
                             Descricao = "Conta de luz, água ou telefone dos últimos 3 meses",
                             Nome = "Comprovante de Residência",
                             Obrigatorio = true
@@ -245,7 +235,7 @@ namespace AgendaIR.Migrations
                         {
                             Id = 4,
                             Ativo = true,
-                            DataCriacao = new DateTime(2026, 1, 23, 20, 19, 13, 77, DateTimeKind.Utc).AddTicks(7335),
+                            DataCriacao = new DateTime(2026, 1, 23, 20, 21, 52, 861, DateTimeKind.Utc).AddTicks(506),
                             Descricao = "Informe de rendimentos do ano anterior",
                             Nome = "Informe de Rendimentos",
                             Obrigatorio = false
@@ -313,11 +303,11 @@ namespace AgendaIR.Migrations
                             Id = 1,
                             Ativo = true,
                             CPF = "000.000.000-00",
-                            DataCriacao = new DateTime(2026, 1, 23, 20, 19, 13, 77, DateTimeKind.Utc).AddTicks(6870),
+                            DataCriacao = new DateTime(2026, 1, 23, 20, 21, 52, 861, DateTimeKind.Utc).AddTicks(69),
                             Email = "admin@agendair.com",
                             IsAdmin = true,
                             Nome = "Administrador do Sistema",
-                            SenhaHash = "$2a$11$rUNMbI1JCJqmSQft1XPrFOo8dYZjSMc487/SIigN0p8ihD6coGesO",
+                            SenhaHash = "$2a$11$.7N/rN4z8a0pNrocFXzu7.mnmB7IbBNeoPRG/bbfwkQ7QeXMV3G8.",
                             Username = "admin"
                         });
                 });
@@ -354,7 +344,7 @@ namespace AgendaIR.Migrations
                         {
                             Id = 1,
                             Ativo = true,
-                            DataCriacao = new DateTime(2026, 1, 23, 20, 19, 13, 77, DateTimeKind.Utc).AddTicks(7393),
+                            DataCriacao = new DateTime(2026, 1, 23, 20, 21, 52, 861, DateTimeKind.Utc).AddTicks(574),
                             Descricao = "Declaração de Imposto de Renda",
                             Nome = "Declaração IR"
                         },
@@ -362,7 +352,7 @@ namespace AgendaIR.Migrations
                         {
                             Id = 2,
                             Ativo = true,
-                            DataCriacao = new DateTime(2026, 1, 23, 20, 19, 13, 77, DateTimeKind.Utc).AddTicks(7396),
+                            DataCriacao = new DateTime(2026, 1, 23, 20, 21, 52, 861, DateTimeKind.Utc).AddTicks(576),
                             Descricao = "Retificação de declaração de IR",
                             Nome = "Declaração IR Retificadora"
                         },
@@ -370,7 +360,7 @@ namespace AgendaIR.Migrations
                         {
                             Id = 3,
                             Ativo = true,
-                            DataCriacao = new DateTime(2026, 1, 23, 20, 19, 13, 77, DateTimeKind.Utc).AddTicks(7397),
+                            DataCriacao = new DateTime(2026, 1, 23, 20, 21, 52, 861, DateTimeKind.Utc).AddTicks(578),
                             Descricao = "Consultoria sobre questões tributárias",
                             Nome = "Consultoria Tributária"
                         },
@@ -378,7 +368,7 @@ namespace AgendaIR.Migrations
                         {
                             Id = 4,
                             Ativo = true,
-                            DataCriacao = new DateTime(2026, 1, 23, 20, 19, 13, 77, DateTimeKind.Utc).AddTicks(7399),
+                            DataCriacao = new DateTime(2026, 1, 23, 20, 21, 52, 861, DateTimeKind.Utc).AddTicks(579),
                             Descricao = "Abertura de Microempreendedor Individual",
                             Nome = "Abertura de MEI"
                         },
@@ -386,7 +376,7 @@ namespace AgendaIR.Migrations
                         {
                             Id = 5,
                             Ativo = true,
-                            DataCriacao = new DateTime(2026, 1, 23, 20, 19, 13, 77, DateTimeKind.Utc).AddTicks(7400),
+                            DataCriacao = new DateTime(2026, 1, 23, 20, 21, 52, 861, DateTimeKind.Utc).AddTicks(580),
                             Descricao = "Serviços contábeis mensais",
                             Nome = "Contabilidade Mensal"
                         },
@@ -394,7 +384,7 @@ namespace AgendaIR.Migrations
                         {
                             Id = 6,
                             Ativo = true,
-                            DataCriacao = new DateTime(2026, 1, 23, 20, 19, 13, 77, DateTimeKind.Utc).AddTicks(7402),
+                            DataCriacao = new DateTime(2026, 1, 23, 20, 21, 52, 861, DateTimeKind.Utc).AddTicks(581),
                             Descricao = "Regularização de pendências fiscais",
                             Nome = "Regularização Fiscal"
                         },
@@ -402,7 +392,7 @@ namespace AgendaIR.Migrations
                         {
                             Id = 7,
                             Ativo = true,
-                            DataCriacao = new DateTime(2026, 1, 23, 20, 19, 13, 77, DateTimeKind.Utc).AddTicks(7403),
+                            DataCriacao = new DateTime(2026, 1, 23, 20, 21, 52, 861, DateTimeKind.Utc).AddTicks(583),
                             Descricao = "Planejamento estratégico tributário",
                             Nome = "Planejamento Tributário"
                         },
@@ -410,7 +400,7 @@ namespace AgendaIR.Migrations
                         {
                             Id = 8,
                             Ativo = true,
-                            DataCriacao = new DateTime(2026, 1, 23, 20, 19, 13, 77, DateTimeKind.Utc).AddTicks(7404),
+                            DataCriacao = new DateTime(2026, 1, 23, 20, 21, 52, 861, DateTimeKind.Utc).AddTicks(584),
                             Descricao = "Outros serviços",
                             Nome = "Outros"
                         });
@@ -429,10 +419,6 @@ namespace AgendaIR.Migrations
                         .HasForeignKey("FuncionarioId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.HasOne("AgendaIR.Models.TipoAgendamento", null)
-                        .WithMany("Agendamentos")
-                        .HasForeignKey("TipoAgendamentoId");
 
                     b.Navigation("Cliente");
 
@@ -469,13 +455,6 @@ namespace AgendaIR.Migrations
                     b.Navigation("DocumentoSolicitado");
                 });
 
-            modelBuilder.Entity("AgendaIR.Models.DocumentoSolicitado", b =>
-                {
-                    b.HasOne("AgendaIR.Models.TipoAgendamento", null)
-                        .WithMany("DocumentosSolicitados")
-                        .HasForeignKey("TipoAgendamentoId");
-                });
-
             modelBuilder.Entity("AgendaIR.Models.Agendamento", b =>
                 {
                     b.Navigation("DocumentosAnexados");
@@ -496,13 +475,6 @@ namespace AgendaIR.Migrations
                     b.Navigation("Agendamentos");
 
                     b.Navigation("Clientes");
-                });
-
-            modelBuilder.Entity("AgendaIR.Models.TipoAgendamento", b =>
-                {
-                    b.Navigation("Agendamentos");
-
-                    b.Navigation("DocumentosSolicitados");
                 });
 #pragma warning restore 612, 618
         }
