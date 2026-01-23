@@ -55,9 +55,17 @@
 
                     <li class="sidebar-item">
                         <a asp-controller="Agendamentos" asp-action="Index"
-                           class="sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Agendamentos" ? "active" : "")">
+                           class="sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Agendamentos" && ViewContext.RouteData.Values["action"]?.ToString() != "CreateAgendamento" ? "active" : "")">
                             <i class="bi bi-calendar-check sidebar-icon"></i>
                             <span>Agendamentos</span>
+                        </a>
+                    </li>
+
+                    <li class="sidebar-item">
+                        <a asp-controller="Agendamentos" asp-action="CreateAgendamento"
+                           class="sidebar-link @(ViewContext.RouteData.Values["action"]?.ToString() == "CreateAgendamento" ? "active" : "")">
+                            <i class="bi bi-calendar-plus sidebar-icon"></i>
+                            <span>Novo Agendamento</span>
                         </a>
                     </li>
 
@@ -84,6 +92,14 @@
                                class="sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Documentos" ? "active" : "")">
                                 <i class="bi bi-file-earmark-text sidebar-icon"></i>
                                 <span>Documentos</span>
+                            </a>
+                        </li>
+
+                        <li class="sidebar-item">
+                            <a asp-controller="TiposAgendamento" asp-action="Index"
+                               class="sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "TiposAgendamento" ? "active" : "")">
+                                <i class="bi bi-list-task sidebar-icon"></i>
+                                <span>Tipos de Agendamento</span>
                             </a>
                         </li>
                     }

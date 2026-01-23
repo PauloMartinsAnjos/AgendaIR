@@ -37,6 +37,12 @@ namespace AgendaIR.Models.ViewModels
         public bool Obrigatorio { get; set; }
 
         /// <summary>
+        /// Tipo de agendamento relacionado (opcional)
+        /// </summary>
+        [Display(Name = "Tipo de Agendamento")]
+        public int? TipoAgendamentoId { get; set; }
+
+        /// <summary>
         /// Indica se o documento está ativo
         /// </summary>
         [Display(Name = "Ativo")]

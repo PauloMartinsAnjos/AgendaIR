@@ -27,5 +27,15 @@ namespace AgendaIR.Models
 
         [Display(Name = "Data de Criação")]
         public DateTime DataCriacao { get; set; }
+
+        /// <summary>
+        /// Relacionamento: Um tipo pode ter vários documentos solicitados
+        /// </summary>
+        public virtual ICollection<DocumentoSolicitado> DocumentosSolicitados { get; set; } = new List<DocumentoSolicitado>();
+
+        /// <summary>
+        /// Relacionamento: Um tipo pode ter vários agendamentos
+        /// </summary>
+        public virtual ICollection<Agendamento> Agendamentos { get; set; } = new List<Agendamento>();
     }
 }

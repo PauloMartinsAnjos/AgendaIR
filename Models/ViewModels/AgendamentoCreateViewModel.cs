@@ -3,11 +3,12 @@ using System.ComponentModel.DataAnnotations;
 namespace AgendaIR.Models.ViewModels
 {
     /// <summary>
-    /// ViewModel usado quando um CLIENTE está criando um novo agendamento
-    /// Contém todos os campos necessários para criar o agendamento + upload de documentos
+    /// ViewModel usado para criar novos agendamentos
+    /// Funciona tanto para CLIENTES quanto para FUNCIONÁRIOS
     /// </summary>
     public class AgendamentoCreateViewModel
     {
+        // === Campos para CLIENTE ===
         [Required(ErrorMessage = "A data e hora são obrigatórias")]
         [Display(Name = "Data e Hora do Agendamento")]
         public DateTime DataHora { get; set; }
@@ -20,8 +21,15 @@ namespace AgendaIR.Models.ViewModels
         public int FuncionarioId { get; set; }
         public string FuncionarioNome { get; set; } = string.Empty;
         
-        // Lista de documentos que podem ser enviados
+        // Lista de documentos que podem ser enviados (para cliente)
         // Preenchido pelo controller com todos os DocumentosSolicitados ativos
         public List<DocumentoUploadViewModel> Documentos { get; set; } = new List<DocumentoUploadViewModel>();
+
+        // === Campos adicionais para FUNCIONÁRIO ===
+        [Display(Name = "Cliente")]
+        public int ClienteId { get; set; }
+
+        [Display(Name = "Tipo de Agendamento")]
+        public int TipoAgendamentoId { get; set; }
     }
 }
