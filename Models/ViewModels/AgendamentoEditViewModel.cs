@@ -29,6 +29,9 @@ namespace AgendaIR.Models.ViewModels
         // Informações do funcionário (readonly)
         public string FuncionarioNome { get; set; } = string.Empty;
         
+        // Documentos anexados (readonly)
+        public List<DocumentoAnexado> DocumentosAnexados { get; set; } = new List<DocumentoAnexado>();
+        
         // Lista de status possíveis para dropdown
         public List<string> StatusList { get; set; } = new List<string> 
         { 

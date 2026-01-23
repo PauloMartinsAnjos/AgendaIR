@@ -1,0 +1,144 @@
+@model AgendaIR.Models.Agendamento
+
+@{
+    ViewData["Title"] = "Excluir Agendamento";
+}
+
+<div class="page-header-rir">
+    <div>
+        <h2><i class="bi bi-trash"></i> Excluir Agendamento</h2>
+        <p>Tem certeza que deseja excluir este agendamento?</p>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+        <div class="card-rir">
+            <div class="card-rir-body">
+                <div class="alert-rir alert-rir-danger mb-4">
+                    <i class="bi bi-exclamation-triangle-fill" style="font-size: 1.5rem;"></i>
+                    <div>
+                        <strong>Atenção!</strong><br />
+                        Esta ação não pode ser desfeita. O agendamento será permanentemente removido do sistema.
+                    </div>
+                </div>
+
+                <h5 class="mb-3">Detalhes do Agendamento</h5>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-person"></i> Cliente
+                        </label>
+                        <p>@Model.Cliente?.Nome</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-envelope"></i> E-mail
+                        </label>
+                        <p>@Model.Cliente?.Email</p>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-tag"></i> Tipo
+                        </label>
+                        <p>
+                            <span class="badge-rir badge-rir-info">
+                                @(Model.TipoAgendamento?.Nome ?? "Não especificado")
+                            </span>
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-calendar"></i> Data/Hora
+                        </label>
+                        <p>
+                            @Model.DataHora.ToString("dd/MM/yyyy") às @Model.DataHora.ToString("HH:mm")
+                        </p>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-check-circle"></i> Status
+                        </label>
+                        <p>
+                            @switch (Model.Status.ToLower())
+                            {
+                                case "pendente":
+                                    <span class="badge-rir badge-rir-warning">Pendente</span>
+                                    break;
+                                case "confirmado":
+                                    <span class="badge-rir badge-rir-success">Confirmado</span>
+                                    break;
+                                case "concluído":
+                                case "concluido":
+                                    <span class="badge-rir badge-rir-primary">Concluído</span>
+                                    break;
+                                case "cancelado":
+                                    <span class="badge-rir badge-rir-danger">Cancelado</span>
+                                    break;
+                                default:
+                                    <span class="badge-rir badge-rir-secondary">@Model.Status</span>
+                                    break;
+                            }
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-person-badge"></i> Responsável
+                        </label>
+                        <p>@Model.Funcionario?.Nome</p>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.Observacoes))
+                {
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <label class="form-label fw-bold">
+                                <i class="bi bi-chat-text"></i> Observações
+                            </label>
+                            <p>@Model.Observacoes</p>
+                        </div>
+                    </div>
+                }
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-clock-history"></i> Criado em
+                        </label>
+                        <p>@Model.DataCriacao.ToString("dd/MM/yyyy HH:mm")</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-file-earmark"></i> Documentos Anexados
+                        </label>
+                        <p>@(Model.DocumentosAnexados?.Count ?? 0) documento(s)</p>
+                    </div>
+                </div>
+
+                <hr class="my-4" />
+
+                <form asp-action="Delete" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="Id" />
+                    
+                    <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
+                        <a asp-action="Index" class="btn-rir-secondary">
+                            <i class="bi bi-arrow-left"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn-rir-danger">
+                            <i class="bi bi-trash"></i> Confirmar Exclusão
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

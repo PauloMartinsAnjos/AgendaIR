@@ -7,12 +7,14 @@
 
 <!-- PAGE HEADER -->
 <div class="page-header-rir">
-    <div>
-        <h2>
-            <i class="bi bi-calendar-check"></i> 
-            @(isAdmin ? "Todos os Agendamentos" : "Meus Agendamentos")
-        </h2>
-        <p>@(isAdmin ? "Visualize e gerencie todos os agendamentos do sistema" : "Visualize e gerencie seus agendamentos")</p>
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+        <div>
+            <h2><i class="bi bi-calendar-check"></i> Agendamentos</h2>
+            <p>Gerencie os agendamentos do sistema</p>
+        </div>
+        <a asp-action="CreateAgendamento" class="btn-rir-primary">
+            <i class="bi bi-plus-circle"></i> Novo Agendamento
+        </a>
     </div>
 </div>
 
@@ -103,221 +105,177 @@
         </div>
     </div>
 
-    <!-- Lista de Agendamentos -->
-    @if (Model.Agendamentos.Any())
-    {
-        <!-- ✅ TABELA DESKTOP -->
-        <div class="table-responsive-rir desktop-only">
-            <table class="table-rir">
-                <thead>
-                    <tr>
-                        <th>Data/Hora</th>
-                        <th>Status</th>
-                        <th>Cliente</th>
-                        <th>E-mail</th>
-                        @if (isAdmin)
-                        {
-                            <th>Funcionário</th>
-                        }
-                        <th>Documentos</th>
-                        <th>Criado em</th>
-                        <th class="text-center">Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var agendamento in Model.Agendamentos)
-                    {
-                        <tr>
-                            <td>
-                                <strong>@agendamento.DataHora.ToString("dd/MM/yyyy")</strong><br>
-                                <small class="text-muted">@agendamento.DataHora.ToString("HH:mm")</small>
-                            </td>
-                            <td>
-                                @if (agendamento.Status == "Pendente")
-                                {
-                                    <span class="badge-rir badge-rir-info">
-                                        <i class="bi bi-clock"></i> Pendente
-                                    </span>
-                                }
-                                else if (agendamento.Status == "Confirmado")
-                                {
-                                    <span class="badge-rir badge-rir-success">
-                                        <i class="bi bi-check-circle"></i> Confirmado
-                                    </span>
-                                }
-                                else if (agendamento.Status == "Concluido")
-                                {
-                                    <span class="badge-rir badge-rir-success">
-                                        <i class="bi bi-check-all"></i> Concluído
-                                    </span>
-                                }
-                                else if (agendamento.Status == "Cancelado")
-                                {
-                                    <span class="badge-rir badge-rir-danger">
-                                        <i class="bi bi-x-circle"></i> Cancelado
-                                    </span>
-                                }
-                            </td>
-                            <td><strong>@agendamento.ClienteNome</strong></td>
-                            <td><small>@agendamento.ClienteEmail</small></td>
-                            @if (isAdmin)
-                            {
-                                <td>
-                                    <span class="badge-rir badge-rir-info">
-                                        <i class="bi bi-person"></i>
-                                        @agendamento.FuncionarioNome
-                                    </span>
-                                </td>
-                            }
-                            <td>
-                                <span class="badge-rir badge-rir-info">
-                                    <i class="bi bi-file-earmark"></i> @agendamento.TotalDocumentos
-                                </span>
-                            </td>
-                            <td>
-                                <small>@agendamento.DataCriacao.ToString("dd/MM/yyyy")</small>
-                            </td>
-                            <td>
-                                <div class="table-actions">
-                                    <a asp-action="Details" asp-route-id="@agendamento.Id" 
-                                       class="btn btn-sm btn-rir-secondary" title="Ver Detalhes">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    @if (agendamento.Status != "Cancelado" && agendamento.Status != "Concluido")
-                                    {
-                                        <a asp-action="Edit" asp-route-id="@agendamento.Id" 
-                                           class="btn btn-sm btn-rir-primary" title="Editar">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
-                                        <form asp-action="Cancelar" asp-route-id="@agendamento.Id" method="post" 
-                                              class="d-inline"
-                                              onsubmit="return confirm('Tem certeza que deseja cancelar este agendamento?');">
-                                            @Html.AntiForgeryToken()
-                                            <button type="submit" class="btn btn-sm btn-rir-danger" title="Cancelar">
-                                                <i class="bi bi-x-circle"></i>
-                                            </button>
-                                        </form>
-                                    }
-                                </div>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-
-        <!-- ✅ CARDS MOBILE -->
-        <div class="mobile-only">
-            @foreach (var agendamento in Model.Agendamentos)
+    <!-- TABELA DE AGENDAMENTOS -->
+    <div class="card-rir">
+        <div class="card-rir-body">
+            @if (!Model.Agendamentos.Any())
             {
-                <div class="client-card-mobile">
-                    <div class="client-card-header">
-                        <div class="client-card-name">
-                            <i class="bi bi-calendar-event"></i>
-                            <strong>@agendamento.ClienteNome</strong>
-                        </div>
-                        <div>
-                            @if (agendamento.Status == "Pendente")
-                            {
-                                <span class="badge-rir badge-rir-info">
-                                    <i class="bi bi-clock"></i> Pendente
-                                </span>
-                            }
-                            else if (agendamento.Status == "Confirmado")
-                            {
-                                <span class="badge-rir badge-rir-success">
-                                    <i class="bi bi-check-circle"></i> Confirmado
-                                </span>
-                            }
-                            else if (agendamento.Status == "Concluido")
-                            {
-                                <span class="badge-rir badge-rir-success">
-                                    <i class="bi bi-check-all"></i> Concluído
-                                </span>
-                            }
-                            else if (agendamento.Status == "Cancelado")
-                            {
-                                <span class="badge-rir badge-rir-danger">
-                                    <i class="bi bi-x-circle"></i> Cancelado
-                                </span>
-                            }
-                        </div>
-                    </div>
-
-                    <div class="client-card-body">
-                        <div class="client-info-row">
-                            <i class="bi bi-calendar"></i>
-                            <span><strong>@agendamento.DataHora.ToString("dd/MM/yyyy")</strong> às <strong>@agendamento.DataHora.ToString("HH:mm")</strong></span>
-                        </div>
-                        <div class="client-info-row">
-                            <i class="bi bi-envelope"></i>
-                            <span>@agendamento.ClienteEmail</span>
-                        </div>
-                        @if (isAdmin)
-                        {
-                            <div class="client-info-row">
-                                <i class="bi bi-person-badge"></i>
-                                <span class="badge-rir badge-rir-info">
-                                    @agendamento.FuncionarioNome
-                                </span>
-                            </div>
-                        }
-                        <div class="client-info-row">
-                            <i class="bi bi-file-earmark"></i>
-                            <span class="badge-rir badge-rir-info">
-                                @agendamento.TotalDocumentos documento(s)
-                            </span>
-                        </div>
-                        <div class="client-info-row">
-                            <i class="bi bi-clock-history"></i>
-                            <span>Criado em @agendamento.DataCriacao.ToString("dd/MM/yyyy")</span>
-                        </div>
-                    </div>
-
-                    <div class="client-card-actions">
-                        <a asp-action="Details" asp-route-id="@agendamento.Id" 
-                           class="btn btn-sm btn-rir-secondary">
-                            <i class="bi bi-eye"></i> Ver
-                        </a>
-                        @if (agendamento.Status != "Cancelado" && agendamento.Status != "Concluido")
-                        {
-                            <a asp-action="Edit" asp-route-id="@agendamento.Id" 
-                               class="btn btn-sm btn-rir-primary">
-                                <i class="bi bi-pencil"></i> Editar
-                            </a>
-                            <form asp-action="Cancelar" asp-route-id="@agendamento.Id" method="post" 
-                                  class="d-inline"
-                                  onsubmit="return confirm('Tem certeza que deseja cancelar este agendamento?');">
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="btn btn-sm btn-rir-danger">
-                                    <i class="bi bi-x-circle"></i> Cancelar
-                                </button>
-                            </form>
-                        }
+                <div class="alert-rir alert-rir-info">
+                    <i class="bi bi-info-circle"></i>
+                    <div>
+                        <strong>Nenhum agendamento encontrado</strong><br />
+                        Clique em "Novo Agendamento" para criar o primeiro.
                     </div>
                 </div>
             }
-        </div>
-
-        <div class="mt-3">
-            <p class="text-muted">
-                <i class="bi bi-info-circle"></i> 
-                Mostrando <strong>@Model.Agendamentos.Count</strong> agendamento(s)
-            </p>
-        </div>
-    }
-    else
-    {
-        <div class="card-rir">
-            <div class="card-rir-body">
-                <div class="table-empty">
-                    <i class="bi bi-inbox"></i>
-                    <h4>Nenhum agendamento encontrado</h4>
-                    <p>Nenhum agendamento encontrado com os filtros selecionados.</p>
+            else
+            {
+                <!-- ✅ TABELA DESKTOP -->
+                <div class="table-responsive desktop-only">
+                    <table class="table-rir">
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Tipo</th>
+                                <th>Data/Hora</th>
+                                <th>Status</th>
+                                <th>Responsável</th>
+                                <th class="text-end">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Agendamentos)
+                            {
+                                <tr>
+                                    <td>
+                                        <strong>@item.ClienteNome</strong><br />
+                                        <small class="text-muted">CPF: @(item.ClienteCPF ?? "N/A")</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge-rir badge-rir-info">
+                                            @(item.TipoAgendamentoNome ?? "Não especificado")
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <i class="bi bi-calendar"></i> @item.DataHora.ToString("dd/MM/yyyy")<br />
+                                        <small class="text-muted"><i class="bi bi-clock"></i> @item.DataHora.ToString("HH:mm")</small>
+                                    </td>
+                                    <td>
+                                        @switch (item.Status.ToLower())
+                                        {
+                                            case "pendente":
+                                                <span class="badge-rir badge-rir-warning">Pendente</span>
+                                                break;
+                                            case "confirmado":
+                                                <span class="badge-rir badge-rir-success">Confirmado</span>
+                                                break;
+                                            case "concluído":
+                                            case "concluido":
+                                                <span class="badge-rir badge-rir-primary">Concluído</span>
+                                                break;
+                                            case "cancelado":
+                                                <span class="badge-rir badge-rir-danger">Cancelado</span>
+                                                break;
+                                            default:
+                                                <span class="badge-rir badge-rir-secondary">@item.Status</span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td>
+                                        <small>@item.FuncionarioNome</small>
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="btn-group" role="group">
+                                            <a asp-action="Details" asp-route-id="@item.Id" 
+                                               class="btn btn-sm btn-rir-secondary" 
+                                               title="Ver detalhes">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a asp-action="Edit" asp-route-id="@item.Id" 
+                                               class="btn btn-sm btn-rir-primary" 
+                                               title="Editar">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a asp-action="Delete" asp-route-id="@item.Id" 
+                                               class="btn btn-sm btn-rir-danger" 
+                                               title="Excluir">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
                 </div>
-            </div>
+
+                <!-- ✅ CARDS MOBILE -->
+                <div class="mobile-only">
+                    @foreach (var item in Model.Agendamentos)
+                    {
+                        <div class="client-card-mobile">
+                            <div class="client-card-header">
+                                <div class="client-card-name">
+                                    <i class="bi bi-calendar-event"></i>
+                                    <strong>@item.ClienteNome</strong>
+                                </div>
+                                <div>
+                                    @switch (item.Status.ToLower())
+                                    {
+                                        case "pendente":
+                                            <span class="badge-rir badge-rir-warning">Pendente</span>
+                                            break;
+                                        case "confirmado":
+                                            <span class="badge-rir badge-rir-success">Confirmado</span>
+                                            break;
+                                        case "concluído":
+                                        case "concluido":
+                                            <span class="badge-rir badge-rir-primary">Concluído</span>
+                                            break;
+                                        case "cancelado":
+                                            <span class="badge-rir badge-rir-danger">Cancelado</span>
+                                            break;
+                                        default:
+                                            <span class="badge-rir badge-rir-secondary">@item.Status</span>
+                                            break;
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="client-card-body">
+                                <div class="client-info-row">
+                                    <i class="bi bi-calendar"></i>
+                                    <span><strong>@item.DataHora.ToString("dd/MM/yyyy")</strong> às <strong>@item.DataHora.ToString("HH:mm")</strong></span>
+                                </div>
+                                <div class="client-info-row">
+                                    <i class="bi bi-person-badge"></i>
+                                    <span>@item.FuncionarioNome</span>
+                                </div>
+                                <div class="client-info-row">
+                                    <i class="bi bi-tag"></i>
+                                    <span class="badge-rir badge-rir-info">
+                                        @(item.TipoAgendamentoNome ?? "Não especificado")
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="client-card-actions">
+                                <a asp-action="Details" asp-route-id="@item.Id" 
+                                   class="btn btn-sm btn-rir-secondary">
+                                    <i class="bi bi-eye"></i> Ver
+                                </a>
+                                <a asp-action="Edit" asp-route-id="@item.Id" 
+                                   class="btn btn-sm btn-rir-primary">
+                                    <i class="bi bi-pencil"></i> Editar
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@item.Id" 
+                                   class="btn btn-sm btn-rir-danger">
+                                    <i class="bi bi-trash"></i> Excluir
+                                </a>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="mt-3">
+                    <p class="text-muted">
+                        <i class="bi bi-info-circle"></i> 
+                        Mostrando <strong>@Model.Agendamentos.Count</strong> agendamento(s)
+                    </p>
+                </div>
+            }
         </div>
-    }
+    </div>
 </div>
 
 @section Scripts {
