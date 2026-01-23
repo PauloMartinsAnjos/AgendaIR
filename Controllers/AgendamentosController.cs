@@ -714,13 +714,16 @@ namespace AgendaIR.Controllers
             if (ModelState.IsValid)
             {
                 // Validar documentos obrigatórios
+                // Note: For funcionario workflow, we check if any documents are uploaded
+                // More granular validation (specific document types) would require UI changes
                 var docsObrigatorios = await _context.DocumentosSolicitados
                     .Where(d => d.TipoAgendamentoId == model.TipoAgendamentoId && d.Obrigatorio && d.Ativo)
                     .ToListAsync();
 
                 if (docsObrigatorios.Any() && (documentos == null || !documentos.Any()))
                 {
-                    ModelState.AddModelError("", "Este tipo de agendamento requer documentos obrigatórios");
+                    var nomesDocs = string.Join(", ", docsObrigatorios.Select(d => d.Nome));
+                    ModelState.AddModelError("", $"Este tipo de agendamento requer os seguintes documentos obrigatórios: {nomesDocs}");
                     await CarregarViewBags(isAdmin, funcionarioId.Value);
                     return View(model);
                 }
@@ -774,10 +777,12 @@ namespace AgendaIR.Controllers
                             if (uploadResult.Success && uploadResult.ConteudoComprimido != null)
                             {
                                 // Salvar no banco de dados (comprimido)
+                                // Note: Using generic DocumentoSolicitadoId=1 for now
+                                // TODO: Future enhancement - allow mapping uploads to specific document types
                                 var documentoAnexado = new DocumentoAnexado
                                 {
                                     AgendamentoId = agendamento.Id,
-                                    DocumentoSolicitadoId = 1, // Generic - will need proper mapping later
+                                    DocumentoSolicitadoId = 1, // Generic - maps to first document type
                                     NomeArquivo = arquivo.FileName,
                                     ConteudoComprimido = uploadResult.ConteudoComprimido,
                                     TamanhoOriginalBytes = uploadResult.TamanhoOriginal,
