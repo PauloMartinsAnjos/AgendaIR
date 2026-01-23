@@ -68,6 +68,76 @@
                         </p>
                     </div>
                 </div>
+
+                <!-- ✅ TELEFONES ADICIONAIS -->
+                @if (!string.IsNullOrEmpty(Model.TelefoneResidencial) || !string.IsNullOrEmpty(Model.TelefoneComercial))
+                {
+                    <div class="row">
+                        @if (!string.IsNullOrEmpty(Model.TelefoneResidencial))
+                        {
+                            <div class="col-12 col-md-6 mb-3">
+                                <label class="text-muted small">Telefone Residencial</label>
+                                <p class="h5 mb-0">
+                                    <i class="bi bi-telephone"></i> @Model.TelefoneResidencial
+                                </p>
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.TelefoneComercial))
+                        {
+                            <div class="col-12 col-md-6 mb-3">
+                                <label class="text-muted small">Telefone Comercial</label>
+                                <p class="h5 mb-0">
+                                    <i class="bi bi-telephone-outbound"></i> @Model.TelefoneComercial
+                                </p>
+                            </div>
+                        }
+                    </div>
+                }
+
+                <!-- ✅ COR DA PASTA -->
+                @if (!string.IsNullOrEmpty(Model.CorDaPasta))
+                {
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label class="text-muted small">Cor da Pasta</label>
+                            <p class="h5 mb-0">
+                                @{
+                                    var corHex = Model.CorDaPasta?.ToLower() switch
+                                    {
+                                        "verde" => "#28a745",
+                                        "azul" => "#007bff",
+                                        "amarelo" => "#ffc107",
+                                        "vermelho" => "#dc3545",
+                                        "rosa" => "#e83e8c",
+                                        "roxo" => "#6f42c1",
+                                        "laranja" => "#fd7e14",
+                                        "preto" => "#343a40",
+                                        "branco" => "#f8f9fa",
+                                        "marrom" => "#795548",
+                                        "cinza" => "#6c757d",
+                                        _ => "#6c757d"
+                                    };
+                                }
+                                <span class="badge" style="background-color: @corHex; color: white; padding: 0.5rem 1rem;">
+                                    <i class="bi bi-folder"></i> @Model.CorDaPasta
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                }
+
+                <!-- ✅ OBSERVAÇÕES -->
+                @if (!string.IsNullOrEmpty(Model.Observacoes))
+                {
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label class="text-muted small">Observações</label>
+                            <div class="alert alert-info mb-0">
+                                <i class="bi bi-card-text"></i> @Model.Observacoes
+                            </div>
+                        </div>
+                    </div>
+                }
             </div>
         </div>
 
