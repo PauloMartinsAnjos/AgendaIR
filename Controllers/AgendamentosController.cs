@@ -564,6 +564,7 @@ namespace AgendaIR.Controllers
             var query = _context.Agendamentos
                 .Include(a => a.Cliente)
                 .Include(a => a.Funcionario)
+                .Include(a => a.TipoAgendamento)
                 .Include(a => a.DocumentosAnexados)
                 .AsQueryable();
 
@@ -604,8 +605,10 @@ namespace AgendaIR.Controllers
                     DataHora = a.DataHora,
                     Status = a.Status,
                     ClienteNome = a.Cliente!.Nome,
+                    ClienteCPF = a.Cliente.CPF,
                     ClienteEmail = a.Cliente.Email,
                     FuncionarioNome = a.Funcionario!.Nome,
+                    TipoAgendamentoNome = a.TipoAgendamento != null ? a.TipoAgendamento.Nome : null,
                     TotalDocumentos = a.DocumentosAnexados.Count,
                     DataCriacao = a.DataCriacao
                 })
@@ -684,7 +687,7 @@ namespace AgendaIR.Controllers
         /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateAgendamento(AgendamentoCreateViewModel model, List<IFormFile> documentos)
+        public async Task<IActionResult> CreateAgendamento(AgendamentoCreateViewModel model, IFormCollection form)
         {
             var userType = GetUserType();
             if (userType != "Funcionario")
@@ -713,17 +716,23 @@ namespace AgendaIR.Controllers
 
             if (ModelState.IsValid)
             {
-                // Validar documentos obrigatórios
-                // Note: For funcionario workflow, we check if any documents are uploaded
-                // More granular validation (specific document types) would require UI changes
+                // ✅ VALIDAR DOCUMENTOS OBRIGATÓRIOS
                 var docsObrigatorios = await _context.DocumentosSolicitados
                     .Where(d => d.TipoAgendamentoId == model.TipoAgendamentoId && d.Obrigatorio && d.Ativo)
                     .ToListAsync();
 
-                if (docsObrigatorios.Any() && (documentos == null || !documentos.Any()))
+                // Verificar se todos os obrigatórios foram enviados
+                foreach (var docObrigatorio in docsObrigatorios)
                 {
-                    var nomesDocs = string.Join(", ", docsObrigatorios.Select(d => d.Nome));
-                    ModelState.AddModelError("", $"Este tipo de agendamento requer os seguintes documentos obrigatórios: {nomesDocs}");
+                    var arquivoKey = $"documento_{docObrigatorio.Id}";
+                    if (!form.Files.Any(f => f.Name == arquivoKey) || form.Files[arquivoKey].Length == 0)
+                    {
+                        ModelState.AddModelError("", $"O documento '{docObrigatorio.Nome}' é obrigatório e não foi anexado.");
+                    }
+                }
+
+                if (!ModelState.IsValid)
+                {
                     await CarregarViewBags(isAdmin, funcionarioId.Value);
                     return View(model);
                 }
@@ -763,50 +772,13 @@ namespace AgendaIR.Controllers
                 _context.Add(agendamento);
                 await _context.SaveChangesAsync();
 
-                // Upload de documentos (simplified for funcionario workflow)
-                if (documentos != null && documentos.Any())
-                {
-                    int documentosSalvos = 0;
-                    foreach (var arquivo in documentos)
-                    {
-                        if (arquivo.Length > 0)
-                        {
-                            // Processar e comprimir arquivo
-                            var uploadResult = await _fileUploadService.ProcessarArquivoAsync(arquivo);
+                // ✅ PROCESSAR UPLOADS INDIVIDUAIS
+                await ProcessarUploadIndividual(form.Files, agendamento.Id);
 
-                            if (uploadResult.Success && uploadResult.ConteudoComprimido != null)
-                            {
-                                // Salvar no banco de dados (comprimido)
-                                // Note: Using generic DocumentoSolicitadoId=1 for now
-                                // TODO: Future enhancement - allow mapping uploads to specific document types
-                                var documentoAnexado = new DocumentoAnexado
-                                {
-                                    AgendamentoId = agendamento.Id,
-                                    DocumentoSolicitadoId = 1, // Generic - maps to first document type
-                                    NomeArquivo = arquivo.FileName,
-                                    ConteudoComprimido = uploadResult.ConteudoComprimido,
-                                    TamanhoOriginalBytes = uploadResult.TamanhoOriginal,
-                                    TamanhoComprimidoBytes = uploadResult.TamanhoComprimido,
-                                    DataUpload = DateTime.UtcNow
-                                };
-
-                                _context.DocumentosAnexados.Add(documentoAnexado);
-                                documentosSalvos++;
-                                _logger.LogInformation($"Documento {arquivo.FileName} anexado ao agendamento {agendamento.Id}");
-                            }
-                        }
-                    }
-
-                    if (documentosSalvos > 0)
-                    {
-                        await _context.SaveChangesAsync();
-                    }
-                }
-
-                _logger.LogInformation($"Agendamento {agendamento.Id} criado por funcionário {User.Identity?.Name}");
+                _logger.LogInformation($"Agendamento {agendamento.Id} criado por {User.Identity?.Name}");
 
                 TempData["SuccessMessage"] = "Agendamento criado com sucesso!";
-                return RedirectToAction(nameof(Details), new { id = agendamento.Id });
+                return RedirectToAction(nameof(Index));
             }
 
             await CarregarViewBags(isAdmin, funcionarioId.Value);
@@ -1056,6 +1028,117 @@ namespace AgendaIR.Controllers
         }
 
         /// <summary>
+        /// FUNCIONÁRIO/ADMIN: Exibe confirmação para deletar agendamento
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> Delete(int id)
+        {
+            // Verificar autenticação
+            var userType = GetUserType();
+            if (userType != "Funcionario")
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            var funcionarioId = GetUsuarioId();
+            if (funcionarioId == null)
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            var isAdmin = IsAdmin();
+
+            // Buscar agendamento
+            var query = _context.Agendamentos
+                .Include(a => a.Cliente)
+                .Include(a => a.Funcionario)
+                .Include(a => a.TipoAgendamento)
+                .Include(a => a.DocumentosAnexados)
+                .AsQueryable();
+
+            // Se não for admin, verificar se é do funcionário
+            if (!isAdmin)
+            {
+                query = query.Where(a => a.FuncionarioId == funcionarioId.Value);
+            }
+
+            var agendamento = await query.FirstOrDefaultAsync(a => a.Id == id);
+
+            if (agendamento == null)
+            {
+                return NotFound();
+            }
+
+            return View(agendamento);
+        }
+
+        /// <summary>
+        /// FUNCIONÁRIO/ADMIN: Confirma e executa deleção do agendamento
+        /// </summary>
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            // Verificar autenticação
+            var userType = GetUserType();
+            if (userType != "Funcionario")
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            var funcionarioId = GetUsuarioId();
+            if (funcionarioId == null)
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            var isAdmin = IsAdmin();
+
+            // Buscar agendamento
+            var query = _context.Agendamentos
+                .Include(a => a.Funcionario)
+                .Include(a => a.DocumentosAnexados)
+                .AsQueryable();
+
+            // Se não for admin, verificar se é do funcionário
+            if (!isAdmin)
+            {
+                query = query.Where(a => a.FuncionarioId == funcionarioId.Value);
+            }
+
+            var agendamento = await query.FirstOrDefaultAsync(a => a.Id == id);
+
+            if (agendamento == null)
+            {
+                return NotFound();
+            }
+
+            // Deletar documentos anexados primeiro
+            if (agendamento.DocumentosAnexados != null && agendamento.DocumentosAnexados.Any())
+            {
+                _context.DocumentosAnexados.RemoveRange(agendamento.DocumentosAnexados);
+            }
+
+            // Deletar evento do Google Calendar (se existir)
+            if (!string.IsNullOrEmpty(agendamento.GoogleCalendarEventId))
+            {
+                await _calendarService.DeletarEventoAsync(
+                    agendamento.Funcionario?.GoogleCalendarEmail ?? "",
+                    agendamento.GoogleCalendarEventId
+                );
+            }
+
+            // Deletar agendamento
+            _context.Agendamentos.Remove(agendamento);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation($"Agendamento {id} deletado por {User.Identity?.Name}");
+
+            TempData["SuccessMessage"] = "Agendamento deletado com sucesso!";
+            return RedirectToAction(nameof(Index));
+        }
+
+        /// <summary>
         /// FUNCIONÁRIO/ADMIN: Faz download de um documento anexado
         /// ✅ NOVO: Com descompressão automática
         /// </summary>
@@ -1116,6 +1199,87 @@ namespace AgendaIR.Controllers
             // Retornar arquivo para download
             var contentType = GetContentType(documento.NomeArquivo);
             return File(conteudoDescomprimido, contentType, documento.NomeArquivo);
+        }
+
+        /// <summary>
+        /// Processa upload individual de documentos
+        /// </summary>
+        private async Task ProcessarUploadIndividual(IFormFileCollection arquivos, int agendamentoId)
+        {
+            int documentosSalvos = 0;
+            long totalOriginal = 0;
+            long totalComprimido = 0;
+
+            foreach (var arquivo in arquivos)
+            {
+                // Extrair DocumentoSolicitadoId do nome do campo (documento_{id})
+                if (!arquivo.Name.StartsWith("documento_"))
+                    continue;
+
+                var documentoIdStr = arquivo.Name.Replace("documento_", "");
+                if (!int.TryParse(documentoIdStr, out int documentoSolicitadoId))
+                    continue;
+
+                if (arquivo.Length > 0)
+                {
+                    // Validar tamanho (10MB)
+                    if (arquivo.Length > 10 * 1024 * 1024)
+                    {
+                        _logger.LogWarning($"Arquivo {arquivo.FileName} excede 10MB");
+                        continue;
+                    }
+
+                    // Validar extensão
+                    var extensao = Path.GetExtension(arquivo.FileName).ToLower();
+                    if (extensao != ".pdf" && extensao != ".jpg" && extensao != ".jpeg" && extensao != ".png")
+                    {
+                        _logger.LogWarning($"Arquivo {arquivo.FileName} tem extensão inválida");
+                        continue;
+                    }
+
+                    // Processar e comprimir arquivo
+                    var uploadResult = await _fileUploadService.ProcessarArquivoAsync(arquivo);
+
+                    if (uploadResult.Success && uploadResult.ConteudoComprimido != null)
+                    {
+                        // Salvar no banco de dados (comprimido)
+                        var documentoAnexado = new DocumentoAnexado
+                        {
+                            AgendamentoId = agendamentoId,
+                            DocumentoSolicitadoId = documentoSolicitadoId,
+                            NomeArquivo = arquivo.FileName,
+                            ConteudoComprimido = uploadResult.ConteudoComprimido,
+                            TamanhoOriginalBytes = uploadResult.TamanhoOriginal,
+                            TamanhoComprimidoBytes = uploadResult.TamanhoComprimido,
+                            DataUpload = DateTime.UtcNow
+                        };
+
+                        _context.DocumentosAnexados.Add(documentoAnexado);
+                        documentosSalvos++;
+                        totalOriginal += uploadResult.TamanhoOriginal;
+                        totalComprimido += uploadResult.TamanhoComprimido;
+
+                        _logger.LogInformation(
+                            $"✓ '{arquivo.FileName}': " +
+                            $"{uploadResult.TamanhoOriginal:N0} → {uploadResult.TamanhoComprimido:N0} bytes"
+                        );
+                    }
+                    else
+                    {
+                        _logger.LogError($"❌ Erro ao processar '{arquivo.FileName}': {uploadResult.ErrorMessage}");
+                    }
+                }
+            }
+
+            if (documentosSalvos > 0)
+            {
+                await _context.SaveChangesAsync();
+                var reducao = totalOriginal > 0 ? (1 - ((double)totalComprimido / totalOriginal)) * 100 : 0;
+                _logger.LogInformation(
+                    $"🎉 {documentosSalvos} documentos salvos | " +
+                    $"Total: {totalOriginal:N0} → {totalComprimido:N0} bytes ({reducao:F1}% de redução)"
+                );
+            }
         }
 
         /// <summary>

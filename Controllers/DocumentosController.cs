@@ -408,10 +408,13 @@ namespace AgendaIR.Controllers
         {
             var documentos = await _context.DocumentosSolicitados
                 .Where(d => d.TipoAgendamentoId == tipoId && d.Ativo)
+                .OrderByDescending(d => d.Obrigatorio)
+                .ThenBy(d => d.Nome)
                 .Select(d => new 
                 { 
                     id = d.Id, 
-                    nome = d.Nome, 
+                    nome = d.Nome,
+                    descricao = d.Descricao,
                     obrigatorio = d.Obrigatorio 
                 })
                 .ToListAsync();

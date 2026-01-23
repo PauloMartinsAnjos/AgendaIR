@@ -48,8 +48,10 @@ namespace AgendaIR.Models.ViewModels
         public DateTime DataHora { get; set; }
         public string Status { get; set; } = string.Empty;
         public string ClienteNome { get; set; } = string.Empty;
+        public string? ClienteCPF { get; set; }
         public string ClienteEmail { get; set; } = string.Empty;
         public string FuncionarioNome { get; set; } = string.Empty;
+        public string? TipoAgendamentoNome { get; set; }
         public int TotalDocumentos { get; set; }
         public DateTime DataCriacao { get; set; }
     }

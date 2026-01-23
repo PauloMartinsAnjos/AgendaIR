@@ -594,5 +594,62 @@ namespace AgendaIR.Controllers
         {
             return _context.Clientes.Any(e => e.Id == id);
         }
+
+        /// <summary>
+        /// API: Buscar clientes por nome ou CPF (autocomplete)
+        /// </summary>
+        [HttpGet("/api/clientes/buscar")]
+        public async Task<IActionResult> BuscarClientes(string termo)
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return Unauthorized();
+            }
+
+            var userType = User.FindFirst("UserType")?.Value;
+            if (userType != "Funcionario")
+            {
+                return Forbid();
+            }
+
+            var funcionarioId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
+            var isAdmin = User.FindFirst("IsAdmin")?.Value == "True";
+
+            if (string.IsNullOrWhiteSpace(termo) || termo.Length < 2)
+            {
+                return Json(new List<object>());
+            }
+
+            var query = _context.Clientes
+                .Where(c => c.Ativo)
+                .AsQueryable();
+
+            // Se não for admin, filtrar apenas clientes do funcionário
+            if (!isAdmin)
+            {
+                query = query.Where(c => c.FuncionarioId == funcionarioId);
+            }
+
+            // Buscar por nome ou CPF
+            var termoLower = termo.ToLower();
+            query = query.Where(c => 
+                c.Nome.ToLower().Contains(termoLower) || 
+                c.CPF.Contains(termo));
+
+            var clientes = await query
+                .OrderBy(c => c.Nome)
+                .Take(10) // Limitar a 10 resultados
+                .Select(c => new
+                {
+                    id = c.Id,
+                    nome = c.Nome,
+                    cpf = c.CPF,
+                    telefone = c.Telefone,
+                    label = c.Nome + " - " + c.CPF
+                })
+                .ToListAsync();
+
+            return Json(clientes);
+        }
     }
 }

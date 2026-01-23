@@ -20,20 +20,27 @@
                     <div asp-validation-summary="ModelOnly" class="alert-rir alert-rir-danger"></div>
 
                     <!-- Cliente -->
+                    <!-- ✅ NOVO: Autocomplete Cliente -->
                     <div class="mb-3">
-                        <label asp-for="ClienteId" class="form-label fw-bold">
+                        <label class="form-label fw-bold">
                             <i class="bi bi-person"></i> Cliente <span class="text-danger">*</span>
                         </label>
-                        <select asp-for="ClienteId" class="form-select" required>
-                            <option value="">-- Selecione um cliente --</option>
-                            @if (ViewBag.Clientes != null)
-                            {
-                                foreach (var cliente in ViewBag.Clientes as List<AgendaIR.Models.Cliente>)
-                                {
-                                    <option value="@cliente.Id">@cliente.Nome - @cliente.CPF</option>
-                                }
-                            }
-                        </select>
+                        <input type="hidden" asp-for="ClienteId" id="clienteIdHidden" />
+                        <input type="text" 
+                               id="clienteAutocomplete" 
+                               class="form-control" 
+                               placeholder="Digite o nome ou CPF do cliente..."
+                               autocomplete="off" />
+                        <div id="clienteSuggestions" class="list-group" style="position: absolute; z-index: 1000; max-height: 300px; overflow-y: auto; display: none;"></div>
+                        <div id="clienteSelecionado" style="display: none; margin-top: 10px;">
+                            <div class="alert alert-success">
+                                <i class="bi bi-check-circle"></i> <strong id="clienteNomeSelecionado"></strong><br />
+                                <small id="clienteCpfSelecionado"></small>
+                                <button type="button" class="btn btn-sm btn-outline-danger float-end" onclick="limparCliente()">
+                                    <i class="bi bi-x"></i> Alterar
+                                </button>
+                            </div>
+                        </div>
                         <span asp-validation-for="ClienteId" class="text-danger"></span>
                     </div>
 
@@ -98,19 +105,13 @@
                         <textarea asp-for="Observacoes" class="form-control" rows="3"></textarea>
                     </div>
 
-                    <!-- Documentos Necessários (carregado via AJAX) -->
-                    <div id="documentosContainer" style="display:none;" class="mb-3">
-                        <h5 class="mb-3"><i class="bi bi-paperclip"></i> Documentos Necessários para este Tipo</h5>
-                        <div id="documentosList" class="alert-rir alert-rir-info"></div>
-                    </div>
-
-                    <!-- Upload de documentos -->
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">
-                            <i class="bi bi-file-earmark-arrow-up"></i> Anexar Documentos
-                        </label>
-                        <input type="file" name="documentos" multiple class="form-control" accept=".pdf,.jpg,.jpeg,.png" />
-                        <small class="form-text text-muted">Formatos aceitos: PDF, JPG, PNG</small>
+                    <!-- ✅ NOVO: Upload Individual por Documento -->
+                    <div id="documentosContainer" style="display:none;">
+                        <hr />
+                        <h5 class="mb-3">
+                            <i class="bi bi-paperclip"></i> Documentos Necessários
+                        </h5>
+                        <div id="documentosList"></div>
                     </div>
 
                     <div class="d-flex justify-content-between gap-2">
@@ -131,7 +132,84 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     
     <script>
-        // AJAX: Carregar documentos ao selecionar tipo
+        // ========================================
+        // AUTOCOMPLETE DE CLIENTES
+        // ========================================
+        let timeoutId;
+        const autocompleteInput = document.getElementById('clienteAutocomplete');
+        const suggestionsDiv = document.getElementById('clienteSuggestions');
+        const clienteIdHidden = document.getElementById('clienteIdHidden');
+        const clienteSelecionadoDiv = document.getElementById('clienteSelecionado');
+
+        // Buscar clientes ao digitar
+        autocompleteInput.addEventListener('input', function() {
+            clearTimeout(timeoutId);
+            const termo = this.value;
+
+            if (termo.length < 2) {
+                suggestionsDiv.style.display = 'none';
+                return;
+            }
+
+            timeoutId = setTimeout(() => {
+                fetch(`/api/clientes/buscar?termo=${encodeURIComponent(termo)}`)
+                    .then(response => response.json())
+                    .then(clientes => {
+                        suggestionsDiv.innerHTML = '';
+                        
+                        if (clientes.length === 0) {
+                            suggestionsDiv.innerHTML = '<div class="list-group-item text-muted">Nenhum cliente encontrado</div>';
+                        } else {
+                            clientes.forEach(cliente => {
+                                const item = document.createElement('a');
+                                item.href = '#';
+                                item.className = 'list-group-item list-group-item-action';
+                                item.innerHTML = `
+                                    <strong>${cliente.nome}</strong><br />
+                                    <small class="text-muted">CPF: ${cliente.cpf} | Tel: ${cliente.telefone || 'N/A'}</small>
+                                `;
+                                item.onclick = (e) => {
+                                    e.preventDefault();
+                                    selecionarCliente(cliente);
+                                };
+                                suggestionsDiv.appendChild(item);
+                            });
+                        }
+                        
+                        suggestionsDiv.style.display = 'block';
+                    });
+            }, 300); // Delay de 300ms
+        });
+
+        // Selecionar cliente
+        function selecionarCliente(cliente) {
+            clienteIdHidden.value = cliente.id;
+            autocompleteInput.style.display = 'none';
+            suggestionsDiv.style.display = 'none';
+            clienteSelecionadoDiv.style.display = 'block';
+            document.getElementById('clienteNomeSelecionado').textContent = cliente.nome;
+            document.getElementById('clienteCpfSelecionado').textContent = `CPF: ${cliente.cpf} | Tel: ${cliente.telefone || 'N/A'}`;
+        }
+
+        // Limpar seleção
+        function limparCliente() {
+            clienteIdHidden.value = '';
+            autocompleteInput.value = '';
+            autocompleteInput.style.display = 'block';
+            clienteSelecionadoDiv.style.display = 'none';
+        }
+
+        // Fechar sugestões ao clicar fora
+        document.addEventListener('click', function(e) {
+            if (!autocompleteInput.contains(e.target) && !suggestionsDiv.contains(e.target)) {
+                suggestionsDiv.style.display = 'none';
+            }
+        });
+
+        // ========================================
+        // UPLOAD INDIVIDUAL POR DOCUMENTO
+        // ========================================
+        // Carregar documentos ao selecionar tipo
         document.getElementById('tipoAgendamentoSelect').addEventListener('change', function() {
             const tipoId = this.value;
             const container = document.getElementById('documentosContainer');
@@ -147,17 +225,39 @@
                 .then(response => response.json())
                 .then(docs => {
                     if (docs.length > 0) {
-                        let html = '<ul class="list-group">';
+                        let html = '';
+                        
                         docs.forEach(doc => {
-                            const badge = doc.obrigatorio 
-                                ? '<span class="badge bg-danger ms-2">Obrigatório</span>' 
-                                : '<span class="badge bg-secondary ms-2">Opcional</span>';
-                            html += `<li class="list-group-item d-flex justify-content-between align-items-center">
-                                        ${doc.nome}
-                                        ${badge}
-                                     </li>`;
+                            const badgeClass = doc.obrigatorio ? 'badge-rir-danger' : 'badge-rir-secondary';
+                            const badgeText = doc.obrigatorio ? 'Obrigatório' : 'Opcional';
+                            const required = doc.obrigatorio ? 'required' : '';
+                            
+                            html += `
+                                <div class="card-rir mb-3">
+                                    <div class="card-rir-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div>
+                                                <h6 class="mb-1">
+                                                    <i class="bi bi-file-earmark-pdf"></i> ${doc.nome}
+                                                </h6>
+                                                ${doc.descricao ? `<small class="text-muted">${doc.descricao}</small>` : ''}
+                                            </div>
+                                            <span class="badge-rir ${badgeClass}">${badgeText}</span>
+                                        </div>
+                                        <input type="file" 
+                                               name="documento_${doc.id}" 
+                                               class="form-control" 
+                                               accept=".pdf,.jpg,.jpeg,.png"
+                                               data-documento-id="${doc.id}"
+                                               data-documento-nome="${doc.nome}"
+                                               data-obrigatorio="${doc.obrigatorio}"
+                                               ${required} />
+                                        <small class="form-text text-muted">Formatos: PDF, JPG, PNG (máx. 10MB)</small>
+                                    </div>
+                                </div>
+                            `;
                         });
-                        html += '</ul>';
+                        
                         lista.innerHTML = html;
                         container.style.display = 'block';
                     } else {
