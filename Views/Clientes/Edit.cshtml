@@ -1,4 +1,4 @@
-@model AgendaIR.Models.Cliente
+@model AgendaIR.Models.ViewModels.ClienteEditViewModel
 
 @{
     ViewData["Title"] = "Editar Cliente";
@@ -20,9 +20,6 @@
                 <form asp-action="Edit" method="post">
                     <div asp-validation-summary="ModelOnly" class="alert-rir alert-rir-danger" role="alert"></div>
                     <input type="hidden" asp-for="Id" />
-                    <input type="hidden" asp-for="MagicToken" />
-                    <input type="hidden" asp-for="TokenGeradoEm" />
-                    <input type="hidden" asp-for="DataCriacao" />
 
                     @* Nome *@
                     <div class="mb-3">
@@ -71,34 +68,16 @@
 
                         @* Funcionário Responsável *@
                         <div class="col-12 col-md-6 mb-3">
-                            <label asp-for="FuncionarioId" class="form-label fw-bold">
+                            <label class="form-label fw-bold">
                                 <i class="bi bi-person-badge"></i> Funcionário Responsável
                             </label>
                             
-                            @if (isAdmin)
-                            {
-                                <select asp-for="FuncionarioId" class="form-select">
-                                    <option value="">Selecione um funcionário</option>
-                                    @if (ViewBag.Funcionarios != null)
-                                    {
-                                        var funcionarios = ViewBag.Funcionarios as IEnumerable<AgendaIR.Models.Funcionario>;
-                                        if (funcionarios != null)
-                                        {
-                                            foreach (var func in funcionarios)
-                                            {
-                                                <option value="@func.Id">@func.Nome</option>
-                                            }
-                                        }
-                                    }
-                                </select>
-                                <span asp-validation-for="FuncionarioId" class="text-danger"></span>
-                            }
-                            else
-                            {
-                                var funcionarioNome = Model.Funcionario?.Nome ?? "";
-                                <input type="text" class="form-control" value="@funcionarioNome" readonly disabled />
-                                <input asp-for="FuncionarioId" type="hidden" />
-                            }
+                            <input type="text" class="form-control" value="@Model.FuncionarioNome" readonly disabled />
+                            <input asp-for="FuncionarioId" type="hidden" />
+                            
+                            <small class="form-text text-muted">
+                                <i class="bi bi-lock"></i> O funcionário responsável não pode ser alterado após a criação
+                            </small>
                         </div>
                     </div>
 
