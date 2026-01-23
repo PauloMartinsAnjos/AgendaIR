@@ -80,13 +80,19 @@ namespace AgendaIR.Controllers
         /// <summary>
         /// Exibe formulário para criar novo documento solicitado
         /// </summary>
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
             // Verificar permissão
             if (!HasPermission())
             {
                 return RedirectToAction("AccessDenied", "Auth");
             }
+
+            // Carregar tipos ativos para dropdown
+            ViewBag.TiposAgendamento = await _context.TiposAgendamento
+                .Where(t => t.Ativo)
+                .OrderBy(t => t.Nome)
+                .ToListAsync();
 
             var model = new DocumentoSolicitadoViewModel
             {
@@ -119,6 +125,7 @@ namespace AgendaIR.Controllers
                 if (nomeExistente)
                 {
                     ModelState.AddModelError("Nome", "Já existe um documento com este nome");
+                    ViewBag.TiposAgendamento = await _context.TiposAgendamento.Where(t => t.Ativo).ToListAsync();
                     return View(model);
                 }
 
@@ -128,6 +135,7 @@ namespace AgendaIR.Controllers
                     Nome = model.Nome,
                     Descricao = model.Descricao,
                     Obrigatorio = model.Obrigatorio,
+                    TipoAgendamentoId = model.TipoAgendamentoId,
                     Ativo = model.Ativo,
                     DataCriacao = DateTime.UtcNow
                 };
@@ -141,6 +149,7 @@ namespace AgendaIR.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
+            ViewBag.TiposAgendamento = await _context.TiposAgendamento.Where(t => t.Ativo).ToListAsync();
             return View(model);
         }
 
@@ -176,9 +185,16 @@ namespace AgendaIR.Controllers
                 Nome = documento.Nome,
                 Descricao = documento.Descricao,
                 Obrigatorio = documento.Obrigatorio,
+                TipoAgendamentoId = documento.TipoAgendamentoId,
                 Ativo = documento.Ativo,
                 DataCriacao = documento.DataCriacao
             };
+
+            // Carregar tipos ativos para dropdown
+            ViewBag.TiposAgendamento = await _context.TiposAgendamento
+                .Where(t => t.Ativo)
+                .OrderBy(t => t.Nome)
+                .ToListAsync();
 
             return View(model);
         }
@@ -212,6 +228,7 @@ namespace AgendaIR.Controllers
                 if (nomeExistente)
                 {
                     ModelState.AddModelError("Nome", "Já existe outro documento com este nome");
+                    ViewBag.TiposAgendamento = await _context.TiposAgendamento.Where(t => t.Ativo).ToListAsync();
                     return View(model);
                 }
 
@@ -229,6 +246,7 @@ namespace AgendaIR.Controllers
                     documento.Nome = model.Nome;
                     documento.Descricao = model.Descricao;
                     documento.Obrigatorio = model.Obrigatorio;
+                    documento.TipoAgendamentoId = model.TipoAgendamentoId;
                     documento.Ativo = model.Ativo;
                     // DataCriacao não é alterada
 
@@ -253,6 +271,7 @@ namespace AgendaIR.Controllers
                 }
             }
 
+            ViewBag.TiposAgendamento = await _context.TiposAgendamento.Where(t => t.Ativo).ToListAsync();
             return View(model);
         }
 
@@ -379,6 +398,25 @@ namespace AgendaIR.Controllers
         private bool DocumentoSolicitadoExists(int id)
         {
             return _context.DocumentosSolicitados.Any(e => e.Id == id);
+        }
+
+        /// <summary>
+        /// API: Retorna documentos de um tipo específico (para AJAX)
+        /// </summary>
+        [HttpGet("/api/documentos/porTipo/{tipoId}")]
+        public async Task<IActionResult> GetDocumentosPorTipo(int tipoId)
+        {
+            var documentos = await _context.DocumentosSolicitados
+                .Where(d => d.TipoAgendamentoId == tipoId && d.Ativo)
+                .Select(d => new 
+                { 
+                    id = d.Id, 
+                    nome = d.Nome, 
+                    obrigatorio = d.Obrigatorio 
+                })
+                .ToListAsync();
+
+            return Json(documentos);
         }
     }
 }
