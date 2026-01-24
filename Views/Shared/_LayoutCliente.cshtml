@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Portal do Cliente RIR</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap" rel="stylesheet">
+
+    <!-- RIR Design System -->
+    <link rel="stylesheet" href="~/css/rir-design/variables.css" />
+    <link rel="stylesheet" href="~/css/rir-design/components.css" />
+    
+    <!-- Portal do Cliente CSS -->
+    <link rel="stylesheet" href="~/css/rir-design/cliente-portal.css" asp-append-version="true" />
+</head>
+<body class="cliente-portal-body">
+    <!-- HEADER SIMPLIFICADO -->
+    <header class="cliente-header">
+        <div class="container">
+            <div class="cliente-header-content">
+                <div class="cliente-logo">
+                    <img src="~/images/logo/logo-rir.png" alt="RIR Contábil" />
+                </div>
+                <div class="cliente-info">
+                    <div class="cliente-nome">
+                        <i class="bi bi-person-circle"></i>
+                        <span>@ViewBag.ClienteNome</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="cliente-main">
+        <div class="container">
+            @RenderBody()
+        </div>
+    </main>
+
+    <!-- FOOTER COM CONTATO/ENDEREÇO -->
+    <footer class="cliente-footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-3 mb-md-0">
+                    <h5><i class="bi bi-geo-alt-fill"></i> Endereço</h5>
+                    <p class="mb-0">
+                        Rua Exemplo, 123<br />
+                        Centro, Cidade - UF<br />
+                        CEP 00000-000
+                    </p>
+                </div>
+                <div class="col-md-4 mb-3 mb-md-0">
+                    <h5><i class="bi bi-telephone-fill"></i> Contato</h5>
+                    <p class="mb-0">
+                        Tel: (00) 0000-0000<br />
+                        WhatsApp: (00) 00000-0000<br />
+                        Email: contato@rir.com.br
+                    </p>
+                </div>
+                <div class="col-md-4">
+                    <h5><i class="bi bi-clock-fill"></i> Horário</h5>
+                    <p class="mb-0">
+                        Segunda a Sexta<br />
+                        08:00 às 18:00
+                    </p>
+                </div>
+            </div>
+            <hr class="my-3" />
+            <div class="text-center">
+                <p class="mb-0">
+                    &copy; @DateTime.Now.Year RIR Contábil. Todos os direitos reservados.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

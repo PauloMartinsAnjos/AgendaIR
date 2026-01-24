@@ -56,6 +56,13 @@ namespace AgendaIR.Models
         public bool BloqueiaHorario { get; set; } = true;
 
         /// <summary>
+        /// JSON com lista de documentos obrigatórios para este tipo
+        /// Exemplo: ["RG e CPF", "Comprovante Renda", "Recibos Médicos"]
+        /// </summary>
+        [Display(Name = "Documentos Obrigatórios (JSON)")]
+        public string? DocumentosObrigatoriosJson { get; set; }
+
+        /// <summary>
         /// Relacionamento: Um tipo pode ter vários documentos solicitados
         /// </summary>
         public virtual ICollection<DocumentoSolicitado> DocumentosSolicitados { get; set; } = new List<DocumentoSolicitado>();
