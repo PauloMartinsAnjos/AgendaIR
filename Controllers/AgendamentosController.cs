@@ -358,15 +358,25 @@ namespace AgendaIR.Controllers
                 _logger.LogInformation($"✓ Chamando GoogleCalendarService.CriarEventoAsync...");
                 _logger.LogInformation($"");
 
-                var eventId = await _calendarService.CriarEventoAsync(
+                // Buscar tipo de agendamento para obter configurações
+                var tipoAgendamento = await _context.TiposAgendamento.FindAsync(model.TipoAgendamentoId);
+
+                var (eventId, conferenciaUrl) = await _calendarService.CriarEventoAsync(
                     funcionarioEmail,
                     cliente.Nome,
-                    model.DataHora
+                    model.DataHora,
+                    60, // Duração padrão
+                    cliente.Email, // Email do cliente como participante
+                    tipoAgendamento?.Local,
+                    tipoAgendamento?.CriarGoogleMeet ?? false,
+                    tipoAgendamento?.CorCalendario ?? 6,
+                    tipoAgendamento?.BloqueiaHorario ?? true
                 );
 
                 if (eventId != null)
                 {
                     agendamento.GoogleCalendarEventId = eventId;
+                    agendamento.ConferenciaUrl = conferenciaUrl;
                     await _context.SaveChangesAsync();
 
                     _logger.LogInformation($"✅ ========================================");
@@ -376,6 +386,10 @@ namespace AgendaIR.Controllers
                     _logger.LogInformation($"✅ Email: {funcionarioEmail}");
                     _logger.LogInformation($"✅ Cliente: {cliente.Nome}");
                     _logger.LogInformation($"✅ Data/Hora: {model.DataHora:yyyy-MM-dd HH:mm}");
+                    if (!string.IsNullOrEmpty(conferenciaUrl))
+                    {
+                        _logger.LogInformation($"✅ Google Meet: {conferenciaUrl}");
+                    }
                     _logger.LogInformation($"✅ ");
                     _logger.LogInformation($"✅ O evento agora está visível em:");
                     _logger.LogInformation($"✅ https://calendar.google.com");
@@ -779,27 +793,45 @@ namespace AgendaIR.Controllers
                 // ✅ INTEGRAÇÃO GOOGLE CALENDAR
                 try
                 {
-                    // Buscar cliente e funcionário com seus dados
+                    // Buscar cliente, funcionário e tipo de agendamento
                     var cliente = await _context.Clientes.FindAsync(agendamento.ClienteId);
                     var funcionario = await _context.Funcionarios.FindAsync(agendamento.FuncionarioId);
+                    var tipoAgendamento = await _context.TiposAgendamento.FindAsync(agendamento.TipoAgendamentoId);
 
                     if (funcionario != null && !string.IsNullOrEmpty(funcionario.GoogleCalendarEmail))
                     {
                         _logger.LogInformation($"📅 Iniciando criação de evento no Google Calendar para funcionário {funcionario.GoogleCalendarEmail}");
                         
                         var clienteNome = cliente?.Nome ?? "Cliente";
-                        var googleEventId = await _calendarService.CriarEventoAsync(
+                        var clienteEmail = cliente?.Email;
+                        var local = tipoAgendamento?.Local;
+                        var criarGoogleMeet = tipoAgendamento?.CriarGoogleMeet ?? false;
+                        var corCalendario = tipoAgendamento?.CorCalendario ?? 6;
+                        var bloqueiaHorario = tipoAgendamento?.BloqueiaHorario ?? true;
+
+                        var (googleEventId, conferenciaUrl) = await _calendarService.CriarEventoAsync(
                             funcionario.GoogleCalendarEmail,
                             clienteNome,
                             agendamento.DataHora,
-                            60 // Duração padrão de 60 minutos
+                            60, // Duração padrão de 60 minutos
+                            clienteEmail,
+                            local,
+                            criarGoogleMeet,
+                            corCalendario,
+                            bloqueiaHorario
                         );
 
                         if (!string.IsNullOrEmpty(googleEventId))
                         {
                             agendamento.GoogleCalendarEventId = googleEventId;
+                            agendamento.ConferenciaUrl = conferenciaUrl;
                             await _context.SaveChangesAsync();
                             _logger.LogInformation($"✅ Evento criado no Google Calendar. EventId: {googleEventId}");
+                            
+                            if (!string.IsNullOrEmpty(conferenciaUrl))
+                            {
+                                _logger.LogInformation($"🎥 Google Meet: {conferenciaUrl}");
+                            }
                         }
                         else
                         {

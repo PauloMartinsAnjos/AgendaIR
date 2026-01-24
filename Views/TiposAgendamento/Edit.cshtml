@@ -37,6 +37,56 @@
                     </div>
 
                     <div class="mb-3">
+                        <label asp-for="Local" class="form-label fw-bold">
+                            <i class="bi bi-geo-alt"></i> Local (opcional)
+                        </label>
+                        <input asp-for="Local" class="form-control" placeholder="Ex: Escritório, Online, Casa do Cliente" />
+                        <span asp-validation-for="Local" class="text-danger"></span>
+                        <small class="form-text text-muted">Local onde o atendimento será realizado</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="CorCalendario" class="form-label fw-bold">
+                            <i class="bi bi-palette"></i> Cor no Calendário
+                        </label>
+                        <select asp-for="CorCalendario" class="form-select">
+                            <option value="1">Azul Claro</option>
+                            <option value="2">Verde</option>
+                            <option value="3">Roxo</option>
+                            <option value="4">Rosa</option>
+                            <option value="5">Amarelo</option>
+                            <option value="6">Laranja</option>
+                            <option value="7">Turquesa</option>
+                            <option value="8">Cinza</option>
+                            <option value="9">Azul Escuro</option>
+                            <option value="10">Verde Escuro</option>
+                            <option value="11">Vermelho</option>
+                        </select>
+                        <span asp-validation-for="CorCalendario" class="text-danger"></span>
+                        <small class="form-text text-muted">Cor do evento no Google Calendar</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input asp-for="CriarGoogleMeet" class="form-check-input" type="checkbox" />
+                            <label asp-for="CriarGoogleMeet" class="form-check-label fw-bold">
+                                <i class="bi bi-camera-video"></i> Criar Google Meet
+                            </label>
+                        </div>
+                        <small class="form-text text-muted">Se marcado, cria automaticamente link do Google Meet</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input asp-for="BloqueiaHorario" class="form-check-input" type="checkbox" />
+                            <label asp-for="BloqueiaHorario" class="form-check-label fw-bold">
+                                <i class="bi bi-lock"></i> Bloqueia Horário
+                            </label>
+                        </div>
+                        <small class="form-text text-muted">Se marcado, marca horário como ocupado no calendário</small>
+                    </div>
+
+                    <div class="mb-3">
                         <div class="form-check form-switch">
                             <input asp-for="Ativo" class="form-check-input" type="checkbox" id="ativoSwitch" />
                             <label class="form-check-label fw-bold" for="ativoSwitch">

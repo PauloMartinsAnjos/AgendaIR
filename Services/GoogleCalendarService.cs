@@ -155,15 +155,25 @@ namespace AgendaIR.Services
 
         /// <summary>
         /// Cria um evento no Google Calendar do funcionário
+        /// Retorna tupla com (EventId, ConferenciaUrl)
         /// </summary>
-        public async Task<string?> CriarEventoAsync(string funcionarioEmail, string clienteNome, DateTime dataHora, int duracao = 60)
+        public async Task<(string? EventId, string? ConferenciaUrl)> CriarEventoAsync(
+            string funcionarioEmail, 
+            string clienteNome, 
+            DateTime dataHora, 
+            int duracao = 60,
+            string? clienteEmail = null,
+            string? local = null,
+            bool criarGoogleMeet = false,
+            int corCalendario = 6,
+            bool bloqueiaHorario = true)
         {
             try
             {
                 if (string.IsNullOrEmpty(funcionarioEmail))
                 {
                     _logger.LogWarning("Email do funcionário vazio, não é possível criar evento");
-                    return null;
+                    return (null, null);
                 }
 
                 _logger.LogInformation($"📅 Criando evento no Google Calendar para {funcionarioEmail}");
@@ -177,10 +187,10 @@ namespace AgendaIR.Services
                     // Redirecionar para autorização OAuth
                     IniciarFluxoOAuth(funcionarioEmail);
 
-                    return null;
+                    return (null, null);
                 }
 
-                // ✅ CORRIGIDO: Usar DateTimeDateTimeOffset ao invés de DateTime
+                // ✅ Criar evento com todos os recursos
                 var evento = new Event
                 {
                     Summary = $"Agendamento IR - {clienteNome}",
@@ -195,6 +205,8 @@ namespace AgendaIR.Services
                         DateTimeDateTimeOffset = new DateTimeOffset(dataHora.AddMinutes(duracao)),
                         TimeZone = "America/Sao_Paulo"
                     },
+                    ColorId = corCalendario.ToString(),
+                    Transparency = bloqueiaHorario ? "opaque" : "transparent",
                     Reminders = new Event.RemindersData
                     {
                         UseDefault = false,
@@ -206,26 +218,83 @@ namespace AgendaIR.Services
                     }
                 };
 
+                // Adicionar local se fornecido
+                if (!string.IsNullOrEmpty(local))
+                {
+                    evento.Location = local;
+                }
+
+                // Adicionar cliente como participante se email fornecido
+                if (!string.IsNullOrEmpty(clienteEmail))
+                {
+                    evento.Attendees = new[]
+                    {
+                        new EventAttendee
+                        {
+                            Email = clienteEmail,
+                            DisplayName = clienteNome,
+                            ResponseStatus = "needsAction"
+                        }
+                    };
+                }
+
+                // Criar Google Meet se solicitado
+                if (criarGoogleMeet)
+                {
+                    evento.ConferenceData = new ConferenceData
+                    {
+                        CreateRequest = new CreateConferenceRequest
+                        {
+                            RequestId = Guid.NewGuid().ToString(),
+                            ConferenceSolutionKey = new ConferenceSolutionKey
+                            {
+                                Type = "hangoutsMeet"
+                            }
+                        }
+                    };
+                }
+
                 _logger.LogInformation($"🔄 Enviando requisição para Google Calendar API...");
 
                 var request = service.Events.Insert(evento, "primary");
+                
+                // Se criar Google Meet, precisa especificar conferenceDataVersion
+                if (criarGoogleMeet)
+                {
+                    request.ConferenceDataVersion = 1;
+                }
+
                 var createdEvent = await request.ExecuteAsync();
 
                 _logger.LogInformation($"✅ Evento criado com sucesso! ID: {createdEvent.Id}");
 
-                return createdEvent.Id;
+                // Extrair URL do Google Meet se criado
+                string? conferenciaUrl = null;
+                if (criarGoogleMeet && createdEvent.ConferenceData?.EntryPoints != null)
+                {
+                    var meetEntry = createdEvent.ConferenceData.EntryPoints
+                        .FirstOrDefault(e => e.EntryPointType == "video");
+                    conferenciaUrl = meetEntry?.Uri;
+                    
+                    if (!string.IsNullOrEmpty(conferenciaUrl))
+                    {
+                        _logger.LogInformation($"🎥 Google Meet criado: {conferenciaUrl}");
+                    }
+                }
+
+                return (createdEvent.Id, conferenciaUrl);
             }
             catch (Google.GoogleApiException gex)
             {
                 _logger.LogError($"❌ Erro da API do Google: {gex.Message}");
                 _logger.LogError($"   Status Code: {gex.HttpStatusCode}");
                 _logger.LogError($"   Error: {gex.Error?.Message}");
-                return null;
+                return (null, null);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "❌ Erro ao criar evento no Google Calendar");
-                return null;
+                return (null, null);
             }
         }
 
