@@ -4,7 +4,7 @@ namespace AgendaIR.Models.ViewModels
 {
     /// <summary>
     /// ViewModel usado quando um FUNCIONÁRIO ou ADMIN está editando um agendamento
-    /// Permite alterar status e adicionar observações
+    /// Permite alterar status, data/hora e adicionar observações
     /// </summary>
     public class AgendamentoEditViewModel
     {
@@ -18,8 +18,14 @@ namespace AgendaIR.Models.ViewModels
         [Display(Name = "Observações")]
         public string? Observacoes { get; set; }
         
+        [Required]
         [Display(Name = "Data e Hora")]
         public DateTime DataHora { get; set; }
+        
+        // Campos de controle para Google Calendar
+        public DateTime DataHoraOriginal { get; set; }
+        public string? GoogleCalendarEventId { get; set; }
+        public string? FuncionarioGoogleEmail { get; set; }
         
         // Informações do cliente (readonly)
         public string ClienteNome { get; set; } = string.Empty;

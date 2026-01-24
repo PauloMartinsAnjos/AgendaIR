@@ -19,6 +19,9 @@
                 <form asp-action="Edit" method="post">
                     @Html.AntiForgeryToken()
                     <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="DataHoraOriginal" />
+                    <input type="hidden" asp-for="GoogleCalendarEventId" />
+                    <input type="hidden" asp-for="FuncionarioGoogleEmail" />
                     
                     <div asp-validation-summary="ModelOnly" class="alert-rir alert-rir-danger" role="alert"></div>
 
@@ -40,16 +43,15 @@
                         </div>
                     </div>
 
-                    <!-- Data e Hora (Readonly) -->
+                    <!-- Data e Hora (Editável) -->
                     <div class="mb-4">
-                        <label class="form-label fw-bold">
+                        <label asp-for="DataHora" class="form-label fw-bold">
                             <i class="bi bi-calendar-event"></i> Data e Hora do Agendamento
                         </label>
-                        <input type="text" class="form-control" 
-                               value="@Model.DataHora.ToString("dd/MM/yyyy HH:mm")" 
-                               readonly disabled />
+                        <input type="datetime-local" asp-for="DataHora" class="form-control" />
+                        <span asp-validation-for="DataHora" class="text-danger"></span>
                         <small class="form-text text-muted">
-                            <i class="bi bi-info-circle"></i> A data e hora não podem ser alteradas após a criação
+                            <i class="bi bi-info-circle"></i> Alterações na data/hora serão sincronizadas com o Google Calendar
                         </small>
                     </div>
 
