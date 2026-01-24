@@ -220,9 +220,10 @@ class UploadDocumentos {
         }
         
         if (progressText) {
+            const percentage = totalDocs > 0 ? Math.round((uploadedDocs / totalDocs) * 100) : 0;
             progressText.innerHTML = `
                 <span>${uploadedDocs} de ${totalDocs} documentos enviados</span>
-                <span><strong>${Math.round((uploadedDocs / totalDocs) * 100)}%</strong></span>
+                <span><strong>${percentage}%</strong></span>
             `;
         }
     }

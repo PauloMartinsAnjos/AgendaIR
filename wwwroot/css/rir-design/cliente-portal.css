@@ -277,7 +277,7 @@
 }
 
 .btn-cliente-primary:disabled {
-    background: #CECCCCD;
+    background: var(--gray-40, #CECCCC);
     cursor: not-allowed;
     box-shadow: none;
     transform: none;

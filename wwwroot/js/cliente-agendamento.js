@@ -227,9 +227,12 @@ class StepperAgendamento {
             if (response.ok) {
                 const documentos = await response.json();
                 this.renderizarDocumentos(documentos);
+            } else {
+                this.showError('Erro ao carregar documentos. Por favor, tente novamente.');
             }
         } catch (error) {
             console.error('Erro ao carregar documentos:', error);
+            this.showError('Erro ao carregar documentos. Verifique sua conexão e tente novamente.');
         }
     }
     
