@@ -64,7 +64,7 @@
                             <option value="">-- Nenhum (documento genérico) --</option>
                             @if (ViewBag.TiposAgendamento != null)
                             {
-                                foreach (var tipo in ViewBag.TiposAgendamento as List<AgendaIR.Models.TipoAgendamento>)
+                                foreach (var tipo in (ViewBag.TiposAgendamento as List<AgendaIR.Models.TipoAgendamento>)!)
                                 {
                                     <option value="@tipo.Id">@tipo.Nome</option>
                                 }

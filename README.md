@@ -601,13 +601,6 @@ Ou mude a porta em `Properties/launchSettings.json`
 Se precisar de ajuda adicional:
 
 1. **Issues GitHub**: https://github.com/PauloMartinsAnjos/AgendaIR/issues
-2. **Email**: (adicione email de contato aqui)
-
----
-
-## 📄 Licença
-
-Este projeto está sob a licença MIT. Veja o arquivo LICENSE para mais detalhes.
 
 ---
 

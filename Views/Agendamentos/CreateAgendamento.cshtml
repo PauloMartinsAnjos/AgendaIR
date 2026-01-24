@@ -53,7 +53,7 @@
                             <option value="">-- Selecione o tipo --</option>
                             @if (ViewBag.TiposAgendamento != null)
                             {
-                                foreach (var tipo in ViewBag.TiposAgendamento as List<AgendaIR.Models.TipoAgendamento>)
+                                foreach (var tipo in (ViewBag.TiposAgendamento as List<AgendaIR.Models.TipoAgendamento>)!)
                                 {
                                     <option value="@tipo.Id">@tipo.Nome</option>
                                 }
@@ -87,7 +87,7 @@
                                 <option value="">-- Eu serei o responsável --</option>
                                 @if (ViewBag.Funcionarios != null)
                                 {
-                                    foreach (var func in ViewBag.Funcionarios as List<AgendaIR.Models.Funcionario>)
+                                    foreach (var func in (ViewBag.Funcionarios as List<AgendaIR.Models.Funcionario>)!)
                                     {
                                         <option value="@func.Id">@func.Nome</option>
                                     }
