@@ -188,6 +188,15 @@ namespace AgendaIR.Controllers
                 .Where(f => f.Id == cliente.FuncionarioId)
                 .ToListAsync();
 
+            // Buscar tipos de agendamento ativos
+            ViewBag.TiposAgendamento = await _context.TiposAgendamento
+                .Where(t => t.Ativo)
+                .OrderBy(t => t.Nome)
+                .ToListAsync();
+
+            // Passar nome do cliente para o layout
+            ViewBag.ClienteNome = cliente.Nome;
+
             var viewModel = new AgendamentoCreateViewModel
             {
                 FuncionarioId = cliente.FuncionarioId,
