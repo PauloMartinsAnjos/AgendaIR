@@ -51,11 +51,14 @@
                         </label>
                         <select asp-for="TipoAgendamentoId" class="form-select" id="tipoAgendamentoSelect" required>
                             <option value="">-- Selecione o tipo --</option>
-                            @if (ViewBag.TiposAgendamento != null)
-                            {
-                                foreach (var tipo in (ViewBag.TiposAgendamento as List<AgendaIR.Models.TipoAgendamento>)!)
+                            @{
+                                var tiposAgendamento = ViewBag.TiposAgendamento as List<AgendaIR.Models.TipoAgendamento>;
+                                if (tiposAgendamento != null)
                                 {
-                                    <option value="@tipo.Id">@tipo.Nome</option>
+                                    foreach (var tipo in tiposAgendamento)
+                                    {
+                                        <option value="@tipo.Id">@tipo.Nome</option>
+                                    }
                                 }
                             }
                         </select>
@@ -85,11 +88,14 @@
                             </label>
                             <select asp-for="FuncionarioId" class="form-select">
                                 <option value="">-- Eu serei o responsável --</option>
-                                @if (ViewBag.Funcionarios != null)
-                                {
-                                    foreach (var func in (ViewBag.Funcionarios as List<AgendaIR.Models.Funcionario>)!)
+                                @{
+                                    var funcionarios = ViewBag.Funcionarios as List<AgendaIR.Models.Funcionario>;
+                                    if (funcionarios != null)
                                     {
-                                        <option value="@func.Id">@func.Nome</option>
+                                        foreach (var func in funcionarios)
+                                        {
+                                            <option value="@func.Id">@func.Nome</option>
+                                        }
                                     }
                                 }
                             </select>

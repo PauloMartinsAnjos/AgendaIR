@@ -58,11 +58,14 @@
                         </label>
                         <select asp-for="TipoAgendamentoId" class="form-select">
                             <option value="">-- Nenhum (documento genérico) --</option>
-                            @if (ViewBag.TiposAgendamento != null)
-                            {
-                                foreach (var tipo in (ViewBag.TiposAgendamento as List<AgendaIR.Models.TipoAgendamento>)!)
+                            @{
+                                var tiposAgendamento = ViewBag.TiposAgendamento as List<AgendaIR.Models.TipoAgendamento>;
+                                if (tiposAgendamento != null)
                                 {
-                                    <option value="@tipo.Id">@tipo.Nome</option>
+                                    foreach (var tipo in tiposAgendamento)
+                                    {
+                                        <option value="@tipo.Id">@tipo.Nome</option>
+                                    }
                                 }
                             }
                         </select>
