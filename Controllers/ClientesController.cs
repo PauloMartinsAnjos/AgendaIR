@@ -613,7 +613,7 @@ namespace AgendaIR.Controllers
         [HttpGet("/api/clientes/buscar")]
         public async Task<IActionResult> BuscarClientes(string termo)
         {
-            if (!User.Identity.IsAuthenticated)
+            if (User.Identity?.IsAuthenticated != true)
             {
                 return Unauthorized();
             }

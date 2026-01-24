@@ -32,6 +32,9 @@ project.fragment.lock.json
 artifacts/
 **/Properties/launchSettings.json
 
+# User Secrets
+**/secrets.json
+
 # NuGet Packages
 *.nupkg
 **/packages/*
