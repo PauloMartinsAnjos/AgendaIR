@@ -293,6 +293,8 @@ namespace AgendaIR.Controllers
                     FuncionarioId = model.FuncionarioId,
                     MagicToken = magicToken,
                     TokenGeradoEm = DateTime.UtcNow,
+                    TokenExpiracao = DateTime.UtcNow.AddHours(8),  // 8 HORAS
+                    TokenAtivo = true,
                     Ativo = true,
                     DataCriacao = DateTime.UtcNow
                 };
@@ -301,6 +303,7 @@ namespace AgendaIR.Controllers
                 await _context.SaveChangesAsync();
 
                 _logger.LogInformation($"Novo cliente criado: {cliente.Nome} (ID: {cliente.Id}) por {User.Identity?.Name}");
+                _logger.LogInformation($"🔑 Token gerado para cliente {cliente.Nome} - Expira em: {cliente.TokenExpiracao:dd/MM/yyyy HH:mm}");
 
                 // Redirecionar para página de sucesso com o ID do cliente
                 return RedirectToAction(nameof(CreatedSuccess), new { id = cliente.Id });
@@ -597,6 +600,53 @@ namespace AgendaIR.Controllers
 
             TempData["Success"] = "Cliente deletado com sucesso!";
             return RedirectToAction(nameof(Index));
+        }
+
+        /// <summary>
+        /// Regenera token de acesso do cliente (POST)
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RegenerarToken(int id)
+        {
+            if (!HasPermission())
+            {
+                return RedirectToAction("AccessDenied", "Auth");
+            }
+
+            var cliente = await _context.Clientes.FindAsync(id);
+            
+            if (cliente == null)
+            {
+                return NotFound();
+            }
+
+            // Verificar permissão
+            if (!IsUserAdmin())
+            {
+                var currentFuncionarioId = GetCurrentFuncionarioId();
+                if (currentFuncionarioId == null || cliente.FuncionarioId != currentFuncionarioId.Value)
+                {
+                    return RedirectToAction("AccessDenied", "Auth");
+                }
+            }
+
+            // Invalidar token anterior
+            cliente.TokenAtivo = false;
+            
+            // Gerar novo token
+            cliente.MagicToken = _magicLinkService.GerarMagicToken();
+            cliente.TokenGeradoEm = DateTime.UtcNow;
+            cliente.TokenExpiracao = DateTime.UtcNow.AddHours(8);
+            cliente.TokenAtivo = true;
+
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation($"🔄 Token regenerado para cliente {cliente.Nome} - Expira em: {cliente.TokenExpiracao:dd/MM/yyyy HH:mm}");
+
+            TempData["Mensagem"] = $"✅ Novo token gerado! Válido até {cliente.TokenExpiracao:dd/MM/yyyy HH:mm}";
+            
+            return RedirectToAction(nameof(Details), new { id = cliente.Id });
         }
 
         /// <summary>

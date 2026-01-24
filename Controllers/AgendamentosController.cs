@@ -1092,6 +1092,8 @@ namespace AgendaIR.Controllers
             var query = _context.Agendamentos
                 .Include(a => a.Cliente)
                 .Include(a => a.Funcionario)
+                .Include(a => a.TipoAgendamento)
+                .Include(a => a.Participantes)  // Incluir participantes
                 .Include(a => a.DocumentosAnexados)
                     .ThenInclude(da => da.DocumentoSolicitado)
                 .AsQueryable();
@@ -1109,6 +1111,27 @@ namespace AgendaIR.Controllers
                 return NotFound();
             }
 
+            // Carregar lista de funcionários para dropdown
+            if (isAdmin)
+            {
+                ViewBag.Funcionarios = await _context.Funcionarios
+                    .Where(f => f.Ativo)
+                    .OrderBy(f => f.Nome)
+                    .ToListAsync();
+            }
+            else
+            {
+                ViewBag.Funcionarios = await _context.Funcionarios
+                    .Where(f => f.Id == funcionarioId.Value)
+                    .ToListAsync();
+            }
+
+            // Carregar tipos de agendamento
+            ViewBag.TiposAgendamento = await _context.TiposAgendamento
+                .Where(t => t.Ativo)
+                .OrderBy(t => t.Nome)
+                .ToListAsync();
+
             var viewModel = new AgendamentoEditViewModel
             {
                 Id = agendamento.Id,
@@ -1118,10 +1141,14 @@ namespace AgendaIR.Controllers
                 DataHoraOriginal = agendamento.DataHora,
                 GoogleCalendarEventId = agendamento.GoogleCalendarEventId,
                 FuncionarioGoogleEmail = agendamento.Funcionario?.GoogleCalendarEmail,
+                ClienteId = agendamento.ClienteId,
                 ClienteNome = agendamento.Cliente?.Nome ?? "",
                 ClienteEmail = agendamento.Cliente?.Email ?? "",
                 ClienteTelefone = agendamento.Cliente?.Telefone ?? "",
+                FuncionarioId = agendamento.FuncionarioId,
                 FuncionarioNome = agendamento.Funcionario?.Nome ?? "",
+                TipoAgendamentoId = agendamento.TipoAgendamentoId,
+                Participantes = agendamento.Participantes?.ToList() ?? new List<AgendamentoParticipante>(),
                 DocumentosAnexados = agendamento.DocumentosAnexados?.ToList() ?? new List<DocumentoAnexado>()
             };
 
@@ -1133,7 +1160,10 @@ namespace AgendaIR.Controllers
         /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, AgendamentoEditViewModel model)
+        public async Task<IActionResult> Edit(
+            int id, 
+            AgendamentoEditViewModel model,
+            string? ParticipantesJson)  // Adicionar parâmetro
         {
             // Verificar autenticação
             var userType = GetUserType();
@@ -1164,6 +1194,7 @@ namespace AgendaIR.Controllers
             var query = _context.Agendamentos
                 .Include(a => a.Cliente)
                 .Include(a => a.Funcionario)
+                .Include(a => a.TipoAgendamento)
                 .AsQueryable();
 
             // Se não for admin, verificar se é do funcionário
@@ -1182,21 +1213,68 @@ namespace AgendaIR.Controllers
             // Detectar mudança de status para Cancelado
             bool statusMudouParaCancelado = agendamento.Status != "Cancelado" && model.Status == "Cancelado";
             
-            // Detectar mudança de data/hora
+            // Detectar mudança de data/hora ou funcionário
             bool dataHoraMudou = agendamento.DataHora != model.DataHora;
+            bool funcionarioMudou = agendamento.FuncionarioId != model.FuncionarioId;
 
             // Atualizar campos
             agendamento.Status = model.Status;
             agendamento.Observacoes = model.Observacoes;
             agendamento.DataHora = model.DataHora;
+            agendamento.FuncionarioId = model.FuncionarioId;
+            if (model.TipoAgendamentoId.HasValue)
+            {
+                agendamento.TipoAgendamentoId = model.TipoAgendamentoId.Value;
+            }
             agendamento.DataAtualizacao = DateTime.UtcNow;
+
+            // ===== ATUALIZAR PARTICIPANTES =====
+            // Remover participantes antigos
+            var participantesAntigos = await _context.AgendamentoParticipantes
+                .Where(p => p.AgendamentoId == id)
+                .ToListAsync();
+
+            _context.AgendamentoParticipantes.RemoveRange(participantesAntigos);
+
+            // Adicionar novos participantes
+            List<string> emailsParticipantes = new();
+
+            if (!string.IsNullOrEmpty(ParticipantesJson))
+            {
+                try
+                {
+                    emailsParticipantes = JsonSerializer.Deserialize<List<string>>(ParticipantesJson) 
+                        ?? new List<string>();
+                    
+                    foreach (var email in emailsParticipantes)
+                    {
+                        var participante = new AgendamentoParticipante
+                        {
+                            AgendamentoId = id,
+                            Email = email,
+                            DataCriacao = DateTime.UtcNow
+                        };
+                        
+                        _context.AgendamentoParticipantes.Add(participante);
+                    }
+                    
+                    _logger.LogInformation($"✅ {emailsParticipantes.Count} participantes atualizados");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "❌ Erro ao processar participantes");
+                }
+            }
 
             await _context.SaveChangesAsync();
 
             // ✅ INTEGRAÇÃO GOOGLE CALENDAR
             try
             {
-                var funcionarioEmail = agendamento.Funcionario?.GoogleCalendarEmail;
+                var funcionario = await _context.Funcionarios.FindAsync(agendamento.FuncionarioId);
+                var cliente = await _context.Clientes.FindAsync(agendamento.ClienteId);
+                var tipoAgendamento = await _context.TiposAgendamento.FindAsync(agendamento.TipoAgendamentoId);
+                var funcionarioEmail = funcionario?.GoogleCalendarEmail;
                 var eventId = agendamento.GoogleCalendarEventId;
 
                 if (!string.IsNullOrEmpty(funcionarioEmail) && !string.IsNullOrEmpty(eventId))
@@ -1216,12 +1294,35 @@ namespace AgendaIR.Controllers
                             _logger.LogWarning($"⚠️ Não foi possível deletar evento do Google Calendar");
                         }
                     }
-                    // Se data/hora mudou, atualizar evento
-                    else if (dataHoraMudou)
+                    // Se data/hora, funcionário ou participantes mudaram, atualizar evento
+                    else if (dataHoraMudou || funcionarioMudou || !string.IsNullOrEmpty(ParticipantesJson))
                     {
-                        _logger.LogInformation($"📅 Atualizando data/hora do evento no Google Calendar: {eventId}");
-                        const int duracaoPadraoMinutos = 60; // Duração padrão de agendamentos
-                        var atualizado = await _calendarService.AtualizarEventoAsync(funcionarioEmail, eventId, model.DataHora, duracaoPadraoMinutos);
+                        _logger.LogInformation($"📅 Atualizando evento no Google Calendar: {eventId}");
+                        
+                        // Montar lista de emails (cliente + participantes)
+                        var todosEmails = new List<string>();
+                        
+                        if (!string.IsNullOrEmpty(cliente?.Email))
+                            todosEmails.Add(cliente.Email);
+                        
+                        todosEmails.AddRange(emailsParticipantes);
+                        
+                        _logger.LogInformation($"📧 Atualizando evento no Google Calendar para {todosEmails.Count} pessoa(s)");
+                        
+                        // Atualizar evento existente com todos os parâmetros
+                        var atualizado = await _calendarService.AtualizarEventoAsync(
+                            funcionarioEmail,
+                            eventId,
+                            cliente?.Nome ?? "Cliente",
+                            agendamento.DataHora,
+                            60,
+                            tipoAgendamento?.Nome,
+                            tipoAgendamento?.Descricao,
+                            todosEmails,
+                            tipoAgendamento?.Local,
+                            tipoAgendamento?.CriarGoogleMeet ?? false,
+                            tipoAgendamento?.CorCalendario ?? 6
+                        );
                         
                         if (atualizado)
                         {

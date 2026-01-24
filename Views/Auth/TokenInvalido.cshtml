@@ -1,0 +1,52 @@
+@{
+    ViewData["Title"] = "Link Inválido";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-danger">
+                <div class="card-body text-center p-5">
+                    <i class="bi bi-x-circle text-danger" style="font-size: 4rem;"></i>
+                    
+                    <h2 class="mt-4 mb-3">❌ Link Inválido</h2>
+                    
+                    <p class="text-muted mb-4">
+                        O link que você utilizou não é válido ou foi revogado.
+                    </p>
+                    
+                    <div class="alert alert-danger">
+                        <i class="bi bi-shield-exclamation"></i>
+                        Verifique se copiou o link corretamente do email recebido.
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <h5 class="mb-3">📞 Precisa de ajuda?</h5>
+                    
+                    <p class="text-muted">
+                        Entre em contato com nosso escritório:
+                    </p>
+                    
+                    <div class="d-grid gap-2 mt-4">
+                        <a href="mailto:contato@rir.com.br" class="btn btn-primary btn-lg">
+                            <i class="bi bi-envelope-fill"></i> Enviar Email
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border-radius: 15px;
+    }
+    
+    .btn-lg {
+        border-radius: 10px;
+        padding: 1rem;
+        font-weight: 600;
+    }
+</style>

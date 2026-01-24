@@ -19,6 +19,7 @@
                 <form asp-action="Edit" method="post">
                     @Html.AntiForgeryToken()
                     <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="ClienteId" />
                     <input type="hidden" asp-for="DataHoraOriginal" />
                     <input type="hidden" asp-for="GoogleCalendarEventId" />
                     <input type="hidden" asp-for="FuncionarioGoogleEmail" />
@@ -36,23 +37,102 @@
                                     <strong>Telefone:</strong> @Model.ClienteTelefone
                                 </div>
                                 <div class="col-12 col-md-6">
-                                    <strong>E-mail:</strong> @Model.ClienteEmail<br />
-                                    <strong>Funcionário:</strong> @Model.FuncionarioNome
+                                    <strong>E-mail:</strong> @Model.ClienteEmail
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Data e Hora (Editável) -->
+                    <!-- PARTICIPANTES ADICIONAIS -->
                     <div class="mb-4">
-                        <label asp-for="DataHora" class="form-label fw-bold">
-                            <i class="bi bi-calendar-event"></i> Data e Hora do Agendamento
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-people-fill"></i> Participantes Adicionais
+                            <small class="text-muted">(opcional)</small>
                         </label>
-                        <input type="datetime-local" asp-for="DataHora" class="form-control" />
+                        
+                        <div class="participantes-wrapper">
+                            <input type="email" 
+                                   id="participantes-input" 
+                                   class="form-control" 
+                                   placeholder="Digite o email e pressione Enter"
+                                   autocomplete="off" />
+                            
+                            <input type="hidden" 
+                                   id="ParticipantesJson" 
+                                   name="ParticipantesJson" 
+                                   value='@Json.Serialize(Model.Participantes?.Select(p => p.Email).ToList() ?? new List<string>())' />
+                            
+                            <div class="participantes-info">
+                                <i class="bi bi-info-circle-fill"></i>
+                                <div>
+                                    Todos os participantes receberão convite no Google Calendar.
+                                    <span id="participant-counter" class="participant-counter">
+                                        @(Model.Participantes?.Count ?? 0) participante(s)
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TIPO DE AGENDAMENTO -->
+                    @if (ViewBag.TiposAgendamento != null)
+                    {
+                        <div class="mb-4">
+                            <label asp-for="TipoAgendamentoId" class="form-label fw-bold">
+                                <i class="bi bi-bookmark"></i> Tipo de Agendamento
+                            </label>
+                            <select asp-for="TipoAgendamentoId" 
+                                    class="form-select" 
+                                    asp-items="@(new SelectList(ViewBag.TiposAgendamento, "Id", "Nome"))">
+                                <option value="">-- Selecione --</option>
+                            </select>
+                            <span asp-validation-for="TipoAgendamentoId" class="text-danger"></span>
+                        </div>
+                    }
+
+                    <!-- FUNCIONÁRIO RESPONSÁVEL -->
+                    <div class="mb-4">
+                        <label asp-for="FuncionarioId" class="form-label fw-bold">
+                            <i class="bi bi-person-badge"></i> Funcionário Responsável
+                        </label>
+                        <select asp-for="FuncionarioId" 
+                                class="form-select" 
+                                asp-items="@(new SelectList(ViewBag.Funcionarios, "Id", "Nome"))"
+                                onchange="onFuncionarioChange(this.value)"
+                                required>
+                            <option value="">-- Selecione --</option>
+                        </select>
+                        <span asp-validation-for="FuncionarioId" class="text-danger"></span>
+                    </div>
+
+                    <!-- DATA E HORÁRIO -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-calendar-event"></i> Data e Horário
+                        </label>
+                        
+                        <div class="data-hora-container">
+                            <!-- Calendário (Esquerda) -->
+                            <div class="calendario-wrapper">
+                                <div id="calendario"></div>
+                            </div>
+                            
+                            <!-- Horários Disponíveis (Direita) -->
+                            <div class="horarios-wrapper">
+                                <div id="horarios-disponiveis">
+                                    <div class="alert-rir alert-rir-info">
+                                        ℹ️ Selecione um dia no calendário
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Campo hidden para enviar no POST -->
+                        <input type="hidden" asp-for="DataHora" id="DataHora" />
                         <span asp-validation-for="DataHora" class="text-danger"></span>
-                        <small class="form-text text-muted">
-                            <i class="bi bi-info-circle"></i> Alterações na data/hora serão sincronizadas com o Google Calendar
-                        </small>
+                        
+                        <!-- Confirmação visual -->
+                        <div id="confirmacao-horario" class="mt-2"></div>
                     </div>
 
                     <div class="row">
@@ -169,9 +249,49 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     
+    <!-- CSS e JS -->
+    <link rel="stylesheet" href="~/css/rir-design/calendario.css" />
+    <link rel="stylesheet" href="~/css/rir-design/tag-input.css" />
+
+    <script src="~/js/calendario-disponibilidade.js"></script>
+    <script src="~/js/tag-input-participantes.js"></script>
+
     <script>
-        // Alerta ao mudar status para Cancelado ou Concluído
-        document.querySelector('select[name="Status"]').addEventListener('change', function() {
+    // Pré-carregar participantes existentes
+    document.addEventListener('DOMContentLoaded', () => {
+        const participantesJson = document.getElementById('ParticipantesJson').value;
+        
+        if (participantesJson && participantesInput) {
+            try {
+                const emails = JSON.parse(participantesJson);
+                participantesInput.tags = emails;
+                emails.forEach(email => participantesInput.renderTag(email));
+                participantesInput.updateHiddenInput();
+            } catch (e) {
+                console.error('Erro ao carregar participantes:', e);
+            }
+        }
+        
+        // Pré-selecionar funcionário e data
+        const funcionarioId = @Model.FuncionarioId;
+        const dataHoraAtual = new Date('@Model.DataHora.ToString("o")');
+        const agendamentoId = @Model.Id;
+        
+        if (funcionarioId) {
+            // Aguardar calendário renderizar, depois selecionar data
+            setTimeout(() => {
+                calendarioState.funcionarioId = funcionarioId;
+                calendarioState.dataSelecionada = dataHoraAtual;
+                calendarioState.ignorarAgendamentoId = agendamentoId; // Ignorar próprio agendamento
+                carregarHorarios(dataHoraAtual);
+            }, 500);
+        }
+    });
+    
+    // Alerta ao mudar status para Cancelado ou Concluído
+    const statusSelect = document.querySelector('select[name="Status"]');
+    if (statusSelect) {
+        statusSelect.addEventListener('change', function() {
             if (this.value === 'Cancelado') {
                 if (!confirm('Ao cancelar o agendamento, o evento será removido do Google Calendar. Confirma?')) {
                     this.value = '@Model.Status'; // Reverter
@@ -182,15 +302,16 @@
                 }
             }
         });
+    }
 
-        // Confirmação ao submeter o formulário
-        document.querySelector('form').addEventListener('submit', function(e) {
-            var status = document.querySelector('select[name="Status"]').value;
-            if (status === 'Cancelado' || status === 'Concluido') {
-                if (!confirm('Tem certeza que deseja salvar estas alterações?')) {
-                    e.preventDefault();
-                }
+    // Confirmação ao submeter o formulário
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const status = document.querySelector('select[name="Status"]');
+        if (status && (status.value === 'Cancelado' || status.value === 'Concluido')) {
+            if (!confirm('Tem certeza que deseja salvar estas alterações?')) {
+                e.preventDefault();
             }
-        });
+        }
+    });
     </script>
 }

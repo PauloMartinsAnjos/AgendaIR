@@ -188,7 +188,32 @@
                     <i class="bi bi-info-circle" style="font-size: 1.5rem;"></i>
                     <div>
                         Este é o link único que permite ao cliente acessar o sistema sem precisar de senha.
+                        <br><strong>Por segurança, o link expira em 8 horas.</strong>
                     </div>
+                </div>
+
+                <!-- STATUS DO TOKEN -->
+                <div class="mb-3">
+                    <label class="text-muted small">Status do Token</label>
+                    @if (Model.TokenAtivo && Model.TokenValido())
+                    {
+                        <div class="alert alert-success mb-0">
+                            <i class="bi bi-check-circle-fill"></i>
+                            <strong>✅ Ativo</strong><br>
+                            Expira em: <strong>@Model.TokenExpiracao?.ToString("dd/MM/yyyy HH:mm")</strong>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning mb-0">
+                            <i class="bi bi-clock-history"></i>
+                            <strong>⏰ Expirado</strong>
+                            @if (Model.TokenExpiracao.HasValue)
+                            {
+                                <br><span>Expirou em: <strong>@Model.TokenExpiracao?.ToString("dd/MM/yyyy HH:mm")</strong></span>
+                            }
+                        </div>
+                    }
                 </div>
 
                 <div class="mb-3">
@@ -208,12 +233,19 @@
                     </div>
                 </div>
 
-                <div class="d-grid">
+                <div class="d-grid gap-2">
                     <a href="@whatsappLink" 
                        target="_blank" 
                        class="btn-rir-success">
                         <i class="bi bi-whatsapp"></i> Enviar via WhatsApp
                     </a>
+                    
+                    <form asp-action="RegenerarToken" asp-route-id="@Model.Id" method="post" class="mb-0">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-warning w-100" onclick="return confirm('Tem certeza? O token anterior será invalidado.')">
+                            <i class="bi bi-arrow-clockwise"></i> Gerar Novo Token
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
