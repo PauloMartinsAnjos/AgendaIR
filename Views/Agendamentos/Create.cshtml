@@ -21,26 +21,52 @@
                     
                     <div asp-validation-summary="ModelOnly" class="alert-rir alert-rir-danger" role="alert"></div>
 
-                    <!-- Informações do Funcionário Responsável -->
-                    <div class="alert-rir alert-rir-info mb-4">
-                        <i class="bi bi-person-badge" style="font-size: 1.5rem;"></i>
-                        <div>
-                            <strong>Funcionário Responsável</strong><br />
-                            <strong>@Model.FuncionarioNome</strong><br />
-                            <small>Este é o funcionário que irá atendê-lo</small>
-                        </div>
+                    <!-- FUNCIONÁRIO RESPONSÁVEL -->
+                    <div class="mb-4">
+                        <label asp-for="FuncionarioId" class="form-label fw-bold">
+                            <i class="bi bi-person-badge"></i> Funcionário Responsável
+                        </label>
+                        <select asp-for="FuncionarioId" 
+                                class="form-select" 
+                                asp-items="@(new SelectList(ViewBag.Funcionarios, "Id", "Nome"))"
+                                onchange="onFuncionarioChange(this.value)"
+                                required>
+                            <option value="">-- Selecione --</option>
+                        </select>
+                        <span asp-validation-for="FuncionarioId" class="text-danger"></span>
+                        <small class="form-text text-muted">
+                            <i class="bi bi-info-circle"></i> Este é o funcionário que irá atendê-lo
+                        </small>
                     </div>
 
-                    <!-- Data e Hora -->
+                    <!-- DATA E HORÁRIO -->
                     <div class="mb-4">
-                        <label asp-for="DataHora" class="form-label fw-bold">
-                            <i class="bi bi-calendar-event"></i> Data e Hora do Agendamento
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-calendar-event"></i> Data e Horário
                         </label>
-                        <input asp-for="DataHora" class="form-control" type="datetime-local" />
+                        
+                        <div class="data-hora-container">
+                            <!-- Calendário (Esquerda) -->
+                            <div class="calendario-wrapper">
+                                <div id="calendario"></div>
+                            </div>
+                            
+                            <!-- Horários Disponíveis (Direita) -->
+                            <div class="horarios-wrapper">
+                                <div id="horarios-disponiveis">
+                                    <div class="alert-rir alert-rir-info">
+                                        ℹ️ Selecione um dia no calendário
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Campo hidden para enviar no POST -->
+                        <input type="hidden" asp-for="DataHora" id="DataHora" />
                         <span asp-validation-for="DataHora" class="text-danger"></span>
-                        <small class="form-text text-muted">
-                            <i class="bi bi-info-circle"></i> Agendamentos disponíveis de segunda a sexta-feira, das 8h às 18h
-                        </small>
+                        
+                        <!-- Confirmação visual -->
+                        <div id="confirmacao-horario" class="mt-2"></div>
                     </div>
 
                     <!-- Observações -->
@@ -115,6 +141,10 @@
         </div>
     </div>
 </div>
+
+<!-- CSS e JS do Calendário -->
+<link rel="stylesheet" href="~/css/rir-design/calendario.css" />
+<script src="~/js/calendario-disponibilidade.js"></script>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

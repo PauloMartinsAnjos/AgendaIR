@@ -44,6 +44,21 @@
                         <span asp-validation-for="ClienteId" class="text-danger"></span>
                     </div>
 
+                    <!-- FUNCIONÁRIO RESPONSÁVEL -->
+                    <div class="mb-4">
+                        <label asp-for="FuncionarioId" class="form-label fw-bold">
+                            <i class="bi bi-person-badge"></i> Funcionário Responsável
+                        </label>
+                        <select asp-for="FuncionarioId" 
+                                class="form-select" 
+                                asp-items="@(new SelectList(ViewBag.Funcionarios, "Id", "Nome"))"
+                                onchange="onFuncionarioChange(this.value)"
+                                required>
+                            <option value="">-- Selecione --</option>
+                        </select>
+                        <span asp-validation-for="FuncionarioId" class="text-danger"></span>
+                    </div>
+
                     <!-- Tipo de Agendamento -->
                     <div class="mb-3">
                         <label asp-for="TipoAgendamentoId" class="form-label fw-bold">
@@ -65,43 +80,35 @@
                         <span asp-validation-for="TipoAgendamentoId" class="text-danger"></span>
                     </div>
 
-                    <!-- Data e Hora -->
-                    <div class="row">
-                        <div class="col-12 col-md-6 mb-3">
-                            <label asp-for="DataHora" class="form-label fw-bold">
-                                <i class="bi bi-calendar"></i> Data e Hora <span class="text-danger">*</span>
-                            </label>
-                            <input asp-for="DataHora" type="datetime-local" class="form-control" required />
-                            <span asp-validation-for="DataHora" class="text-danger"></span>
-                            <small class="form-text text-muted">
-                                Horário: 8h às 18h, Segunda a Sexta
-                            </small>
+                    <!-- DATA E HORÁRIO -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-calendar-event"></i> Data e Horário
+                        </label>
+                        
+                        <div class="data-hora-container">
+                            <!-- Calendário (Esquerda) -->
+                            <div class="calendario-wrapper">
+                                <div id="calendario"></div>
+                            </div>
+                            
+                            <!-- Horários Disponíveis (Direita) -->
+                            <div class="horarios-wrapper">
+                                <div id="horarios-disponiveis">
+                                    <div class="alert-rir alert-rir-info">
+                                        ℹ️ Selecione um dia no calendário
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+                        
+                        <!-- Campo hidden para enviar no POST -->
+                        <input type="hidden" asp-for="DataHora" id="DataHora" />
+                        <span asp-validation-for="DataHora" class="text-danger"></span>
+                        
+                        <!-- Confirmação visual -->
+                        <div id="confirmacao-horario" class="mt-2"></div>
                     </div>
-
-                    <!-- Responsável (só aparece para Admin) -->
-                    @if (isAdmin)
-                    {
-                        <div class="mb-3">
-                            <label asp-for="FuncionarioId" class="form-label fw-bold">
-                                <i class="bi bi-person-badge"></i> Funcionário Responsável
-                            </label>
-                            <select asp-for="FuncionarioId" class="form-select">
-                                <option value="">-- Eu serei o responsável --</option>
-                                @{
-                                    var funcionarios = ViewBag.Funcionarios as List<AgendaIR.Models.Funcionario>;
-                                    if (funcionarios != null)
-                                    {
-                                        foreach (var func in funcionarios)
-                                        {
-                                            <option value="@func.Id">@func.Nome</option>
-                                        }
-                                    }
-                                }
-                            </select>
-                            <small class="form-text text-muted">Se não selecionar, você será o responsável</small>
-                        </div>
-                    }
 
                     <!-- Observações -->
                     <div class="mb-3">
@@ -133,6 +140,10 @@
         </div>
     </div>
 </div>
+
+<!-- CSS e JS do Calendário -->
+<link rel="stylesheet" href="~/css/rir-design/calendario.css" />
+<script src="~/js/calendario-disponibilidade.js"></script>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
