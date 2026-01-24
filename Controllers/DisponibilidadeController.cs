@@ -24,14 +24,15 @@ namespace AgendaIR.Controllers
         }
 
         /// <summary>
-        /// GET: api/disponibilidade?funcionarioId=1&data=2026-01-24&duracao=60
+        /// GET: api/disponibilidade?funcionarioId=1&data=2026-01-24&duracao=60&ignorarAgendamentoId=5
         /// Retorna lista de horários disponíveis/ocupados
         /// </summary>
         [HttpGet]
         public async Task<IActionResult> ObterHorariosDisponiveis(
             int funcionarioId,
             DateTime data,
-            int duracao = 60)
+            int duracao = 60,
+            int? ignorarAgendamentoId = null)  // NOVO PARÂMETRO
         {
             _logger.LogInformation($"🔍 Buscando disponibilidade - Funcionário: {funcionarioId}, Data: {data:dd/MM/yyyy}, Duração: {duracao}min");
 
@@ -73,7 +74,8 @@ namespace AgendaIR.Controllers
                     funcionarioId,
                     funcionario.GoogleCalendarEmail,
                     hora,
-                    duracao
+                    duracao,
+                    ignorarAgendamentoId  // Passar parâmetro
                 );
 
                 horarios.Add(new HorarioDisponivel
@@ -97,14 +99,23 @@ namespace AgendaIR.Controllers
             int funcionarioId,
             string? googleEmail,
             DateTime inicio,
-            int duracao)
+            int duracao,
+            int? ignorarAgendamentoId = null)  // NOVO PARÂMETRO
         {
             var fim = inicio.AddMinutes(duracao);
 
             // 1️⃣ VERIFICAR AGENDAMENTOS LOCAIS
-            var temAgendamentoLocal = await _context.Agendamentos
+            var query = _context.Agendamentos
                 .Where(a => a.FuncionarioId == funcionarioId)
-                .Where(a => a.Status != "Cancelado")
+                .Where(a => a.Status != "Cancelado");
+            
+            // Ignorar o próprio agendamento (no caso de edição)
+            if (ignorarAgendamentoId.HasValue)
+            {
+                query = query.Where(a => a.Id != ignorarAgendamentoId.Value);
+            }
+            
+            var temAgendamentoLocal = await query
                 .AnyAsync(a =>
                     // Conflito: novo agendamento começa durante um existente
                     (a.DataHora >= inicio && a.DataHora < fim) ||

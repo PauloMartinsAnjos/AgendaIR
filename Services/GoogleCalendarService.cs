@@ -355,6 +355,106 @@ namespace AgendaIR.Services
         }
 
         /// <summary>
+        /// Atualiza evento existente no Google Calendar com todos os detalhes
+        /// </summary>
+        public async Task<bool> AtualizarEventoAsync(
+            string funcionarioEmail,
+            string eventId,
+            string clienteNome,
+            DateTime dataHora,
+            int duracao = 60,
+            string? tipoNome = null,
+            string? tipoDescricao = null,
+            List<string>? participantesEmails = null,
+            string? local = null,
+            bool criarGoogleMeet = false,
+            int corCalendario = 6)
+        {
+            try
+            {
+                var service = await GetCalendarServiceAsync(funcionarioEmail);
+                if (service == null)
+                {
+                    _logger.LogWarning($"⚠️ Não foi possível obter service do Google Calendar");
+                    return false;
+                }
+
+                // Buscar evento existente
+                var eventRequest = service.Events.Get("primary", eventId);
+                var evento = await eventRequest.ExecuteAsync();
+
+                if (evento == null)
+                {
+                    _logger.LogWarning($"⚠️ Evento {eventId} não encontrado");
+                    return false;
+                }
+
+                // Atualizar dados do evento
+                evento.Summary = $"🗓️ {tipoNome ?? "Agendamento"} - {clienteNome}";
+                evento.Description = tipoDescricao ?? $"Agendamento com {clienteNome}";
+                evento.Location = local;
+                evento.Start = new EventDateTime 
+                { 
+                    DateTimeDateTimeOffset = new DateTimeOffset(dataHora),
+                    TimeZone = "America/Sao_Paulo" 
+                };
+                evento.End = new EventDateTime 
+                { 
+                    DateTimeDateTimeOffset = new DateTimeOffset(dataHora.AddMinutes(duracao)),
+                    TimeZone = "America/Sao_Paulo" 
+                };
+                evento.ColorId = corCalendario.ToString();
+
+                // Atualizar participantes
+                if (participantesEmails != null && participantesEmails.Any())
+                {
+                    evento.Attendees = participantesEmails
+                        .Where(email => !string.IsNullOrEmpty(email))
+                        .Distinct()
+                        .Select(email => new EventAttendee
+                        {
+                            Email = email,
+                            ResponseStatus = "needsAction"
+                        })
+                        .ToList();
+                }
+                else
+                {
+                    evento.Attendees = null;
+                }
+
+                // Atualizar Google Meet (se necessário)
+                if (criarGoogleMeet && evento.ConferenceData == null)
+                {
+                    evento.ConferenceData = new ConferenceData
+                    {
+                        CreateRequest = new CreateConferenceRequest
+                        {
+                            RequestId = Guid.NewGuid().ToString(),
+                            ConferenceSolutionKey = new ConferenceSolutionKey { Type = "hangoutsMeet" }
+                        }
+                    };
+                }
+
+                // Executar atualização
+                var updateRequest = service.Events.Update(evento, "primary", eventId);
+                updateRequest.SendUpdates = EventsResource.UpdateRequest.SendUpdatesEnum.All; // Notificar todos
+                updateRequest.ConferenceDataVersion = 1;
+
+                await updateRequest.ExecuteAsync();
+
+                _logger.LogInformation($"✅ Evento {eventId} atualizado com sucesso");
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"❌ Erro ao atualizar evento no Google Calendar");
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Deleta um evento do Google Calendar
         /// </summary>
         public async Task<bool> DeletarEventoAsync(string funcionarioEmail, string eventId)
