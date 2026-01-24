@@ -1,0 +1,196 @@
+/* ===================================
+   DASHBOARD LEMBRETES - RIR Design System
+   ===================================
+   Sistema de lembretes lateral para agendamentos
+   Usa variáveis CSS do RIR Design System
+   =================================== */
+
+/* Painel de Lembretes */
+.lembretes-panel {
+    position: sticky;
+    top: 20px;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+}
+
+.lembretes-panel .card-rir {
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.lembretes-panel .card-rir-header {
+    background: linear-gradient(135deg, var(--primary, #F58634) 0%, var(--secondary, #7B431A) 100%);
+    color: white;
+    padding: 1rem 1.25rem;
+    border-radius: 16px 16px 0 0;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.lembretes-panel .card-rir-header h5 {
+    margin: 0;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+/* Seções de Lembretes */
+.lembretes-section {
+    border-bottom: 1px solid var(--orange-40, #FBD4AC);
+}
+
+.lembretes-section:last-child {
+    border-bottom: none;
+}
+
+.lembretes-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.875rem 1.25rem;
+    background: linear-gradient(to right, rgba(245, 134, 52, 0.05), rgba(251, 212, 172, 0.05));
+    border-bottom: 1px solid var(--orange-40, #FBD4AC);
+}
+
+.lembretes-section-header .badge-rir {
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+/* Lista de Lembretes */
+.lembretes-list {
+    background: white;
+}
+
+.lembrete-item {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    padding: 0.875rem 1.25rem;
+    border-bottom: 1px solid #f0f0f0;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+}
+
+.lembrete-item:last-child {
+    border-bottom: none;
+}
+
+.lembrete-item:hover {
+    background: linear-gradient(to right, rgba(245, 134, 52, 0.05), rgba(251, 212, 172, 0.05));
+    transform: translateX(5px);
+    cursor: pointer;
+}
+
+.lembrete-time {
+    flex-shrink: 0;
+    font-weight: 600;
+    color: var(--secondary, #7B431A);
+    font-size: 0.875rem;
+    min-width: 80px;
+}
+
+.lembrete-time i {
+    margin-right: 0.25rem;
+}
+
+.lembrete-info {
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.lembrete-cliente {
+    font-weight: 600;
+    color: #333;
+    font-size: 0.925rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 0.25rem;
+}
+
+.lembrete-tipo {
+    font-size: 0.8rem;
+    color: #666;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.lembrete-tipo i {
+    margin-right: 0.25rem;
+    font-size: 0.75rem;
+}
+
+.lembrete-meet {
+    font-size: 0.75rem;
+    color: var(--primary, #F58634);
+    margin-top: 0.25rem;
+}
+
+.lembrete-meet i {
+    margin-right: 0.25rem;
+}
+
+.lembrete-status {
+    flex-shrink: 0;
+}
+
+.lembrete-status .badge-rir {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+}
+
+/* Scrollbar personalizada */
+.lembretes-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.lembretes-panel::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.lembretes-panel::-webkit-scrollbar-thumb {
+    background: var(--primary, #F58634);
+    border-radius: 10px;
+}
+
+.lembretes-panel::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary, #7B431A);
+}
+
+/* Responsivo */
+@media (max-width: 991px) {
+    .lembretes-panel {
+        position: static;
+        max-height: none;
+        margin-top: 1.5rem;
+    }
+    
+    .lembrete-item {
+        flex-wrap: wrap;
+    }
+    
+    .lembrete-time {
+        min-width: auto;
+    }
+}
+
+@media (max-width: 576px) {
+    .lembretes-section-header {
+        padding: 0.75rem 1rem;
+    }
+    
+    .lembrete-item {
+        padding: 0.75rem 1rem;
+        gap: 0.5rem;
+    }
+    
+    .lembrete-cliente {
+        font-size: 0.875rem;
+    }
+    
+    .lembrete-tipo {
+        font-size: 0.75rem;
+    }
+}
