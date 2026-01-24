@@ -162,6 +162,8 @@ namespace AgendaIR.Services
             string clienteNome, 
             DateTime dataHora, 
             int duracao = 60,
+            string? tipoNome = null,
+            string? tipoDescricao = null,
             string? clienteEmail = null,
             string? local = null,
             bool criarGoogleMeet = false,
@@ -193,8 +195,12 @@ namespace AgendaIR.Services
                 // ✅ Criar evento com todos os recursos
                 var evento = new Event
                 {
-                    Summary = $"Agendamento IR - {clienteNome}",
-                    Description = $"Atendimento de declaração de IR para o cliente {clienteNome}",
+                    Summary = !string.IsNullOrEmpty(tipoNome) 
+                        ? $"{tipoNome} - {clienteNome}" 
+                        : $"Agendamento - {clienteNome}",
+                    Description = !string.IsNullOrEmpty(tipoDescricao) 
+                        ? tipoDescricao 
+                        : $"Atendimento para o cliente {clienteNome}",
                     Start = new EventDateTime
                     {
                         DateTimeDateTimeOffset = new DateTimeOffset(dataHora),

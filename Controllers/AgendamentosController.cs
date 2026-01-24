@@ -368,6 +368,8 @@ namespace AgendaIR.Controllers
                     cliente.Nome,
                     model.DataHora,
                     duracaoPadraoMinutos,
+                    tipoAgendamento?.Nome,
+                    tipoAgendamento?.Descricao,
                     cliente.Email, // Email do cliente como participante
                     tipoAgendamento?.Local,
                     tipoAgendamento?.CriarGoogleMeet ?? false,
@@ -818,6 +820,8 @@ namespace AgendaIR.Controllers
                             clienteNome,
                             agendamento.DataHora,
                             duracaoPadraoMinutos,
+                            tipoAgendamento?.Nome,
+                            tipoAgendamento?.Descricao,
                             clienteEmail,
                             local,
                             criarGoogleMeet,
