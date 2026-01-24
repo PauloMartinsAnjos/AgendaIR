@@ -93,7 +93,7 @@ function renderizarCalendario(data) {
         if (!isDiaUtil) classes += ' fim-semana';
         
         const onclick = (!isPast && isDiaUtil) 
-            ? `onclick="selecionarDia('${dataCompleta.toISOString()}')"` 
+            ? `onclick="selecionarDia('${dataCompleta.toISOString()}', this)"` 
             : '';
         
         html += `<div class="${classes}" ${onclick}>${dia}</div>`;
@@ -106,7 +106,7 @@ function renderizarCalendario(data) {
 /**
  * Selecionar dia no calendário
  */
-async function selecionarDia(dataISO) {
+async function selecionarDia(dataISO, clickedElement) {
     // Validar se funcionário foi selecionado
     if (!calendarioState.funcionarioId) {
         alert('⚠️ Selecione o funcionário responsável primeiro!');
@@ -120,7 +120,11 @@ async function selecionarDia(dataISO) {
 
     // Destacar dia selecionado
     document.querySelectorAll('.dia').forEach(el => el.classList.remove('selecionado'));
-    event.target.classList.add('selecionado');
+    // Use the element from the onclick event if available, otherwise try to find it
+    const targetElement = clickedElement || event.target;
+    if (targetElement) {
+        targetElement.classList.add('selecionado');
+    }
 
     // Carregar horários disponíveis
     await carregarHorarios(data);
@@ -198,7 +202,7 @@ function renderizarHorarios(horarios) {
         const classe = horario.disponivel ? 'horario-livre' : 'horario-ocupado';
         const icone = horario.disponivel ? '✅' : '❌';
         const status = horario.disponivel ? 'LIVRE' : 'OCUPADO';
-        const onclick = horario.disponivel ? `onclick="selecionarHorario('${horario.inicio}')"` : '';
+        const onclick = horario.disponivel ? `onclick="selecionarHorario('${horario.inicio}', this)"` : '';
 
         html += `
             <div class="horario-item ${classe}" ${onclick}>
@@ -216,7 +220,7 @@ function renderizarHorarios(horarios) {
 /**
  * Selecionar horário da lista
  */
-function selecionarHorario(dataHoraISO) {
+function selecionarHorario(dataHoraISO, clickedElement) {
     console.log('⏰ Horário selecionado:', dataHoraISO);
     
     // Atualizar campo hidden do formulário
@@ -229,7 +233,15 @@ function selecionarHorario(dataHoraISO) {
     document.querySelectorAll('.horario-item').forEach(el => {
         el.classList.remove('selecionado');
     });
-    event.target.closest('.horario-item').classList.add('selecionado');
+    
+    // Use the element from the onclick event if available, otherwise try to find it
+    const targetElement = clickedElement || event.target;
+    if (targetElement) {
+        const horarioItem = targetElement.closest('.horario-item');
+        if (horarioItem) {
+            horarioItem.classList.add('selecionado');
+        }
+    }
 
     // Mostrar confirmação visual
     const dataHora = new Date(dataHoraISO);

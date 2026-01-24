@@ -100,7 +100,7 @@ namespace AgendaIR.Controllers
                     // Conflito: novo agendamento começa durante um existente
                     (a.DataHora >= inicio && a.DataHora < fim) ||
                     // Conflito: novo agendamento termina durante um existente
-                    (a.DataHora < inicio && a.DataHora.AddMinutes(60) > inicio)
+                    (a.DataHora < inicio && a.DataHora.AddMinutes(duracao) > inicio)
                 );
 
             if (temAgendamentoLocal)
