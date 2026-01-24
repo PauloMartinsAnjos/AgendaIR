@@ -90,13 +90,26 @@ class TagInputParticipantes {
         
         const tag = document.createElement('div');
         tag.className = 'participant-tag';
-        tag.innerHTML = `
-            <i class="bi bi-person-fill"></i>
-            <span>${email}</span>
-            <button type="button" onclick="participantesInput.removeTag('${email}')">
-                <i class="bi bi-x"></i>
-            </button>
-        `;
+        tag.setAttribute('data-email', email);
+        
+        const icon = document.createElement('i');
+        icon.className = 'bi bi-person-fill';
+        
+        const span = document.createElement('span');
+        span.textContent = email;
+        
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.innerHTML = '<i class="bi bi-x"></i>';
+        
+        // Use addEventListener instead of inline onclick to prevent XSS
+        button.addEventListener('click', () => {
+            this.removeTag(email);
+        });
+        
+        tag.appendChild(icon);
+        tag.appendChild(span);
+        tag.appendChild(button);
         
         tagsContainer.appendChild(tag);
     }

@@ -47,7 +47,7 @@ namespace AgendaIR.Controllers
             var horarios = new List<HorarioDisponivel>();
             
             // Horário comercial: 8h às 17h (Horário de Brasília)
-            var timeZoneBrasilia = TimeZoneInfo.FindSystemTimeZoneById("E. South America Standard Time");
+            var timeZoneBrasilia = TimeZoneInfo.FindSystemTimeZoneById("America/Sao_Paulo");
             var agora = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, timeZoneBrasilia);
 
             var horaInicioLocal = new DateTime(data.Year, data.Month, data.Day, 8, 0, 0, DateTimeKind.Unspecified);

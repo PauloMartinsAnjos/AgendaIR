@@ -332,26 +332,43 @@ namespace AgendaIR.Controllers
             {
                 try
                 {
-                    emailsParticipantes = JsonSerializer.Deserialize<List<string>>(ParticipantesJson) 
-                        ?? new List<string>();
+                    var participantesDeserialized = JsonSerializer.Deserialize<List<string>>(ParticipantesJson);
                     
-                    _logger.LogInformation($"📧 Processando {emailsParticipantes.Count} participantes");
-                    
-                    foreach (var email in emailsParticipantes)
+                    if (participantesDeserialized != null)
                     {
-                        var participante = new AgendamentoParticipante
-                        {
-                            AgendamentoId = agendamento.Id,
-                            Email = email,
-                            DataCriacao = DateTime.UtcNow
-                        };
+                        // Validate each email before adding
+                        var emailRegex = new System.Text.RegularExpressions.Regex(
+                            @"^[^@\s]+@[^@\s]+\.[^@\s]+$", 
+                            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
                         
-                        _context.AgendamentoParticipantes.Add(participante);
+                        emailsParticipantes = participantesDeserialized
+                            .Where(email => !string.IsNullOrWhiteSpace(email) && emailRegex.IsMatch(email))
+                            .Select(email => email.Trim())
+                            .Distinct()
+                            .ToList();
+                        
+                        _logger.LogInformation($"📧 Processando {emailsParticipantes.Count} participantes válidos");
+                        
+                        foreach (var email in emailsParticipantes)
+                        {
+                            var participante = new AgendamentoParticipante
+                            {
+                                AgendamentoId = agendamento.Id,
+                                Email = email,
+                                DataCriacao = DateTime.UtcNow
+                            };
+                            
+                            _context.AgendamentoParticipantes.Add(participante);
+                        }
+                        
+                        await _context.SaveChangesAsync();
+                        
+                        _logger.LogInformation($"✅ {emailsParticipantes.Count} participantes salvos no banco");
                     }
-                    
-                    await _context.SaveChangesAsync();
-                    
-                    _logger.LogInformation($"✅ {emailsParticipantes.Count} participantes salvos no banco");
+                }
+                catch (JsonException ex)
+                {
+                    _logger.LogError(ex, "❌ Erro ao processar JSON de participantes - formato inválido");
                 }
                 catch (Exception ex)
                 {
@@ -415,7 +432,7 @@ namespace AgendaIR.Controllers
 
                 var (eventId, conferenciaUrl) = await _calendarService.CriarEventoAsync(
                     funcionarioEmail,
-                    cliente.Nome,
+                    cliente?.Nome ?? "Cliente",
                     model.DataHora,
                     duracaoPadraoMinutos,
                     tipoAgendamento?.Nome,
@@ -438,7 +455,7 @@ namespace AgendaIR.Controllers
                     _logger.LogInformation($"✅ ========================================");
                     _logger.LogInformation($"✅ Event ID: {eventId}");
                     _logger.LogInformation($"✅ Email: {funcionarioEmail}");
-                    _logger.LogInformation($"✅ Cliente: {cliente.Nome}");
+                    _logger.LogInformation($"✅ Cliente: {cliente?.Nome ?? "Cliente"}");
                     _logger.LogInformation($"✅ Data/Hora: {model.DataHora:yyyy-MM-dd HH:mm}");
                     if (!string.IsNullOrEmpty(conferenciaUrl))
                     {
@@ -459,7 +476,7 @@ namespace AgendaIR.Controllers
                     _logger.LogError($"❌ O GoogleCalendarService retornou NULL");
                     _logger.LogError($"❌ ");
                     _logger.LogError($"❌ Email usado: {funcionarioEmail}");
-                    _logger.LogError($"❌ Cliente: {cliente.Nome}");
+                    _logger.LogError($"❌ Cliente: {cliente?.Nome ?? "Cliente"}");
                     _logger.LogError($"❌ Data/Hora: {model.DataHora:yyyy-MM-dd HH:mm}");
                     _logger.LogError($"❌ ");
                     _logger.LogError($"❌ POSSÍVEIS CAUSAS:");
@@ -856,26 +873,43 @@ namespace AgendaIR.Controllers
                 {
                     try
                     {
-                        emailsParticipantes = JsonSerializer.Deserialize<List<string>>(ParticipantesJson) 
-                            ?? new List<string>();
+                        var participantesDeserialized = JsonSerializer.Deserialize<List<string>>(ParticipantesJson);
                         
-                        _logger.LogInformation($"📧 Processando {emailsParticipantes.Count} participantes");
-                        
-                        foreach (var email in emailsParticipantes)
+                        if (participantesDeserialized != null)
                         {
-                            var participante = new AgendamentoParticipante
-                            {
-                                AgendamentoId = agendamento.Id,
-                                Email = email,
-                                DataCriacao = DateTime.UtcNow
-                            };
+                            // Validate each email before adding
+                            var emailRegex = new System.Text.RegularExpressions.Regex(
+                                @"^[^@\s]+@[^@\s]+\.[^@\s]+$", 
+                                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
                             
-                            _context.AgendamentoParticipantes.Add(participante);
+                            emailsParticipantes = participantesDeserialized
+                                .Where(email => !string.IsNullOrWhiteSpace(email) && emailRegex.IsMatch(email))
+                                .Select(email => email.Trim())
+                                .Distinct()
+                                .ToList();
+                            
+                            _logger.LogInformation($"📧 Processando {emailsParticipantes.Count} participantes válidos");
+                            
+                            foreach (var email in emailsParticipantes)
+                            {
+                                var participante = new AgendamentoParticipante
+                                {
+                                    AgendamentoId = agendamento.Id,
+                                    Email = email,
+                                    DataCriacao = DateTime.UtcNow
+                                };
+                                
+                                _context.AgendamentoParticipantes.Add(participante);
+                            }
+                            
+                            await _context.SaveChangesAsync();
+                            
+                            _logger.LogInformation($"✅ {emailsParticipantes.Count} participantes salvos no banco");
                         }
-                        
-                        await _context.SaveChangesAsync();
-                        
-                        _logger.LogInformation($"✅ {emailsParticipantes.Count} participantes salvos no banco");
+                    }
+                    catch (JsonException ex)
+                    {
+                        _logger.LogError(ex, "❌ Erro ao processar JSON de participantes - formato inválido");
                     }
                     catch (Exception ex)
                     {
