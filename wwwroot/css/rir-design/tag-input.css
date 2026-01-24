@@ -1,0 +1,148 @@
+/* ========================================
+   TAG INPUT PARTICIPANTES
+   Design System RIR
+   Cores: #F58634 (laranja), #7B431A (marrom)
+   ======================================== */
+
+.participantes-wrapper {
+    position: relative;
+}
+
+/* Container de tags */
+.tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    min-height: 40px;
+    padding: 0.5rem;
+    border: 2px dashed #F5B68A;
+    border-radius: 8px;
+    background: #FFF5ED;
+}
+
+.tags-container:empty {
+    display: none;
+}
+
+/* Tag individual (email) */
+.participant-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #F58634;
+    color: white;
+    padding: 0.5rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    animation: slideIn 0.3s ease;
+}
+
+.participant-tag i.bi-person-fill {
+    font-size: 1rem;
+}
+
+/* Botão de remover tag */
+.participant-tag button {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.participant-tag button:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+.participant-tag button i {
+    font-size: 1.2rem;
+}
+
+/* Input de email */
+#participantes-input {
+    border: 2px solid #F5B68A;
+    border-radius: 8px;
+    padding: 0.75rem;
+    width: 100%;
+}
+
+#participantes-input:focus {
+    border-color: #F58634;
+    box-shadow: 0 0 0 0.2rem rgba(245, 134, 52, 0.25);
+    outline: none;
+}
+
+#participantes-input.is-invalid {
+    border-color: #ef4444;
+}
+
+.invalid-feedback {
+    color: #ef4444;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    display: none;
+}
+
+/* Contador de participantes */
+.participant-counter {
+    font-size: 0.85rem;
+    color: #7B431A;
+    margin-top: 0.5rem;
+    font-weight: 600;
+}
+
+/* Info box */
+.participantes-info {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+    margin-top: 0.5rem;
+    padding: 0.75rem;
+    background: #FFF5ED;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: #7B431A;
+    border: 1px solid #F5B68A;
+}
+
+.participantes-info i {
+    color: #F58634;
+    font-size: 1rem;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+}
+
+/* Animação de entrada */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px) scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+/* ===== RESPONSIVO ===== */
+
+@media (max-width: 768px) {
+    .participant-tag {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.6rem;
+    }
+    
+    .participantes-info {
+        font-size: 0.8rem;
+    }
+}

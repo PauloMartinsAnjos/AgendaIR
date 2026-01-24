@@ -131,6 +131,30 @@
             </div>
         </div>
 
+        <!-- PARTICIPANTES ADICIONAIS -->
+        @if (Model.Participantes != null && Model.Participantes.Any())
+        {
+            <div class="card-rir mt-4">
+                <div class="card-rir-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-people-fill"></i> Participantes Adicionais
+                        <span class="badge bg-primary">@Model.Participantes.Count</span>
+                    </h5>
+                </div>
+                <div class="card-rir-body">
+                    <div class="participantes-list">
+                        @foreach (var participante in Model.Participantes)
+                        {
+                            <div class="participante-item d-flex align-items-center gap-2 mb-2 p-2 bg-light rounded">
+                                <i class="bi bi-envelope-fill text-primary"></i>
+                                <span>@participante.Email</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
         <!-- Informações do Funcionário -->
         <div class="card-rir mt-4">
             <div class="card-rir-header">

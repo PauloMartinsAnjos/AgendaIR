@@ -5,6 +5,7 @@ using AgendaIR.Models;
 using AgendaIR.Models.ViewModels;
 using AgendaIR.Services;
 using Microsoft.AspNetCore.Authorization;
+using System.Text.Json;
 
 namespace AgendaIR.Controllers
 {
@@ -202,7 +203,7 @@ namespace AgendaIR.Controllers
         /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(AgendamentoCreateViewModel model)
+        public async Task<IActionResult> Create(AgendamentoCreateViewModel model, string? ParticipantesJson)
         {
             // Verificar autenticação
             var userType = GetUserType();
@@ -324,6 +325,40 @@ namespace AgendaIR.Controllers
 
             _logger.LogInformation($"✓ Agendamento {agendamento.Id} criado com sucesso para {model.DataHora:yyyy-MM-dd HH:mm}");
 
+            // ===== PROCESSAR PARTICIPANTES ADICIONAIS =====
+            List<string> emailsParticipantes = new();
+
+            if (!string.IsNullOrEmpty(ParticipantesJson))
+            {
+                try
+                {
+                    emailsParticipantes = JsonSerializer.Deserialize<List<string>>(ParticipantesJson) 
+                        ?? new List<string>();
+                    
+                    _logger.LogInformation($"📧 Processando {emailsParticipantes.Count} participantes");
+                    
+                    foreach (var email in emailsParticipantes)
+                    {
+                        var participante = new AgendamentoParticipante
+                        {
+                            AgendamentoId = agendamento.Id,
+                            Email = email,
+                            DataCriacao = DateTime.UtcNow
+                        };
+                        
+                        _context.AgendamentoParticipantes.Add(participante);
+                    }
+                    
+                    await _context.SaveChangesAsync();
+                    
+                    _logger.LogInformation($"✅ {emailsParticipantes.Count} participantes salvos no banco");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "❌ Erro ao processar participantes");
+                }
+            }
+
             // ===== INTEGRAÇÃO COM GOOGLE CALENDAR COM LOGS DETALHADOS =====
             var funcionarioEmail = cliente.Funcionario?.GoogleCalendarEmail;
 
@@ -366,6 +401,16 @@ namespace AgendaIR.Controllers
                 // Buscar tipo de agendamento para obter configurações
                 var tipoAgendamento = await _context.TiposAgendamento.FindAsync(model.TipoAgendamentoId);
 
+                // Criar lista de TODOS os emails (cliente + participantes)
+                var todosEmails = new List<string>();
+
+                if (!string.IsNullOrEmpty(cliente?.Email))
+                    todosEmails.Add(cliente.Email);
+
+                todosEmails.AddRange(emailsParticipantes);
+
+                _logger.LogInformation($"📧 Enviando convites para {todosEmails.Count} pessoa(s)");
+
                 const int duracaoPadraoMinutos = 60; // Duração padrão de agendamentos
 
                 var (eventId, conferenciaUrl) = await _calendarService.CriarEventoAsync(
@@ -375,7 +420,7 @@ namespace AgendaIR.Controllers
                     duracaoPadraoMinutos,
                     tipoAgendamento?.Nome,
                     tipoAgendamento?.Descricao,
-                    cliente.Email, // Email do cliente como participante
+                    todosEmails,
                     tipoAgendamento?.Local,
                     tipoAgendamento?.CriarGoogleMeet ?? false,
                     tipoAgendamento?.CorCalendario ?? 6,
@@ -718,7 +763,7 @@ namespace AgendaIR.Controllers
         /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateAgendamento(AgendamentoCreateViewModel model, IFormCollection form)
+        public async Task<IActionResult> CreateAgendamento(AgendamentoCreateViewModel model, IFormCollection form, string? ParticipantesJson)
         {
             var userType = GetUserType();
             if (userType != "Funcionario")
@@ -804,6 +849,40 @@ namespace AgendaIR.Controllers
                 _context.Add(agendamento);
                 await _context.SaveChangesAsync();
 
+                // ===== PROCESSAR PARTICIPANTES ADICIONAIS =====
+                List<string> emailsParticipantes = new();
+
+                if (!string.IsNullOrEmpty(ParticipantesJson))
+                {
+                    try
+                    {
+                        emailsParticipantes = JsonSerializer.Deserialize<List<string>>(ParticipantesJson) 
+                            ?? new List<string>();
+                        
+                        _logger.LogInformation($"📧 Processando {emailsParticipantes.Count} participantes");
+                        
+                        foreach (var email in emailsParticipantes)
+                        {
+                            var participante = new AgendamentoParticipante
+                            {
+                                AgendamentoId = agendamento.Id,
+                                Email = email,
+                                DataCriacao = DateTime.UtcNow
+                            };
+                            
+                            _context.AgendamentoParticipantes.Add(participante);
+                        }
+                        
+                        await _context.SaveChangesAsync();
+                        
+                        _logger.LogInformation($"✅ {emailsParticipantes.Count} participantes salvos no banco");
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "❌ Erro ao processar participantes");
+                    }
+                }
+
                 // ✅ PROCESSAR UPLOADS INDIVIDUAIS
                 await ProcessarUploadIndividual(form.Files, agendamento.Id);
 
@@ -820,11 +899,20 @@ namespace AgendaIR.Controllers
                         _logger.LogInformation($"📅 Iniciando criação de evento no Google Calendar para funcionário {funcionario.GoogleCalendarEmail}");
                         
                         var clienteNome = cliente?.Nome ?? "Cliente";
-                        var clienteEmail = cliente?.Email;
                         var local = tipoAgendamento?.Local;
                         var criarGoogleMeet = tipoAgendamento?.CriarGoogleMeet ?? false;
                         var corCalendario = tipoAgendamento?.CorCalendario ?? 6;
                         var bloqueiaHorario = tipoAgendamento?.BloqueiaHorario ?? true;
+
+                        // Criar lista de TODOS os emails (cliente + participantes)
+                        var todosEmails = new List<string>();
+
+                        if (!string.IsNullOrEmpty(cliente?.Email))
+                            todosEmails.Add(cliente.Email);
+
+                        todosEmails.AddRange(emailsParticipantes);
+
+                        _logger.LogInformation($"📧 Enviando convites para {todosEmails.Count} pessoa(s)");
 
                         const int duracaoPadraoMinutos = 60; // Duração padrão de agendamentos
 
@@ -835,7 +923,7 @@ namespace AgendaIR.Controllers
                             duracaoPadraoMinutos,
                             tipoAgendamento?.Nome,
                             tipoAgendamento?.Descricao,
-                            clienteEmail,
+                            todosEmails,
                             local,
                             criarGoogleMeet,
                             corCalendario,
