@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AgendaIR.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260124214647_AdicionarParticipantesAgendamento")]
-    partial class AdicionarParticipantesAgendamento
+    [Migration("20260124221102_AdicionarTabelaParticipantes")]
+    partial class AdicionarTabelaParticipantes
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -367,7 +367,7 @@ namespace AgendaIR.Migrations
                             Email = "admin@agendair.com",
                             IsAdmin = true,
                             Nome = "Administrador do Sistema",
-                            SenhaHash = "$2a$11$k54frV3GiDz/1AM5D98uXuYRYB6qkC.htKGNr8nMJITslBls5C07.",
+                            SenhaHash = "$2a$11$ieT2LYB62clpsViamFNcauUiBBzXPf0a9G0CEssns8CzeXcoygyri",
                             Username = "admin"
                         });
                 });

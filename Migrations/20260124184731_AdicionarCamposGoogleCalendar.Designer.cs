@@ -3,6 +3,7 @@ using System;
 using AgendaIR.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AgendaIR.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260124184731_AdicionarCamposGoogleCalendar")]
+    partial class AdicionarCamposGoogleCalendar
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -76,36 +79,6 @@ namespace AgendaIR.Migrations
                     b.ToTable("Agendamentos");
                 });
 
-            modelBuilder.Entity("AgendaIR.Models.AgendamentoParticipante", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AgendamentoId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("DataCriacao")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("Nome")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AgendamentoId");
-
-                    b.ToTable("AgendamentoParticipantes");
-                });
-
             modelBuilder.Entity("AgendaIR.Models.Cliente", b =>
                 {
                     b.Property<int>("Id")
@@ -163,12 +136,6 @@ namespace AgendaIR.Migrations
                     b.Property<string>("TelefoneResidencial")
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
-
-                    b.Property<bool>("TokenAtivo")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime?>("TokenExpiracao")
-                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime>("TokenGeradoEm")
                         .HasColumnType("timestamp without time zone");
@@ -370,7 +337,7 @@ namespace AgendaIR.Migrations
                             Email = "admin@agendair.com",
                             IsAdmin = true,
                             Nome = "Administrador do Sistema",
-                            SenhaHash = "$2a$11$k54frV3GiDz/1AM5D98uXuYRYB6qkC.htKGNr8nMJITslBls5C07.",
+                            SenhaHash = "$2a$11$VA6LSH1oFyZqTlTE6wyPE.u588mRAnjd9RSmyUNhq0Ti96d66Itlu",
                             Username = "admin"
                         });
                 });
@@ -401,9 +368,6 @@ namespace AgendaIR.Migrations
                     b.Property<string>("Descricao")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
-
-                    b.Property<string>("DocumentosObrigatoriosJson")
-                        .HasColumnType("text");
 
                     b.Property<string>("Local")
                         .HasMaxLength(200)
@@ -536,17 +500,6 @@ namespace AgendaIR.Migrations
                     b.Navigation("TipoAgendamento");
                 });
 
-            modelBuilder.Entity("AgendaIR.Models.AgendamentoParticipante", b =>
-                {
-                    b.HasOne("AgendaIR.Models.Agendamento", "Agendamento")
-                        .WithMany("Participantes")
-                        .HasForeignKey("AgendamentoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Agendamento");
-                });
-
             modelBuilder.Entity("AgendaIR.Models.Cliente", b =>
                 {
                     b.HasOne("AgendaIR.Models.Funcionario", "Funcionario")
@@ -590,8 +543,6 @@ namespace AgendaIR.Migrations
             modelBuilder.Entity("AgendaIR.Models.Agendamento", b =>
                 {
                     b.Navigation("DocumentosAnexados");
-
-                    b.Navigation("Participantes");
                 });
 
             modelBuilder.Entity("AgendaIR.Models.Cliente", b =>
