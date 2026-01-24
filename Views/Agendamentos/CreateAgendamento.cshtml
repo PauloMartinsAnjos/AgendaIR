@@ -118,6 +118,34 @@
                         <textarea asp-for="Observacoes" class="form-control" rows="3"></textarea>
                     </div>
 
+                    <!-- PARTICIPANTES ADICIONAIS -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-people-fill"></i> Participantes Adicionais
+                            <small class="text-muted">(opcional)</small>
+                        </label>
+                        
+                        <div class="participantes-wrapper">
+                            <input type="email" 
+                                   id="participantes-input" 
+                                   class="form-control" 
+                                   placeholder="Digite o email e pressione Enter"
+                                   autocomplete="off" />
+                            
+                            <input type="hidden" 
+                                   id="ParticipantesJson" 
+                                   name="ParticipantesJson" />
+                            
+                            <div class="participantes-info">
+                                <i class="bi bi-info-circle-fill"></i>
+                                <div>
+                                    Todos os participantes receberão convite no Google Calendar.
+                                    <span id="participant-counter" class="participant-counter">0 participante(s)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- ✅ NOVO: Upload Individual por Documento -->
                     <div id="documentosContainer" style="display:none;">
                         <hr />
@@ -143,7 +171,9 @@
 
 <!-- CSS e JS do Calendário -->
 <link rel="stylesheet" href="~/css/rir-design/calendario.css" />
+<link rel="stylesheet" href="~/css/rir-design/tag-input.css" />
 <script src="~/js/calendario-disponibilidade.js"></script>
+<script src="~/js/tag-input-participantes.js"></script>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

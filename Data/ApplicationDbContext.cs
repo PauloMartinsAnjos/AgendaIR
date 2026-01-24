@@ -51,6 +51,11 @@ namespace AgendaIR.Data
         public DbSet<TipoAgendamento> TiposAgendamento { get; set; }
 
         /// <summary>
+        /// Tabela de Participantes de Agendamento
+        /// </summary>
+        public DbSet<AgendamentoParticipante> AgendamentoParticipantes { get; set; }
+
+        /// <summary>
         /// OnModelCreating é chamado quando o Entity Framework está criando o modelo do banco
         /// Aqui podemos configurar relacionamentos, índices, restrições, etc.
         /// </summary>

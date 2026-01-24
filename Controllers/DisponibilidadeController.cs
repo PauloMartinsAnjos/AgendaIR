@@ -46,9 +46,18 @@ namespace AgendaIR.Controllers
 
             var horarios = new List<HorarioDisponivel>();
             
-            // Horário comercial: 8h às 18h (UTC)
-            var horaInicio = new DateTime(data.Year, data.Month, data.Day, 8, 0, 0, DateTimeKind.Utc);
-            var horaFim = new DateTime(data.Year, data.Month, data.Day, 18, 0, 0, DateTimeKind.Utc);
+            // Horário comercial: 8h às 17h (Horário de Brasília)
+            var timeZoneBrasilia = TimeZoneInfo.FindSystemTimeZoneById("America/Sao_Paulo");
+            var agora = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, timeZoneBrasilia);
+
+            var horaInicioLocal = new DateTime(data.Year, data.Month, data.Day, 8, 0, 0, DateTimeKind.Unspecified);
+            var horaFimLocal = new DateTime(data.Year, data.Month, data.Day, 17, 0, 0, DateTimeKind.Unspecified);
+
+            var horaInicio = TimeZoneInfo.ConvertTimeToUtc(horaInicioLocal, timeZoneBrasilia);
+            var horaFim = TimeZoneInfo.ConvertTimeToUtc(horaFimLocal, timeZoneBrasilia);
+
+            _logger.LogInformation($"🕐 Horário local: {horaInicioLocal:HH:mm} - {horaFimLocal:HH:mm}");
+            _logger.LogInformation($"🕐 Horário UTC: {horaInicio:HH:mm} - {horaFim:HH:mm}");
 
             // Gerar intervalos de 30 em 30 minutos
             for (var hora = horaInicio; hora < horaFim; hora = hora.AddMinutes(30))
