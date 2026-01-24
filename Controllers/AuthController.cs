@@ -121,9 +121,24 @@ namespace AgendaIR.Controllers
 
             if (cliente == null)
             {
-                TempData["Error"] = "Link de acesso inválido ou expirado";
-                return RedirectToAction("AccessDenied");
+                _logger.LogWarning($"⚠️ Token inválido: {token}");
+                return View("TokenInvalido");
             }
+
+            // VALIDAR EXPIRAÇÃO
+            if (!cliente.TokenValido())
+            {
+                _logger.LogWarning($"⏰ Token expirado para cliente {cliente.Nome} - Expirou em: {cliente.TokenExpiracao:dd/MM/yyyy HH:mm}");
+                
+                ViewBag.ClienteNome = cliente.Nome;
+                ViewBag.ClienteId = cliente.Id;
+                ViewBag.TokenExpiracao = cliente.TokenExpiracao;
+                
+                return View("TokenExpirado");
+            }
+
+            // Token válido - continuar normalmente
+            _logger.LogInformation($"✅ Token válido para cliente {cliente.Nome} - Expira em: {cliente.TokenExpiracao:dd/MM/yyyy HH:mm}");
 
             // Criar claims para o cliente
             var claims = new List<Claim>

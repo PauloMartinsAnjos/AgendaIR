@@ -1,0 +1,66 @@
+@{
+    ViewData["Title"] = "Link Expirado";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-warning">
+                <div class="card-body text-center p-5">
+                    <i class="bi bi-clock-history text-warning" style="font-size: 4rem;"></i>
+                    
+                    <h2 class="mt-4 mb-3">⏰ Link Expirado</h2>
+                    
+                    <p class="text-muted mb-4">
+                        Olá, <strong>@ViewBag.ClienteNome</strong>!<br>
+                        O link de agendamento expirou em <strong>@ViewBag.TokenExpiracao?.ToString("dd/MM/yyyy HH:mm")</strong>.
+                    </p>
+                    
+                    <div class="alert alert-warning">
+                        <i class="bi bi-info-circle-fill"></i>
+                        Por motivos de segurança, os links de agendamento são válidos por apenas <strong>8 horas</strong>.
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <h5 class="mb-3">📞 Como solicitar um novo link?</h5>
+                    
+                    <p class="text-muted">
+                        Entre em contato com nosso escritório:
+                    </p>
+                    
+                    <div class="d-grid gap-2 mt-4">
+                        <a href="mailto:contato@rir.com.br" class="btn btn-primary btn-lg">
+                            <i class="bi bi-envelope-fill"></i> Enviar Email
+                        </a>
+                        
+                        <a href="tel:+5511999999999" class="btn btn-outline-primary btn-lg">
+                            <i class="bi bi-telephone-fill"></i> Ligar Agora
+                        </a>
+                        
+                        <a href="https://wa.me/5511999999999" target="_blank" class="btn btn-success btn-lg">
+                            <i class="bi bi-whatsapp"></i> WhatsApp
+                        </a>
+                    </div>
+                    
+                    <p class="text-muted mt-4 small">
+                        Nosso horário de atendimento:<br>
+                        Segunda a Sexta: 8h às 18h
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border-radius: 15px;
+    }
+    
+    .btn-lg {
+        border-radius: 10px;
+        padding: 1rem;
+        font-weight: 600;
+    }
+</style>

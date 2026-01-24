@@ -69,8 +69,29 @@ namespace AgendaIR.Models
         // Data e hora em que o token foi gerado
         public DateTime TokenGeradoEm { get; set; } = DateTime.UtcNow;
 
+        /// <summary>
+        /// Data/hora de expiração do token (UTC)
+        /// </summary>
+        public DateTime? TokenExpiracao { get; set; }
+
+        /// <summary>
+        /// Indica se o token está ativo (não expirou ou foi revogado)
+        /// </summary>
+        public bool TokenAtivo { get; set; } = true;
+
         // Indica se o cliente está ativo
         public bool Ativo { get; set; } = true;
+
+        /// <summary>
+        /// Verifica se o token está válido (não expirou)
+        /// </summary>
+        public bool TokenValido()
+        {
+            if (!TokenAtivo || !TokenExpiracao.HasValue)
+                return false;
+            
+            return DateTime.UtcNow < TokenExpiracao.Value;
+        }
 
         // Data de criação do registro
         public DateTime DataCriacao { get; set; } = DateTime.UtcNow;

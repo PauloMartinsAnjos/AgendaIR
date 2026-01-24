@@ -8,7 +8,8 @@ let calendarioState = {
     funcionarioId: null,        // ID do funcionário selecionado
     duracao: 60,                // Duração em minutos (padrão 60)
     dataSelecionada: null,      // Data selecionada no calendário
-    mesAtual: new Date()        // Mês sendo exibido
+    mesAtual: new Date(),       // Mês sendo exibido
+    ignorarAgendamentoId: null  // ID do agendamento a ignorar (para edição)
 };
 
 // Inicializar quando DOM carregar
@@ -138,7 +139,12 @@ async function carregarHorarios(data) {
     container.innerHTML = '<div class="loading">🔄 Carregando horários...</div>';
 
     try {
-        const url = `/api/disponibilidade?funcionarioId=${calendarioState.funcionarioId}&data=${data.toISOString()}&duracao=${calendarioState.duracao}`;
+        let url = `/api/disponibilidade?funcionarioId=${calendarioState.funcionarioId}&data=${data.toISOString()}&duracao=${calendarioState.duracao}`;
+        
+        // Adicionar ignorarAgendamentoId se existir (para edição)
+        if (calendarioState.ignorarAgendamentoId) {
+            url += `&ignorarAgendamentoId=${calendarioState.ignorarAgendamentoId}`;
+        }
         
         console.log('🌐 API Request:', url);
         

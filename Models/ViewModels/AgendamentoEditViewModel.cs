@@ -22,10 +22,21 @@ namespace AgendaIR.Models.ViewModels
         [Display(Name = "Data e Hora")]
         public DateTime DataHora { get; set; }
         
+        // Funcionário responsável (editável)
+        [Required]
+        [Display(Name = "Funcionário Responsável")]
+        public int FuncionarioId { get; set; }
+        
+        // Tipo de Agendamento
+        public int? TipoAgendamentoId { get; set; }
+        
         // Campos de controle para Google Calendar
         public DateTime DataHoraOriginal { get; set; }
         public string? GoogleCalendarEventId { get; set; }
         public string? FuncionarioGoogleEmail { get; set; }
+        
+        // Cliente (não editável, apenas para referência)
+        public int ClienteId { get; set; }
         
         // Informações do cliente (readonly)
         public string ClienteNome { get; set; } = string.Empty;
@@ -34,6 +45,9 @@ namespace AgendaIR.Models.ViewModels
         
         // Informações do funcionário (readonly)
         public string FuncionarioNome { get; set; } = string.Empty;
+        
+        // Participantes adicionais
+        public List<AgendamentoParticipante> Participantes { get; set; } = new List<AgendamentoParticipante>();
         
         // Documentos anexados (readonly)
         public List<DocumentoAnexado> DocumentosAnexados { get; set; } = new List<DocumentoAnexado>();
