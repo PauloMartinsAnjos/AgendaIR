@@ -48,6 +48,13 @@ namespace AgendaIR.Models
         [StringLength(500)]
         public string? GoogleCalendarEventId { get; set; }
 
+        /// <summary>
+        /// URL da conferência (Google Meet) se criada
+        /// </summary>
+        [StringLength(500)]
+        [Display(Name = "Link da Conferência")]
+        public string? ConferenciaUrl { get; set; }
+
         // Observações sobre o agendamento
         [StringLength(1000)]
         public string? Observacoes { get; set; }

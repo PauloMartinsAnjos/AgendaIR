@@ -1,0 +1,171 @@
+@model AgendaIR.Models.ViewModels.DashboardLembreteViewModel
+
+@if (Model != null && (Model.AgendamentosHoje.Any() || Model.Agendamentos3Dias.Any() || Model.Agendamentos5Dias.Any()))
+{
+    <div class="lembretes-panel">
+        <div class="card-rir">
+            <div class="card-rir-header">
+                <h5><i class="bi bi-bell"></i> Próximos Agendamentos</h5>
+            </div>
+            <div class="card-rir-body p-0">
+                @if (Model.AgendamentosHoje.Any())
+                {
+                    <div class="lembretes-section">
+                        <div class="lembretes-section-header">
+                            <span class="badge-rir badge-rir-danger">
+                                <i class="bi bi-calendar-check"></i> Hoje
+                            </span>
+                            <span class="badge-rir badge-rir-secondary">@Model.AgendamentosHoje.Count</span>
+                        </div>
+                        <div class="lembretes-list">
+                            @foreach (var agendamento in Model.AgendamentosHoje)
+                            {
+                                <a asp-controller="Agendamentos" asp-action="Details" asp-route-id="@agendamento.Id" 
+                                   class="lembrete-item">
+                                    <div class="lembrete-time">
+                                        <i class="bi bi-clock"></i> @agendamento.DataHora.ToString("HH:mm")
+                                    </div>
+                                    <div class="lembrete-info">
+                                        <div class="lembrete-cliente">@agendamento.ClienteNome</div>
+                                        <div class="lembrete-tipo">
+                                            <i class="bi bi-tag"></i> @agendamento.TipoAgendamento
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(agendamento.ConferenciaUrl))
+                                        {
+                                            <div class="lembrete-meet">
+                                                <i class="bi bi-camera-video text-primary"></i> Google Meet
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="lembrete-status">
+                                        @if (agendamento.Status == "Confirmado")
+                                        {
+                                            <span class="badge-rir badge-rir-success">@agendamento.Status</span>
+                                        }
+                                        else if (agendamento.Status == "Pendente")
+                                        {
+                                            <span class="badge-rir badge-rir-warning">@agendamento.Status</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge-rir badge-rir-secondary">@agendamento.Status</span>
+                                        }
+                                    </div>
+                                </a>
+                            }
+                        </div>
+                    </div>
+                }
+
+                @if (Model.Agendamentos3Dias.Any())
+                {
+                    <div class="lembretes-section">
+                        <div class="lembretes-section-header">
+                            <span class="badge-rir badge-rir-warning">
+                                <i class="bi bi-calendar3"></i> Próximos 3 Dias
+                            </span>
+                            <span class="badge-rir badge-rir-secondary">@Model.Agendamentos3Dias.Count</span>
+                        </div>
+                        <div class="lembretes-list">
+                            @foreach (var agendamento in Model.Agendamentos3Dias)
+                            {
+                                <a asp-controller="Agendamentos" asp-action="Details" asp-route-id="@agendamento.Id" 
+                                   class="lembrete-item">
+                                    <div class="lembrete-time">
+                                        <i class="bi bi-calendar-event"></i> @agendamento.DataHora.ToString("dd/MM HH:mm")
+                                    </div>
+                                    <div class="lembrete-info">
+                                        <div class="lembrete-cliente">@agendamento.ClienteNome</div>
+                                        <div class="lembrete-tipo">
+                                            <i class="bi bi-tag"></i> @agendamento.TipoAgendamento
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(agendamento.ConferenciaUrl))
+                                        {
+                                            <div class="lembrete-meet">
+                                                <i class="bi bi-camera-video text-primary"></i> Google Meet
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="lembrete-status">
+                                        @if (agendamento.Status == "Confirmado")
+                                        {
+                                            <span class="badge-rir badge-rir-success">@agendamento.Status</span>
+                                        }
+                                        else if (agendamento.Status == "Pendente")
+                                        {
+                                            <span class="badge-rir badge-rir-warning">@agendamento.Status</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge-rir badge-rir-secondary">@agendamento.Status</span>
+                                        }
+                                    </div>
+                                </a>
+                            }
+                        </div>
+                    </div>
+                }
+
+                @if (Model.Agendamentos5Dias.Any())
+                {
+                    <div class="lembretes-section">
+                        <div class="lembretes-section-header">
+                            <span class="badge-rir badge-rir-primary">
+                                <i class="bi bi-calendar-range"></i> Próximos 5 Dias
+                            </span>
+                            <span class="badge-rir badge-rir-secondary">@Model.Agendamentos5Dias.Count</span>
+                        </div>
+                        <div class="lembretes-list">
+                            @{
+                                const int maxItensExibidos = 5;
+                            }
+                            @foreach (var agendamento in Model.Agendamentos5Dias.Take(maxItensExibidos))
+                            {
+                                <a asp-controller="Agendamentos" asp-action="Details" asp-route-id="@agendamento.Id" 
+                                   class="lembrete-item">
+                                    <div class="lembrete-time">
+                                        <i class="bi bi-calendar-event"></i> @agendamento.DataHora.ToString("dd/MM HH:mm")
+                                    </div>
+                                    <div class="lembrete-info">
+                                        <div class="lembrete-cliente">@agendamento.ClienteNome</div>
+                                        <div class="lembrete-tipo">
+                                            <i class="bi bi-tag"></i> @agendamento.TipoAgendamento
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(agendamento.ConferenciaUrl))
+                                        {
+                                            <div class="lembrete-meet">
+                                                <i class="bi bi-camera-video text-primary"></i> Google Meet
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="lembrete-status">
+                                        @if (agendamento.Status == "Confirmado")
+                                        {
+                                            <span class="badge-rir badge-rir-success">@agendamento.Status</span>
+                                        }
+                                        else if (agendamento.Status == "Pendente")
+                                        {
+                                            <span class="badge-rir badge-rir-warning">@agendamento.Status</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge-rir badge-rir-secondary">@agendamento.Status</span>
+                                        }
+                                    </div>
+                                </a>
+                            }
+                            @if (Model.Agendamentos5Dias.Count > maxItensExibidos)
+                            {
+                                <div class="text-center py-2">
+                                    <a asp-controller="Agendamentos" asp-action="Index" class="btn btn-sm btn-rir-secondary">
+                                        <i class="bi bi-arrow-right"></i> Ver todos (@Model.Agendamentos5Dias.Count)
+                                    </a>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}

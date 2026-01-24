@@ -22,6 +22,7 @@
     <link rel="stylesheet" href="~/css/rir-design/components.css" />
     <link rel="stylesheet" href="~/css/rir-design/tables.css" />
     <link rel="stylesheet" href="~/css/rir-design/forms.css" />
+    <link rel="stylesheet" href="~/css/rir-design/dashboard-lembretes.css" />
 
     <!-- CSS do Projeto (por último para sobrescrever se necessário) -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
@@ -134,7 +135,21 @@
 
             <!-- MAIN CONTENT -->
             <main class="main-content">
-                @RenderBody()
+                @if (User.FindFirst("UserType")?.Value == "Funcionario")
+                {
+                    <div class="row">
+                        <div class="col-12 col-lg-9">
+                            @RenderBody()
+                        </div>
+                        <div class="col-12 col-lg-3">
+                            @await Component.InvokeAsync("LembretesAgendamentos")
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    @RenderBody()
+                }
             </main>
 
             <!-- FOOTER -->
