@@ -202,6 +202,39 @@ namespace AgendaIR.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        /// <summary>
+        /// API: GET /api/tiposagendamento/{id}/documentos
+        /// Retorna documentos associados a um tipo de agendamento
+        /// </summary>
+        [HttpGet]
+        [Route("api/tiposagendamento/{id}/documentos")]
+        public async Task<IActionResult> GetDocumentosPorTipo(int id)
+        {
+            var tipo = await _context.TiposAgendamento
+                .Include(t => t.DocumentosSolicitados)
+                .FirstOrDefaultAsync(t => t.Id == id);
+
+            if (tipo == null)
+            {
+                return NotFound(new { erro = "Tipo de agendamento não encontrado" });
+            }
+
+            var documentos = tipo.DocumentosSolicitados
+                .Where(d => d.Ativo)
+                .OrderByDescending(d => d.Obrigatorio)
+                .ThenBy(d => d.Nome)
+                .Select(d => new
+                {
+                    id = d.Id,
+                    nome = d.Nome,
+                    descricao = d.Descricao,
+                    obrigatorio = d.Obrigatorio
+                })
+                .ToList();
+
+            return Ok(documentos);
+        }
+
         private bool TipoAgendamentoExists(int id)
         {
             return _context.TiposAgendamento.Any(e => e.Id == id);

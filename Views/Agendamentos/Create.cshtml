@@ -2,235 +2,405 @@
 
 @{
     ViewData["Title"] = "Novo Agendamento";
+    Layout = "~/Views/Shared/_LayoutCliente.cshtml";
 }
 
-<!-- PAGE HEADER -->
-<div class="page-header-rir">
-    <div>
-        <h2><i class="bi bi-calendar-plus"></i> Novo Agendamento</h2>
-        <p>Preencha as informações para agendar seu atendimento IR</p>
-    </div>
-</div>
-
-<div class="row justify-content-center">
-    <div class="col-12 col-lg-10">
-        <div class="card-rir">
-            <div class="card-rir-body">
-                <form asp-action="Create" method="post" enctype="multipart/form-data">
-                    @Html.AntiForgeryToken()
-                    
-                    <div asp-validation-summary="ModelOnly" class="alert-rir alert-rir-danger" role="alert"></div>
-
-                    <!-- FUNCIONÁRIO RESPONSÁVEL -->
-                    <div class="mb-4">
-                        <label asp-for="FuncionarioId" class="form-label fw-bold">
-                            <i class="bi bi-person-badge"></i> Funcionário Responsável
-                        </label>
-                        <select asp-for="FuncionarioId" 
-                                class="form-select" 
-                                asp-items="@(new SelectList(ViewBag.Funcionarios, "Id", "Nome"))"
-                                onchange="onFuncionarioChange(this.value)"
-                                required>
-                            <option value="">-- Selecione --</option>
-                        </select>
-                        <span asp-validation-for="FuncionarioId" class="text-danger"></span>
-                        <small class="form-text text-muted">
-                            <i class="bi bi-info-circle"></i> Este é o funcionário que irá atendê-lo
-                        </small>
-                    </div>
-
-                    <!-- DATA E HORÁRIO -->
-                    <div class="mb-4">
-                        <label class="form-label fw-bold">
-                            <i class="bi bi-calendar-event"></i> Data e Horário
-                        </label>
-                        
-                        <div class="data-hora-container">
-                            <!-- Calendário (Esquerda) -->
-                            <div class="calendario-wrapper">
-                                <div id="calendario"></div>
-                            </div>
-                            
-                            <!-- Horários Disponíveis (Direita) -->
-                            <div class="horarios-wrapper">
-                                <div id="horarios-disponiveis">
-                                    <div class="alert-rir alert-rir-info">
-                                        ℹ️ Selecione um dia no calendário
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Campo hidden para enviar no POST -->
-                        <input type="hidden" asp-for="DataHora" id="DataHora" />
-                        <span asp-validation-for="DataHora" class="text-danger"></span>
-                        
-                        <!-- Confirmação visual -->
-                        <div id="confirmacao-horario" class="mt-2"></div>
-                    </div>
-
-                    <!-- Observações -->
-                    <div class="mb-4">
-                        <label asp-for="Observacoes" class="form-label fw-bold">
-                            <i class="bi bi-chat-text"></i> Observações (Opcional)
-                        </label>
-                        <textarea asp-for="Observacoes" class="form-control" rows="3" 
-                                  placeholder="Adicione informações adicionais sobre seu agendamento..."></textarea>
-                        <span asp-validation-for="Observacoes" class="text-danger"></span>
-                    </div>
-
-                    <!-- PARTICIPANTES ADICIONAIS -->
-                    <div class="mb-4">
-                        <label class="form-label fw-bold">
-                            <i class="bi bi-people-fill"></i> Participantes Adicionais
-                            <small class="text-muted">(opcional)</small>
-                        </label>
-                        
-                        <div class="participantes-wrapper">
-                            <input type="email" 
-                                   id="participantes-input" 
-                                   class="form-control" 
-                                   placeholder="Digite o email e pressione Enter"
-                                   autocomplete="off" />
-                            
-                            <input type="hidden" 
-                                   id="ParticipantesJson" 
-                                   name="ParticipantesJson" />
-                            
-                            <div class="participantes-info">
-                                <i class="bi bi-info-circle-fill"></i>
-                                <div>
-                                    Todos os participantes receberão convite no Google Calendar.
-                                    <span id="participant-counter" class="participant-counter">0 participante(s)</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Documentos -->
-                    <div class="mb-4">
-                        <h5><i class="bi bi-file-earmark-arrow-up"></i> Documentos Necessários</h5>
-                        <p class="text-muted">
-                            Faça o upload dos documentos solicitados. 
-                            Documentos marcados com <span class="badge-rir badge-rir-danger">Obrigatório</span> são necessários.
-                        </p>
-
-                        @for (int i = 0; i < Model.Documentos.Count; i++)
-                        {
-                            <div class="card-rir mb-3">
-                                <div class="card-rir-body">
-                                    <div class="row align-items-center">
-                                        <div class="col-12 col-md-6 mb-3 mb-md-0">
-                                            <h6 class="mb-1">
-                                                <i class="bi bi-file-earmark-text"></i> @Model.Documentos[i].Nome
-                                                @if (Model.Documentos[i].Obrigatorio)
-                                                {
-                                                    <span class="badge-rir badge-rir-danger ms-2">Obrigatório</span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="badge-rir badge-rir-info ms-2">Opcional</span>
-                                                }
-                                            </h6>
-                                            @if (!string.IsNullOrEmpty(Model.Documentos[i].Descricao))
-                                            {
-                                                <small class="text-muted">@Model.Documentos[i].Descricao</small>
-                                            }
-                                        </div>
-                                        <div class="col-12 col-md-6">
-                                            <input type="hidden" asp-for="Documentos[i].DocumentoSolicitadoId" />
-                                            <input type="hidden" asp-for="Documentos[i].Nome" />
-                                            <input type="hidden" asp-for="Documentos[i].Descricao" />
-                                            <input type="hidden" asp-for="Documentos[i].Obrigatorio" />
-                                            
-                                            <input asp-for="Documentos[i].Arquivo" class="form-control" type="file" 
-                                                   accept=".pdf,.jpg,.jpeg,.png" />
-                                            <small class="form-text text-muted">
-                                                Formatos aceitos: PDF, JPG, PNG (máx. 10MB)
-                                            </small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        }
-                    </div>
-
-                    <!-- Botões -->
-                    <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
-                        <a asp-action="MeusAgendamentos" class="btn-rir-secondary">
-                            <i class="bi bi-x-circle"></i> Cancelar
-                        </a>
-                        <button type="submit" class="btn-rir-primary">
-                            <i class="bi bi-check-circle"></i> Criar Agendamento
-                        </button>
-                    </div>
-                </form>
-            </div>
+<!-- STEPPER CONTAINER -->
+<div class="stepper-container">
+    <!-- STEPPER VISUAL -->
+    <div class="stepper">
+        <div class="stepper-progress"></div>
+        
+        <div class="step active" data-step-number="1">
+            <div class="step-circle">1</div>
+            <div class="step-label">Boas-vindas</div>
+        </div>
+        
+        <div class="step" data-step-number="2">
+            <div class="step-circle">2</div>
+            <div class="step-label">Tipo</div>
+        </div>
+        
+        <div class="step" data-step-number="3">
+            <div class="step-circle">3</div>
+            <div class="step-label">Data/Hora</div>
+        </div>
+        
+        <div class="step" data-step-number="4">
+            <div class="step-circle">4</div>
+            <div class="step-label">Documentos</div>
+        </div>
+        
+        <div class="step" data-step-number="5">
+            <div class="step-circle">5</div>
+            <div class="step-label">Confirmação</div>
         </div>
     </div>
+
+    <form asp-action="Create" method="post" enctype="multipart/form-data" id="agendamentoForm">
+        @Html.AntiForgeryToken()
+        
+        <!-- PASSO 1: BOAS-VINDAS -->
+        <div class="step-content active" data-step="1">
+            <div class="card-cliente">
+                <div class="card-cliente-header">
+                    <div class="card-cliente-icon">
+                        <i class="bi bi-hand-thumbs-up"></i>
+                    </div>
+                    <div class="card-cliente-title">
+                        <h3>Bem-vindo(a)!</h3>
+                        <p>Vamos agendar seu atendimento em 5 passos simples</p>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center gap-3 p-3 bg-rir-light rounded">
+                            <i class="bi bi-person-badge text-rir-primary" style="font-size: 2rem;"></i>
+                            <div>
+                                <small class="text-muted d-block">Seu Consultor Responsável</small>
+                                <strong class="text-rir-primary">@Model.FuncionarioNome</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center gap-3 p-3 bg-rir-light rounded">
+                            <i class="bi bi-calendar-check text-rir-primary" style="font-size: 2rem;"></i>
+                            <div>
+                                <small class="text-muted d-block">Processo Simplificado</small>
+                                <strong class="text-rir-primary">5 Passos Rápidos</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info mt-3">
+                    <i class="bi bi-info-circle-fill"></i>
+                    <strong>Como funciona:</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>Escolha o tipo de agendamento</li>
+                        <li>Selecione a data e horário disponível</li>
+                        <li>Envie os documentos necessários</li>
+                        <li>Confirme as informações</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-end mt-4">
+                <button type="button" class="btn-cliente-primary" data-step-next>
+                    <i class="bi bi-arrow-right"></i> Continuar
+                </button>
+            </div>
+        </div>
+
+        <!-- PASSO 2: TIPO DE AGENDAMENTO -->
+        <div class="step-content" data-step="2">
+            <div class="card-cliente">
+                <div class="card-cliente-header">
+                    <div class="card-cliente-icon">
+                        <i class="bi bi-list-check"></i>
+                    </div>
+                    <div class="card-cliente-title">
+                        <h3>Tipo de Agendamento</h3>
+                        <p>Escolha o tipo de atendimento que você precisa</p>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label asp-for="TipoAgendamentoId" class="form-label fw-bold">
+                        <i class="bi bi-tag"></i> Selecione o Tipo
+                    </label>
+                    <select asp-for="TipoAgendamentoId" 
+                            id="tipoAgendamentoSelect"
+                            class="form-select form-select-lg" 
+                            asp-items="@(new SelectList(ViewBag.TiposAgendamento, "Id", "Nome"))"
+                            required>
+                        <option value="">-- Selecione o tipo de agendamento --</option>
+                    </select>
+                    <span asp-validation-for="TipoAgendamentoId" class="text-danger"></span>
+                </div>
+                
+                <div id="tipo-info" class="alert alert-info d-none">
+                    <i class="bi bi-info-circle-fill"></i>
+                    <div id="tipo-descricao"></div>
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-between mt-4">
+                <button type="button" class="btn-cliente-secondary" data-step-prev>
+                    <i class="bi bi-arrow-left"></i> Voltar
+                </button>
+                <button type="button" class="btn-cliente-primary" data-step-next disabled>
+                    <i class="bi bi-arrow-right"></i> Continuar
+                </button>
+            </div>
+        </div>
+
+        <!-- PASSO 3: DATA E HORA -->
+        <div class="step-content" data-step="3">
+            <div class="card-cliente">
+                <div class="card-cliente-header">
+                    <div class="card-cliente-icon">
+                        <i class="bi bi-calendar-event"></i>
+                    </div>
+                    <div class="card-cliente-title">
+                        <h3>Escolha Data e Horário</h3>
+                        <p>Selecione quando você deseja ser atendido</p>
+                    </div>
+                </div>
+                
+                <div class="data-hora-container">
+                    <!-- Calendário (Esquerda) -->
+                    <div class="calendario-wrapper">
+                        <div id="calendario"></div>
+                    </div>
+                    
+                    <!-- Horários Disponíveis (Direita) -->
+                    <div class="horarios-wrapper">
+                        <div id="horarios-disponiveis">
+                            <div class="alert-rir alert-rir-info">
+                                ℹ️ Selecione um dia no calendário
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Campo hidden para enviar no POST -->
+                <input type="hidden" asp-for="DataHora" id="DataHora" />
+                <input type="hidden" asp-for="FuncionarioId" />
+                <span asp-validation-for="DataHora" class="text-danger"></span>
+                
+                <!-- Confirmação visual -->
+                <div id="confirmacao-horario" class="mt-2"></div>
+            </div>
+            
+            <div class="d-flex justify-content-between mt-4">
+                <button type="button" class="btn-cliente-secondary" data-step-prev>
+                    <i class="bi bi-arrow-left"></i> Voltar
+                </button>
+                <button type="button" class="btn-cliente-primary" data-step-next disabled>
+                    <i class="bi bi-arrow-right"></i> Continuar
+                </button>
+            </div>
+        </div>
+
+        <!-- PASSO 4: UPLOAD DOCUMENTOS -->
+        <div class="step-content" data-step="4">
+            <div class="card-cliente">
+                <div class="card-cliente-header">
+                    <div class="card-cliente-icon">
+                        <i class="bi bi-file-earmark-arrow-up"></i>
+                    </div>
+                    <div class="card-cliente-title">
+                        <h3>Envie seus Documentos</h3>
+                        <p>Arraste e solte os arquivos ou clique para selecionar</p>
+                    </div>
+                </div>
+                
+                <div class="alert alert-warning mb-4">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <strong>Importante:</strong> Todos os documentos marcados como <span class="badge-cliente badge-cliente-danger">Obrigatório</span> devem ser enviados para continuar.
+                </div>
+                
+                <!-- Barra de Progresso -->
+                <div class="progress-container mb-4">
+                    <div class="progress">
+                        <div class="progress-bar" style="width: 0%"></div>
+                    </div>
+                    <div class="progress-text">
+                        <span>0 de @Model.Documentos.Count(d => d.Obrigatorio) documentos enviados</span>
+                        <span><strong>0%</strong></span>
+                    </div>
+                </div>
+                
+                @for (int i = 0; i < Model.Documentos.Count; i++)
+                {
+                    <div class="card-cliente mb-3">
+                        <div class="row align-items-start">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <h5>
+                                    <i class="bi bi-file-earmark-text text-rir-primary"></i> @Model.Documentos[i].Nome
+                                </h5>
+                                @if (!string.IsNullOrEmpty(Model.Documentos[i].Descricao))
+                                {
+                                    <p class="text-muted mb-2">@Model.Documentos[i].Descricao</p>
+                                }
+                                @if (Model.Documentos[i].Obrigatorio)
+                                {
+                                    <span class="badge-cliente badge-cliente-danger">Obrigatório</span>
+                                }
+                                else
+                                {
+                                    <span class="badge-cliente badge-cliente-info">Opcional</span>
+                                }
+                            </div>
+                            <div class="col-md-6">
+                                <input type="hidden" asp-for="Documentos[i].DocumentoSolicitadoId" />
+                                <input type="hidden" asp-for="Documentos[i].Nome" />
+                                <input type="hidden" asp-for="Documentos[i].Descricao" />
+                                <input type="hidden" asp-for="Documentos[i].Obrigatorio" />
+                                
+                                <div class="upload-zone">
+                                    <div class="upload-zone-icon">
+                                        <i class="bi bi-cloud-upload"></i>
+                                    </div>
+                                    <div class="upload-zone-text">
+                                        <h4>Arraste o arquivo aqui</h4>
+                                        <p>ou clique para selecionar</p>
+                                        <small class="text-muted">PDF, JPG, PNG (máx. 10MB)</small>
+                                    </div>
+                                    <input asp-for="Documentos[i].Arquivo" 
+                                           type="file" 
+                                           data-doc-id="@Model.Documentos[i].DocumentoSolicitadoId"
+                                           data-doc-required="@Model.Documentos[i].Obrigatorio.ToString().ToLower()"
+                                           accept=".pdf,.jpg,.jpeg,.png" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            
+            <div class="d-flex justify-content-between mt-4">
+                <button type="button" class="btn-cliente-secondary" data-step-prev>
+                    <i class="bi bi-arrow-left"></i> Voltar
+                </button>
+                <button type="button" class="btn-cliente-primary" data-step-next disabled>
+                    <i class="bi bi-arrow-right"></i> Continuar
+                </button>
+            </div>
+        </div>
+
+        <!-- PASSO 5: CONFIRMAÇÃO -->
+        <div class="step-content" data-step="5">
+            <div class="card-cliente">
+                <div class="card-cliente-header">
+                    <div class="card-cliente-icon">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                    <div class="card-cliente-title">
+                        <h3>Confirme seu Agendamento</h3>
+                        <p>Revise os dados antes de finalizar</p>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="p-3 bg-rir-light rounded">
+                            <small class="text-muted d-block mb-1"><i class="bi bi-person-badge"></i> Consultor</small>
+                            <strong>@Model.FuncionarioNome</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="p-3 bg-rir-light rounded">
+                            <small class="text-muted d-block mb-1"><i class="bi bi-tag"></i> Tipo</small>
+                            <strong id="resumo-tipo">-</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="p-3 bg-rir-light rounded">
+                            <small class="text-muted d-block mb-1"><i class="bi bi-calendar-event"></i> Data</small>
+                            <strong id="resumo-data">-</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="p-3 bg-rir-light rounded">
+                            <small class="text-muted d-block mb-1"><i class="bi bi-clock"></i> Horário</small>
+                            <strong id="resumo-hora">-</strong>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-3">
+                    <label asp-for="Observacoes" class="form-label fw-bold">
+                        <i class="bi bi-chat-text"></i> Observações (Opcional)
+                    </label>
+                    <textarea asp-for="Observacoes" class="form-control" rows="3" 
+                              placeholder="Adicione informações adicionais sobre seu agendamento..."></textarea>
+                </div>
+                
+                <div class="alert alert-success mt-4">
+                    <i class="bi bi-check-circle-fill"></i>
+                    <strong>Tudo pronto!</strong> Ao confirmar, você receberá um email com os detalhes do agendamento.
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-between mt-4">
+                <button type="button" class="btn-cliente-secondary" data-step-prev>
+                    <i class="bi bi-arrow-left"></i> Voltar
+                </button>
+                <button type="submit" class="btn-cliente-primary">
+                    <i class="bi bi-check-circle"></i> Finalizar Agendamento
+                </button>
+            </div>
+        </div>
+    </form>
 </div>
 
 <!-- CSS e JS do Calendário -->
 <link rel="stylesheet" href="~/css/rir-design/calendario.css" />
-<link rel="stylesheet" href="~/css/rir-design/tag-input.css" />
 <script src="~/js/calendario-disponibilidade.js"></script>
-<script src="~/js/tag-input-participantes.js"></script>
+<script src="~/js/cliente-agendamento.js"></script>
+<script src="~/js/upload-documentos.js"></script>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     
     <script>
-        // Definir data mínima como amanhã
-        document.addEventListener('DOMContentLoaded', function() {
-            var dataHoraInput = document.querySelector('input[type="datetime-local"]');
-            if (dataHoraInput) {
-                // Data mínima: amanhã
-                var tomorrow = new Date();
-                tomorrow.setDate(tomorrow.getDate() + 1);
-                tomorrow.setHours(8, 0, 0, 0);
+        // Tipo de agendamento change handler
+        document.getElementById('tipoAgendamentoSelect')?.addEventListener('change', async function() {
+            const tipoId = this.value;
+            const tipoInfo = document.getElementById('tipo-info');
+            const tipoDescricao = document.getElementById('tipo-descricao');
+            const btnNext = document.querySelector('[data-step="2"] [data-step-next]');
+            
+            if (tipoId) {
+                const tipoTexto = this.options[this.selectedIndex].text;
+                tipoDescricao.textContent = `Você selecionou: ${tipoTexto}`;
+                tipoInfo.classList.remove('d-none');
+                btnNext.disabled = false;
                 
-                // Formatar para datetime-local (YYYY-MM-DDTHH:MM)
-                var year = tomorrow.getFullYear();
-                var month = String(tomorrow.getMonth() + 1).padStart(2, '0');
-                var day = String(tomorrow.getDate()).padStart(2, '0');
-                var hours = String(tomorrow.getHours()).padStart(2, '0');
-                var minutes = String(tomorrow.getMinutes()).padStart(2, '0');
+                // Atualizar resumo
+                document.getElementById('resumo-tipo').textContent = tipoTexto;
                 
-                var minDateTime = year + '-' + month + '-' + day + 'T' + hours + ':' + minutes;
-                dataHoraInput.setAttribute('min', minDateTime);
-                
-                // Validação ao mudar
-                dataHoraInput.addEventListener('change', function() {
-                    var selectedDate = new Date(this.value);
-                    var dayOfWeek = selectedDate.getDay();
-                    var hour = selectedDate.getHours();
-                    
-                    // Verificar fim de semana
-                    if (dayOfWeek === 0 || dayOfWeek === 6) {
-                        alert('Agendamentos só podem ser feitos de segunda a sexta-feira.');
-                        this.value = '';
-                        return;
+                // Carregar documentos do tipo via API
+                try {
+                    const response = await fetch(`/api/tiposagendamento/${tipoId}/documentos`);
+                    if (response.ok) {
+                        const documentos = await response.json();
+                        
+                        // Se houver documentos, atualizar a lista no step 4
+                        if (documentos.length > 0) {
+                            atualizarListaDocumentos(documentos);
+                        }
                     }
-                    
-                    // Verificar horário (8h às 18h)
-                    if (hour < 8 || hour >= 18) {
-                        alert('Agendamentos só podem ser feitos entre 8h e 18h.');
-                        this.value = '';
-                        return;
-                    }
-                });
+                } catch (error) {
+                    console.error('Erro ao carregar documentos:', error);
+                }
+            } else {
+                tipoInfo.classList.add('d-none');
+                btnNext.disabled = true;
             }
         });
-
-        // Preview dos arquivos selecionados
-        document.querySelectorAll('input[type="file"]').forEach(function(input) {
-            input.addEventListener('change', function() {
-                if (this.files && this.files[0]) {
-                    var fileName = this.files[0].name;
-                    var fileSize = (this.files[0].size / 1024 / 1024).toFixed(2); // MB
-                    console.log('Arquivo selecionado: ' + fileName + ' (' + fileSize + ' MB)');
-                }
-            });
-        });
+        
+        // Função para atualizar lista de documentos dinamicamente
+        function atualizarListaDocumentos(documentos) {
+            // Por enquanto, apenas log - pode ser expandido para recriar a lista
+            console.log('Documentos carregados para este tipo:', documentos);
+            
+            // Aqui você pode adicionar lógica para substituir os documentos no step 4
+            // se necessário
+        }
+        
+        // Atualizar resumo quando selecionar data/hora
+        window.onHorarioSelecionado = function(dataHora) {
+            const data = new Date(dataHora);
+            document.getElementById('resumo-data').textContent = data.toLocaleDateString('pt-BR');
+            document.getElementById('resumo-hora').textContent = data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            
+            // Habilitar botão continuar
+            const btnNext = document.querySelector('[data-step="3"] [data-step-next]');
+            if (btnNext) btnNext.disabled = false;
+        };
     </script>
 }
