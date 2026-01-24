@@ -241,9 +241,24 @@ namespace AgendaIR.Controllers
             // ✅ CORREÇÃO: Guardar referência aos documentos ANTES de recarregar
             var documentosEnviados = model.Documentos;
 
-            // Recarregar informações dos documentos do banco (SEM perder os arquivos)
+            // Buscar o tipo de agendamento selecionado para validar documentos corretos
+            var tipoSelecionado = await _context.TiposAgendamento
+                .Include(t => t.DocumentosSolicitados)
+                .FirstOrDefaultAsync(t => t.Id == model.TipoAgendamentoId);
+
+            if (tipoSelecionado == null)
+            {
+                ModelState.AddModelError("TipoAgendamentoId", "Tipo de agendamento inválido");
+                // Recarregar dados para view
+                ViewBag.TiposAgendamento = await _context.TiposAgendamento.Where(t => t.Ativo).ToListAsync();
+                ViewBag.ClienteNome = cliente.Nome;
+                model.FuncionarioNome = cliente.Funcionario?.Nome ?? "Não atribuído";
+                return View(model);
+            }
+
+            // Recarregar documentos específicos do tipo + documentos genéricos
             var documentosNoBanco = await _context.DocumentosSolicitados
-                .Where(d => d.Ativo)
+                .Where(d => d.Ativo && (d.TipoAgendamentoId == model.TipoAgendamentoId || d.TipoAgendamentoId == null))
                 .OrderByDescending(d => d.Obrigatorio)
                 .ThenBy(d => d.Nome)
                 .ToListAsync();
@@ -268,6 +283,9 @@ namespace AgendaIR.Controllers
 
             if (!ModelState.IsValid)
             {
+                // Recarregar dados para view
+                ViewBag.TiposAgendamento = await _context.TiposAgendamento.Where(t => t.Ativo).ToListAsync();
+                ViewBag.ClienteNome = cliente.Nome;
                 return View(model);
             }
 
@@ -276,13 +294,16 @@ namespace AgendaIR.Controllers
             if (!validacao.IsValid)
             {
                 ModelState.AddModelError("DataHora", validacao.ErrorMessage);
+                // Recarregar dados para view
+                ViewBag.TiposAgendamento = await _context.TiposAgendamento.Where(t => t.Ativo).ToListAsync();
+                ViewBag.ClienteNome = cliente.Nome;
                 return View(model);
             }
 
             // Validar que todos os documentos obrigatórios foram enviados
             var documentosObrigatorios = documentosNoBanco.Where(d => d.Obrigatorio).ToList();
 
-            _logger.LogInformation($"Validando {documentosObrigatorios.Count} documentos obrigatórios");
+            _logger.LogInformation($"Validando {documentosObrigatorios.Count} documentos obrigatórios para tipo '{tipoSelecionado.Nome}'");
 
             foreach (var docObrigatorio in documentosObrigatorios)
             {
@@ -303,6 +324,9 @@ namespace AgendaIR.Controllers
 
             if (!ModelState.IsValid)
             {
+                // Recarregar dados para view
+                ViewBag.TiposAgendamento = await _context.TiposAgendamento.Where(t => t.Ativo).ToListAsync();
+                ViewBag.ClienteNome = cliente.Nome;
                 return View(model);
             }
 
@@ -315,6 +339,9 @@ namespace AgendaIR.Controllers
             if (!disponivel)
             {
                 ModelState.AddModelError("DataHora", "Este horário não está disponível. Por favor, escolha outro.");
+                // Recarregar dados para view
+                ViewBag.TiposAgendamento = await _context.TiposAgendamento.Where(t => t.Ativo).ToListAsync();
+                ViewBag.ClienteNome = cliente.Nome;
                 return View(model);
             }
 
@@ -323,6 +350,7 @@ namespace AgendaIR.Controllers
             {
                 ClienteId = clienteId.Value,
                 FuncionarioId = cliente.FuncionarioId,
+                TipoAgendamentoId = model.TipoAgendamentoId,
                 DataHora = model.DataHora,
                 Status = "Pendente",
                 Observacoes = model.Observacoes,
