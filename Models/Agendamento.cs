@@ -75,6 +75,12 @@ namespace AgendaIR.Models
 
         // Relacionamento: Um agendamento pode ter vários documentos anexados
         public virtual ICollection<DocumentoAnexado> DocumentosAnexados { get; set; } = new List<DocumentoAnexado>();
+
+        /// <summary>
+        /// Participantes adicionais (emails extras para reuniões)
+        /// </summary>
+        public ICollection<AgendamentoParticipante> Participantes { get; set; } 
+            = new List<AgendamentoParticipante>();
     }
 
     /// <summary>

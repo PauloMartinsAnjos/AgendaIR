@@ -164,7 +164,7 @@ namespace AgendaIR.Services
             int duracao = 60,
             string? tipoNome = null,
             string? tipoDescricao = null,
-            string? clienteEmail = null,
+            List<string>? participantesEmails = null,
             string? local = null,
             bool criarGoogleMeet = false,
             int corCalendario = 6,
@@ -230,18 +230,20 @@ namespace AgendaIR.Services
                     evento.Location = local;
                 }
 
-                // Adicionar cliente como participante se email fornecido
-                if (!string.IsNullOrEmpty(clienteEmail))
+                // Adicionar participantes (se houver)
+                if (participantesEmails != null && participantesEmails.Any())
                 {
-                    evento.Attendees = new[]
-                    {
-                        new EventAttendee
+                    evento.Attendees = participantesEmails
+                        .Where(email => !string.IsNullOrEmpty(email))
+                        .Distinct() // Evitar duplicados
+                        .Select(email => new EventAttendee
                         {
-                            Email = clienteEmail,
-                            DisplayName = clienteNome,
+                            Email = email,
                             ResponseStatus = "needsAction"
-                        }
-                    };
+                        })
+                        .ToList();
+                    
+                    _logger.LogInformation($"👥 {participantesEmails.Count} participantes adicionados ao evento");
                 }
 
                 // Criar Google Meet se solicitado
