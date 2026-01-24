@@ -182,6 +182,11 @@ namespace AgendaIR.Controllers
                 })
                 .ToListAsync();
 
+            // Buscar lista de funcionários para dropdown (cliente vê só o funcionário dele)
+            ViewBag.Funcionarios = await _context.Funcionarios
+                .Where(f => f.Id == cliente.FuncionarioId)
+                .ToListAsync();
+
             var viewModel = new AgendamentoCreateViewModel
             {
                 FuncionarioId = cliente.FuncionarioId,
@@ -687,12 +692,20 @@ namespace AgendaIR.Controllers
 
             ViewBag.Clientes = await query.OrderBy(c => c.Nome).ToListAsync();
 
-            // Se admin, carregar funcionários para escolher responsável
+            // Buscar lista de funcionários para dropdown
             if (isAdmin)
             {
+                // Admin vê TODOS os funcionários ativos
                 ViewBag.Funcionarios = await _context.Funcionarios
                     .Where(f => f.Ativo)
                     .OrderBy(f => f.Nome)
+                    .ToListAsync();
+            }
+            else
+            {
+                // Funcionário comum vê SÓ ele mesmo
+                ViewBag.Funcionarios = await _context.Funcionarios
+                    .Where(f => f.Id == funcionarioId.Value)
                     .ToListAsync();
             }
 

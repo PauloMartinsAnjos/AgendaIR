@@ -1,0 +1,286 @@
+/* ========================================
+   CALENDÁRIO DE DISPONIBILIDADE
+   Design System RIR
+   Cores: #F58634 (laranja), #7B431A (marrom)
+   ======================================== */
+
+/* Container principal */
+.data-hora-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    border: 2px solid #F5B68A;
+    border-radius: 12px;
+    padding: 1.5rem;
+    background: #FFF5ED;
+}
+
+/* ===== CALENDÁRIO ===== */
+
+.calendario-wrapper {
+    background: white;
+    border-radius: 10px;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.calendario-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #F5B68A;
+}
+
+.calendario-header h6 {
+    margin: 0;
+    color: #7B431A;
+    font-weight: 700;
+    text-transform: capitalize;
+}
+
+.btn-nav {
+    background: #F58634;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.btn-nav:hover {
+    background: #7B431A;
+    transform: scale(1.1);
+}
+
+.calendario-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.5rem;
+}
+
+.dia-semana {
+    text-align: center;
+    font-weight: 700;
+    color: #7B431A;
+    padding: 0.5rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+}
+
+.dia {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #F5B68A;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    background: white;
+    color: #333;
+}
+
+.dia:hover:not(.passado):not(.fim-semana) {
+    border-color: #F58634;
+    background: #FFF5ED;
+    transform: scale(1.05);
+}
+
+.dia.selecionado {
+    background: #F58634;
+    color: white;
+    border-color: #F58634;
+    font-weight: 700;
+}
+
+.dia.passado {
+    opacity: 0.3;
+    cursor: not-allowed;
+    background: #f5f5f5;
+    color: #999;
+}
+
+.dia.fim-semana {
+    background: #f5f5f5;
+    opacity: 0.5;
+    cursor: not-allowed;
+    color: #999;
+}
+
+.dia-vazio {
+    aspect-ratio: 1;
+}
+
+/* ===== HORÁRIOS ===== */
+
+.horarios-wrapper {
+    background: white;
+    border-radius: 10px;
+    padding: 1rem;
+    max-height: 400px;
+    overflow-y: auto;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.horarios-header {
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #F5B68A;
+}
+
+.horarios-header h6 {
+    margin: 0;
+    color: #7B431A;
+    font-weight: 700;
+}
+
+.horarios-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.horario-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+}
+
+/* Horário LIVRE (verde) */
+.horario-livre {
+    border: 2px solid #10b981;
+    background: #d1fae5;
+    cursor: pointer;
+}
+
+.horario-livre:hover {
+    background: #a7f3d0;
+    transform: translateX(5px);
+}
+
+.horario-livre.selecionado {
+    background: #10b981;
+    color: white;
+    font-weight: 700;
+    border-color: #10b981;
+}
+
+/* Horário OCUPADO (vermelho) */
+.horario-ocupado {
+    border: 2px solid #ef4444;
+    background: #fee2e2;
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.horario-icone {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.horario-texto {
+    flex: 1;
+    font-weight: 600;
+}
+
+.horario-status {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+/* Loading */
+.loading {
+    text-align: center;
+    padding: 2rem;
+    color: #7B431A;
+    font-weight: 600;
+}
+
+/* Alerts personalizados */
+.alert-rir {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+.alert-rir-info {
+    background: #e0f2fe;
+    border: 1px solid #0284c7;
+    color: #0369a1;
+}
+
+.alert-rir-success {
+    background: #d1fae5;
+    border: 1px solid #10b981;
+    color: #047857;
+}
+
+.alert-rir-danger {
+    background: #fee2e2;
+    border: 1px solid #ef4444;
+    color: #dc2626;
+}
+
+.alert-rir-warning {
+    background: #fef3c7;
+    border: 1px solid #f59e0b;
+    color: #d97706;
+}
+
+/* ===== RESPONSIVO ===== */
+
+@media (max-width: 992px) {
+    .data-hora-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .horarios-wrapper {
+        max-height: 300px;
+    }
+}
+
+@media (max-width: 768px) {
+    .calendario-grid {
+        gap: 0.25rem;
+    }
+    
+    .dia {
+        font-size: 0.85rem;
+    }
+    
+    .horario-item {
+        font-size: 0.85rem;
+        padding: 0.6rem;
+    }
+}
+
+/* Scrollbar customizada */
+.horarios-wrapper::-webkit-scrollbar {
+    width: 6px;
+}
+
+.horarios-wrapper::-webkit-scrollbar-track {
+    background: #FFF5ED;
+    border-radius: 3px;
+}
+
+.horarios-wrapper::-webkit-scrollbar-thumb {
+    background: #F5B68A;
+    border-radius: 3px;
+}
+
+.horarios-wrapper::-webkit-scrollbar-thumb:hover {
+    background: #F58634;
+}
