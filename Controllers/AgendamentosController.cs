@@ -361,11 +361,13 @@ namespace AgendaIR.Controllers
                 // Buscar tipo de agendamento para obter configurações
                 var tipoAgendamento = await _context.TiposAgendamento.FindAsync(model.TipoAgendamentoId);
 
+                const int duracaoPadraoMinutos = 60; // Duração padrão de agendamentos
+
                 var (eventId, conferenciaUrl) = await _calendarService.CriarEventoAsync(
                     funcionarioEmail,
                     cliente.Nome,
                     model.DataHora,
-                    60, // Duração padrão
+                    duracaoPadraoMinutos,
                     cliente.Email, // Email do cliente como participante
                     tipoAgendamento?.Local,
                     tipoAgendamento?.CriarGoogleMeet ?? false,
@@ -809,11 +811,13 @@ namespace AgendaIR.Controllers
                         var corCalendario = tipoAgendamento?.CorCalendario ?? 6;
                         var bloqueiaHorario = tipoAgendamento?.BloqueiaHorario ?? true;
 
+                        const int duracaoPadraoMinutos = 60; // Duração padrão de agendamentos
+
                         var (googleEventId, conferenciaUrl) = await _calendarService.CriarEventoAsync(
                             funcionario.GoogleCalendarEmail,
                             clienteNome,
                             agendamento.DataHora,
-                            60, // Duração padrão de 60 minutos
+                            duracaoPadraoMinutos,
                             clienteEmail,
                             local,
                             criarGoogleMeet,
@@ -1077,7 +1081,8 @@ namespace AgendaIR.Controllers
                     else if (dataHoraMudou)
                     {
                         _logger.LogInformation($"📅 Atualizando data/hora do evento no Google Calendar: {eventId}");
-                        var atualizado = await _calendarService.AtualizarEventoAsync(funcionarioEmail, eventId, model.DataHora, 60);
+                        const int duracaoPadraoMinutos = 60; // Duração padrão de agendamentos
+                        var atualizado = await _calendarService.AtualizarEventoAsync(funcionarioEmail, eventId, model.DataHora, duracaoPadraoMinutos);
                         
                         if (atualizado)
                         {

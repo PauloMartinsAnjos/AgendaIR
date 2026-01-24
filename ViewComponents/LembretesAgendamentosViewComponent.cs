@@ -12,6 +12,7 @@ namespace AgendaIR.ViewComponents
     public class LembretesAgendamentosViewComponent : ViewComponent
     {
         private readonly ApplicationDbContext _context;
+        private const int MaxAgendamentos5Dias = 5; // Limite de agendamentos exibidos na seção de 5 dias
 
         public LembretesAgendamentosViewComponent(ApplicationDbContext context)
         {

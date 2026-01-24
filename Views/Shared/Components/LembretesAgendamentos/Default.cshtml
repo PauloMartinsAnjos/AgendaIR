@@ -116,7 +116,10 @@
                             <span class="badge-rir badge-rir-secondary">@Model.Agendamentos5Dias.Count</span>
                         </div>
                         <div class="lembretes-list">
-                            @foreach (var agendamento in Model.Agendamentos5Dias.Take(5))
+                            @{
+                                const int maxItensExibidos = 5;
+                            }
+                            @foreach (var agendamento in Model.Agendamentos5Dias.Take(maxItensExibidos))
                             {
                                 <a asp-controller="Agendamentos" asp-action="Details" asp-route-id="@agendamento.Id" 
                                    class="lembrete-item">
@@ -151,7 +154,7 @@
                                     </div>
                                 </a>
                             }
-                            @if (Model.Agendamentos5Dias.Count > 5)
+                            @if (Model.Agendamentos5Dias.Count > maxItensExibidos)
                             {
                                 <div class="text-center py-2">
                                     <a asp-controller="Agendamentos" asp-action="Index" class="btn btn-sm btn-rir-secondary">
