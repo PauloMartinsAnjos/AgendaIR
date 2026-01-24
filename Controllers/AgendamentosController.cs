@@ -169,9 +169,10 @@ namespace AgendaIR.Controllers
                 return NotFound();
             }
 
-            // Buscar todos os documentos solicitados ativos
+            // Buscar documentos solicitados genéricos (sem tipo específico)
+            // Os documentos específicos por tipo serão carregados via JS
             var documentos = await _context.DocumentosSolicitados
-                .Where(d => d.Ativo)
+                .Where(d => d.Ativo && d.TipoAgendamentoId == null)
                 .OrderByDescending(d => d.Obrigatorio)
                 .ThenBy(d => d.Nome)
                 .Select(d => new DocumentoUploadViewModel

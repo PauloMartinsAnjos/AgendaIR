@@ -348,7 +348,7 @@
     
     <script>
         // Tipo de agendamento change handler
-        document.getElementById('tipoAgendamentoSelect')?.addEventListener('change', function() {
+        document.getElementById('tipoAgendamentoSelect')?.addEventListener('change', async function() {
             const tipoId = this.value;
             const tipoInfo = document.getElementById('tipo-info');
             const tipoDescricao = document.getElementById('tipo-descricao');
@@ -362,11 +362,35 @@
                 
                 // Atualizar resumo
                 document.getElementById('resumo-tipo').textContent = tipoTexto;
+                
+                // Carregar documentos do tipo via API
+                try {
+                    const response = await fetch(`/api/tiposagendamento/${tipoId}/documentos`);
+                    if (response.ok) {
+                        const documentos = await response.json();
+                        
+                        // Se houver documentos, atualizar a lista no step 4
+                        if (documentos.length > 0) {
+                            atualizarListaDocumentos(documentos);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Erro ao carregar documentos:', error);
+                }
             } else {
                 tipoInfo.classList.add('d-none');
                 btnNext.disabled = true;
             }
         });
+        
+        // Função para atualizar lista de documentos dinamicamente
+        function atualizarListaDocumentos(documentos) {
+            // Por enquanto, apenas log - pode ser expandido para recriar a lista
+            console.log('Documentos carregados para este tipo:', documentos);
+            
+            // Aqui você pode adicionar lógica para substituir os documentos no step 4
+            // se necessário
+        }
         
         // Atualizar resumo quando selecionar data/hora
         window.onHorarioSelecionado = function(dataHora) {
