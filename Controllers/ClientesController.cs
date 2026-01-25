@@ -267,24 +267,27 @@ namespace AgendaIR.Controllers
                 return View(model);
             }
 
-            // Verificar se já existe cliente com mesmo CPF
-            var cpfExistente = await _context.Clientes
-                .AnyAsync(c => c.CPF == model.CPF);
-
-            if (cpfExistente)
+            // Verificar se já existe cliente com mesmo CPF (apenas se CPF foi preenchido)
+            if (!string.IsNullOrWhiteSpace(model.CPF))
             {
-                ModelState.AddModelError("CPF", "Já existe um cliente cadastrado com este CPF");
-                
-                // Recarregar ViewBag se for admin
-                if (IsUserAdmin())
+                var cpfExistente = await _context.Clientes
+                    .AnyAsync(c => c.CPF == model.CPF);
+
+                if (cpfExistente)
                 {
-                    ViewBag.Funcionarios = await _context.Funcionarios
-                        .Where(f => f.Ativo)
-                        .OrderBy(f => f.Nome)
-                        .ToListAsync();
+                    ModelState.AddModelError("CPF", "Já existe um cliente cadastrado com este CPF");
+                    
+                    // Recarregar ViewBag se for admin
+                    if (IsUserAdmin())
+                    {
+                        ViewBag.Funcionarios = await _context.Funcionarios
+                            .Where(f => f.Ativo)
+                            .OrderBy(f => f.Nome)
+                            .ToListAsync();
+                    }
+                    
+                    return View(model);
                 }
-                
-                return View(model);
             }
 
             // Criar novo cliente SEM magic token
@@ -473,15 +476,18 @@ namespace AgendaIR.Controllers
 
             if (ModelState.IsValid)
             {
-                // Verificar se CPF já existe para outro cliente
-                var cpfExistente = await _context.Clientes
-                    .AnyAsync(c => c.CPF == model.CPF && c.Id != id);
-
-                if (cpfExistente)
+                // Verificar se CPF já existe para outro cliente (apenas se CPF foi preenchido)
+                if (!string.IsNullOrWhiteSpace(model.CPF))
                 {
-                    ModelState.AddModelError("CPF", "Já existe outro cliente cadastrado com este CPF");
-                    model.FuncionarioNome = cliente.FuncionarioResponsavel?.Nome;
-                    return View(model);
+                    var cpfExistente = await _context.Clientes
+                        .AnyAsync(c => c.CPF == model.CPF && c.Id != id);
+
+                    if (cpfExistente)
+                    {
+                        ModelState.AddModelError("CPF", "Já existe outro cliente cadastrado com este CPF");
+                        model.FuncionarioNome = cliente.FuncionarioResponsavel?.Nome;
+                        return View(model);
+                    }
                 }
 
                 try
@@ -703,7 +709,7 @@ namespace AgendaIR.Controllers
             var termoLower = termo.ToLower();
             query = query.Where(c => 
                 c.Nome.ToLower().Contains(termoLower) || 
-                c.CPF.Contains(termo));
+                (c.CPF != null && c.CPF.Contains(termo)));
 
             var clientes = await query
                 .OrderBy(c => c.Nome)

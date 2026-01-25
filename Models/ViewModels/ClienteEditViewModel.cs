@@ -70,10 +70,10 @@ namespace AgendaIR.Models.ViewModels
         /// <summary>
         /// CPF do cliente
         /// </summary>
-        [Required(ErrorMessage = "O CPF é obrigatório")]
+        [Display(Name = "CPF (Opcional)")]
+        [RegularExpression(@"\d{3}\.\d{3}\.\d{3}-\d{2}", ErrorMessage = "CPF deve estar no formato 000.000.000-00")]
         [StringLength(14)]
-        [Display(Name = "CPF")]
-        public string CPF { get; set; } = string.Empty;
+        public string? CPF { get; set; }
 
         /// <summary>
         /// Indica se o cliente está ativo
