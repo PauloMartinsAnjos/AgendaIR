@@ -25,16 +25,16 @@ document.addEventListener('DOMContentLoaded', () => {
  */
 function onFuncionarioChange(funcionarioId) {
     console.log('👤 Funcionário selecionado:', funcionarioId);
-    
+
     calendarioState.funcionarioId = parseInt(funcionarioId);
     calendarioState.dataSelecionada = null;
-    
+
     // Limpar seleção de horários
     const horariosContainer = document.getElementById('horarios-disponiveis');
     if (horariosContainer) {
         horariosContainer.innerHTML = '<div class="alert-rir alert-rir-info">📅 Selecione um dia no calendário</div>';
     }
-    
+
     // Limpar confirmação
     const confirmacao = document.getElementById('confirmacao-horario');
     if (confirmacao) {
@@ -49,11 +49,11 @@ function renderizarCalendario(data) {
     const calendario = document.getElementById('calendario');
     if (!calendario) return;
 
-    const mesAno = data.toLocaleDateString('pt-BR', { 
-        month: 'long', 
-        year: 'numeric' 
+    const mesAno = data.toLocaleDateString('pt-BR', {
+        month: 'long',
+        year: 'numeric'
     });
-    
+
     let html = `
         <div class="calendario-header">
             <button type="button" onclick="mesAnterior()" class="btn-nav">◀</button>
@@ -74,7 +74,7 @@ function renderizarCalendario(data) {
     const primeiroDia = new Date(data.getFullYear(), data.getMonth(), 1);
     const ultimoDia = new Date(data.getFullYear(), data.getMonth() + 1, 0);
     const diaInicial = primeiroDia.getDay();
-    
+
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
 
@@ -88,15 +88,15 @@ function renderizarCalendario(data) {
         const dataCompleta = new Date(data.getFullYear(), data.getMonth(), dia);
         const isPast = dataCompleta < hoje;
         const isDiaUtil = dataCompleta.getDay() >= 1 && dataCompleta.getDay() <= 5; // Seg a Sex
-        
+
         let classes = 'dia';
         if (isPast) classes += ' passado';
         if (!isDiaUtil) classes += ' fim-semana';
-        
-        const onclick = (!isPast && isDiaUtil) 
-            ? `onclick="selecionarDia('${dataCompleta.toISOString()}', this)"` 
+
+        const onclick = (!isPast && isDiaUtil)
+            ? `onclick="selecionarDia('${dataCompleta.toISOString()}', this)"`
             : '';
-        
+
         html += `<div class="${classes}" ${onclick}>${dia}</div>`;
     }
 
@@ -140,14 +140,14 @@ async function carregarHorarios(data) {
 
     try {
         let url = `/api/disponibilidade?funcionarioId=${calendarioState.funcionarioId}&data=${data.toISOString()}&duracao=${calendarioState.duracao}`;
-        
+
         // Adicionar ignorarAgendamentoId se existir (para edição)
         if (calendarioState.ignorarAgendamentoId) {
             url += `&ignorarAgendamentoId=${calendarioState.ignorarAgendamentoId}`;
         }
-        
+
         console.log('🌐 API Request:', url);
-        
+
         const response = await fetch(url);
 
         if (!response.ok) {
@@ -155,11 +155,11 @@ async function carregarHorarios(data) {
         }
 
         const horarios = await response.json();
-        
+
         console.log('✅ Horários recebidos:', horarios.length);
-        
+
         renderizarHorarios(horarios);
-        
+
     } catch (error) {
         console.error('❌ Erro ao carregar horários:', error);
         container.innerHTML = `
@@ -176,25 +176,25 @@ async function carregarHorarios(data) {
  */
 function renderizarHorarios(horarios) {
     const container = document.getElementById('horarios-disponiveis');
-    
+
     if (!horarios || horarios.length === 0) {
         container.innerHTML = '<div class="alert-rir alert-rir-warning">⚠️ Nenhum horário disponível neste dia</div>';
         return;
     }
-    
+
     const dataFormatada = calendarioState.dataSelecionada.toLocaleDateString('pt-BR', {
         weekday: 'short',
         day: '2-digit',
         month: '2-digit'
     });
-    
+
     let html = `
         <div class="horarios-header">
             <h6>⏰ Horários (${dataFormatada})</h6>
         </div>
         <div class="horarios-lista">
     `;
-    
+
     horarios.forEach(horario => {
         const inicio = new Date(horario.inicio).toLocaleTimeString('pt-BR', {
             hour: '2-digit',
@@ -225,21 +225,25 @@ function renderizarHorarios(horarios) {
 
 /**
  * Selecionar horário da lista
+ * ✅ MODIFICADO: Agora dispara evento para habilitar botão
  */
 function selecionarHorario(dataHoraISO, clickedElement) {
     console.log('⏰ Horário selecionado:', dataHoraISO);
-    
+
+    const dataHora = new Date(dataHoraISO);
+
     // Atualizar campo hidden do formulário
     const inputDataHora = document.getElementById('DataHora');
     if (inputDataHora) {
         inputDataHora.value = dataHoraISO;
+        console.log('✅ Campo DataHora atualizado:', inputDataHora.value);
     }
 
     // Destacar horário selecionado
     document.querySelectorAll('.horario-item').forEach(el => {
         el.classList.remove('selecionado');
     });
-    
+
     // Use the element from the onclick event if available, otherwise try to find it
     const targetElement = clickedElement || event.target;
     if (targetElement) {
@@ -250,7 +254,6 @@ function selecionarHorario(dataHoraISO, clickedElement) {
     }
 
     // Mostrar confirmação visual
-    const dataHora = new Date(dataHoraISO);
     const textoConfirmacao = dataHora.toLocaleString('pt-BR', {
         weekday: 'long',
         day: '2-digit',
@@ -259,7 +262,7 @@ function selecionarHorario(dataHoraISO, clickedElement) {
         hour: '2-digit',
         minute: '2-digit'
     });
-    
+
     const confirmacaoDiv = document.getElementById('confirmacao-horario');
     if (confirmacaoDiv) {
         confirmacaoDiv.innerHTML = `
@@ -268,6 +271,18 @@ function selecionarHorario(dataHoraISO, clickedElement) {
             </div>
         `;
     }
+
+    // ✅ NOVO: DISPARAR EVENTO CUSTOMIZADO
+    // Isso permite que cliente-agendamento.js saiba que horário foi selecionado
+    const evento = new CustomEvent('horarioSelecionado', {
+        detail: {
+            dataHora: dataHora,
+            dataHoraISO: dataHoraISO
+        }
+    });
+    window.dispatchEvent(evento);
+
+    console.log('📢 Evento "horarioSelecionado" disparado com sucesso');
 }
 
 /**
