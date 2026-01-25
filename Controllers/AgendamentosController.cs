@@ -329,7 +329,6 @@ namespace AgendaIR.Controllers
             if (!string.IsNullOrEmpty(token))
             {
                 cliente = await _context.Clientes
-                    .Include(c => c.Funcionario)
                     .Include(c => c.FuncionarioResponsavel)
                     .FirstOrDefaultAsync(c => c.MagicToken == token);
 
@@ -358,7 +357,6 @@ namespace AgendaIR.Controllers
 
                 // Buscar informações do cliente
                 cliente = await _context.Clientes
-                    .Include(c => c.Funcionario)
                     .Include(c => c.FuncionarioResponsavel)
                     .FirstOrDefaultAsync(c => c.Id == clienteId.Value);
 
@@ -384,11 +382,11 @@ namespace AgendaIR.Controllers
                 .ToListAsync();
 
             // PRÉ-DEFINIR funcionário responsável (cliente não escolhe)
-            var funcionarioId = cliente.FuncionarioResponsavelId ?? cliente.FuncionarioId;
-            var funcionario = cliente.FuncionarioResponsavel ?? cliente.Funcionario;
+            var funcionarioId = cliente.FuncionarioResponsavelId;
+            var funcionario = cliente.FuncionarioResponsavel;
             
             // ✅ VALIDAR se cliente tem funcionário responsável
-            if (funcionario == null || funcionarioId == 0)
+            if (funcionario == null)
             {
                 _logger.LogError($"❌ Cliente {cliente.Id} não tem funcionário responsável definido!");
                 TempData["Erro"] = "⚠️ Cliente sem funcionário responsável. Contate o suporte.";
@@ -441,7 +439,6 @@ namespace AgendaIR.Controllers
             if (!string.IsNullOrEmpty(token))
             {
                 cliente = await _context.Clientes
-                    .Include(c => c.Funcionario)
                     .Include(c => c.FuncionarioResponsavel)
                     .FirstOrDefaultAsync(c => c.MagicToken == token);
 
@@ -467,7 +464,6 @@ namespace AgendaIR.Controllers
 
                 // Buscar cliente
                 cliente = await _context.Clientes
-                    .Include(c => c.Funcionario)
                     .Include(c => c.FuncionarioResponsavel)
                     .FirstOrDefaultAsync(c => c.Id == clienteId.Value);
 
@@ -492,7 +488,7 @@ namespace AgendaIR.Controllers
                 ViewBag.TiposAgendamento = await _context.TiposAgendamento.Where(t => t.Ativo).ToListAsync();
                 ViewBag.ClienteNome = cliente.Nome;
                 ViewBag.Token = token;
-                model.FuncionarioNome = cliente.FuncionarioResponsavel?.Nome ?? cliente.Funcionario?.Nome ?? "Não atribuído";
+                model.FuncionarioNome = cliente.FuncionarioResponsavel?.Nome ?? "Não atribuído";
                 return View(model);
             }
 
@@ -519,7 +515,7 @@ namespace AgendaIR.Controllers
                 };
             }).ToList();
 
-            model.FuncionarioNome = cliente.FuncionarioResponsavel?.Nome ?? cliente.Funcionario?.Nome ?? "Não atribuído";
+            model.FuncionarioNome = cliente.FuncionarioResponsavel?.Nome ?? "Não atribuído";
 
             if (!ModelState.IsValid)
             {
@@ -572,9 +568,9 @@ namespace AgendaIR.Controllers
                 return View(model);
             }
 
-            // Usar funcionário responsável ou fallback para funcionário principal
-            var funcionario = cliente.FuncionarioResponsavel ?? cliente.Funcionario;
-            var funcionarioId = cliente.FuncionarioResponsavelId ?? cliente.FuncionarioId;
+            // Usar funcionário responsável
+            var funcionario = cliente.FuncionarioResponsavel;
+            var funcionarioId = cliente.FuncionarioResponsavelId;
 
             // Verificar disponibilidade no Google Calendar
             var disponivel = await _calendarService.VerificarDisponibilidadeAsync(
@@ -662,15 +658,15 @@ namespace AgendaIR.Controllers
             }
 
             // ===== INTEGRAÇÃO COM GOOGLE CALENDAR COM LOGS DETALHADOS =====
-            var funcionarioEmail = cliente.Funcionario?.GoogleCalendarEmail;
+            var funcionarioEmail = cliente.FuncionarioResponsavel?.GoogleCalendarEmail;
 
             _logger.LogInformation($"");
             _logger.LogInformation($"📅 ========================================");
             _logger.LogInformation($"📅 INICIANDO INTEGRAÇÃO GOOGLE CALENDAR");
             _logger.LogInformation($"📅 ========================================");
             _logger.LogInformation($"   Cliente: {cliente.Nome}");
-            _logger.LogInformation($"   Funcionário: {cliente.Funcionario?.Nome ?? "Não atribuído"}");
-            _logger.LogInformation($"   Funcionário ID: {cliente.FuncionarioId}");
+            _logger.LogInformation($"   Funcionário: {cliente.FuncionarioResponsavel?.Nome ?? "Não atribuído"}");
+            _logger.LogInformation($"   Funcionário ID: {cliente.FuncionarioResponsavelId}");
             _logger.LogInformation($"   Email do Funcionário: '{funcionarioEmail ?? "VAZIO!!!"}'");
             _logger.LogInformation($"   Data/Hora: {model.DataHora:yyyy-MM-dd HH:mm}");
             _logger.LogInformation($"");
@@ -680,7 +676,7 @@ namespace AgendaIR.Controllers
                 _logger.LogWarning($"⚠️ ========================================");
                 _logger.LogWarning($"⚠️ ATENÇÃO: EMAIL NÃO CONFIGURADO!");
                 _logger.LogWarning($"⚠️ ========================================");
-                _logger.LogWarning($"⚠️ Funcionário: '{cliente.Funcionario?.Nome ?? "desconhecido"}' (ID: {cliente.FuncionarioId})");
+                _logger.LogWarning($"⚠️ Funcionário: '{cliente.FuncionarioResponsavel?.Nome ?? "desconhecido"}' (ID: {cliente.FuncionarioResponsavelId})");
                 _logger.LogWarning($"⚠️ NÃO possui email do Google Calendar configurado!");
                 _logger.LogWarning($"⚠️ ");
                 _logger.LogWarning($"⚠️ O agendamento foi SALVO no banco de dados,");
@@ -1040,7 +1036,7 @@ namespace AgendaIR.Controllers
             
             if (!isAdmin)
             {
-                query = query.Where(c => c.FuncionarioId == funcionarioId.Value);
+                query = query.Where(c => c.FuncionarioResponsavelId == funcionarioId.Value);
             }
 
             ViewBag.Clientes = await query.OrderBy(c => c.Nome).ToListAsync();
@@ -1303,7 +1299,7 @@ namespace AgendaIR.Controllers
             var queryClientes = _context.Clientes.Where(c => c.Ativo).AsQueryable();
             if (!isAdmin)
             {
-                queryClientes = queryClientes.Where(c => c.FuncionarioId == funcionarioId);
+                queryClientes = queryClientes.Where(c => c.FuncionarioResponsavelId == funcionarioId);
             }
             ViewBag.Clientes = await queryClientes.OrderBy(c => c.Nome).ToListAsync();
 

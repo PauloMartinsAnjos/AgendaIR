@@ -88,7 +88,7 @@ namespace AgendaIR.Controllers
 
             // Query base
             var query = _context.Clientes
-                .Include(c => c.Funcionario)
+                .Include(c => c.FuncionarioResponsavel)
                 .AsQueryable();
 
             // Se for funcionário (não admin), mostrar apenas seus clientes
@@ -99,11 +99,11 @@ namespace AgendaIR.Controllers
                 {
                     return RedirectToAction("AccessDenied", "Auth");
                 }
-                query = query.Where(c => c.FuncionarioId == currentFuncionarioId.Value);
+                query = query.Where(c => c.FuncionarioResponsavelId == currentFuncionarioId.Value);
             }
             else if (funcionarioId.HasValue) // Admin com filtro por funcionário
             {
-                query = query.Where(c => c.FuncionarioId == funcionarioId.Value);
+                query = query.Where(c => c.FuncionarioResponsavelId == funcionarioId.Value);
             }
 
             // Ordenar por nome
@@ -145,7 +145,7 @@ namespace AgendaIR.Controllers
             }
 
             var cliente = await _context.Clientes
-                .Include(c => c.Funcionario)
+                .Include(c => c.FuncionarioResponsavel)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (cliente == null)
@@ -157,17 +157,20 @@ namespace AgendaIR.Controllers
             if (!IsUserAdmin())
             {
                 var currentFuncionarioId = GetCurrentFuncionarioId();
-                if (currentFuncionarioId == null || cliente.FuncionarioId != currentFuncionarioId.Value)
+                if (currentFuncionarioId == null || cliente.FuncionarioResponsavelId != currentFuncionarioId.Value)
                 {
                     _logger.LogWarning($"Funcionário {User.Identity?.Name} tentou acessar cliente {id} sem permissão");
                     return RedirectToAction("AccessDenied", "Auth");
                 }
             }
 
-            // Gerar magic link para exibição
-            ViewBag.MagicLink = _magicLinkService.GerarMagicLink(
-                cliente.MagicToken,
-                $"{Request.Scheme}://{Request.Host}");
+            // Gerar magic link para exibição (se token existir)
+            if (!string.IsNullOrEmpty(cliente.MagicToken))
+            {
+                ViewBag.MagicLink = _magicLinkService.GerarMagicLink(
+                    cliente.MagicToken,
+                    $"{Request.Scheme}://{Request.Host}");
+            }
 
             return View(cliente);
         }
@@ -193,10 +196,10 @@ namespace AgendaIR.Controllers
                 {
                     return RedirectToAction("AccessDenied", "Auth");
                 }
-                model.FuncionarioId = currentFuncionarioId.Value;
+                model.FuncionarioResponsavelId = currentFuncionarioId.Value;
             }
 
-            // Carregar lista de funcionários para seleção (para ambos campos)
+            // Carregar lista de funcionários para seleção
             ViewBag.Funcionarios = await _context.Funcionarios
                 .Where(f => f.Ativo)
                 .OrderBy(f => f.Nome)
@@ -208,8 +211,7 @@ namespace AgendaIR.Controllers
         // POST: Clientes/Create
         /// <summary>
         /// Processa criação de novo cliente
-        /// Gera automaticamente o MagicToken
-        /// Redireciona para página de sucesso mostrando o magic link
+        /// Redireciona para Index com mensagem de sucesso
         /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -224,106 +226,98 @@ namespace AgendaIR.Controllers
             if (!IsUserAdmin())
             {
                 var currentFuncionarioId = GetCurrentFuncionarioId();
-                if (currentFuncionarioId == null || model.FuncionarioId != currentFuncionarioId.Value)
+                if (currentFuncionarioId == null || model.FuncionarioResponsavelId != currentFuncionarioId.Value)
                 {
                     _logger.LogWarning($"Funcionário tentou criar cliente para outro funcionário");
                     return RedirectToAction("AccessDenied", "Auth");
                 }
             }
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                // Verificar se funcionário existe e está ativo
-                var funcionario = await _context.Funcionarios
-                    .FirstOrDefaultAsync(f => f.Id == model.FuncionarioId && f.Ativo);
-
-                if (funcionario == null)
+                // Recarregar ViewBag se for admin
+                if (IsUserAdmin())
                 {
-                    ModelState.AddModelError("FuncionarioId", "Funcionário não encontrado ou inativo");
-                    
-                    // Recarregar ViewBag se for admin
-                    if (IsUserAdmin())
-                    {
-                        ViewBag.Funcionarios = await _context.Funcionarios
-                            .Where(f => f.Ativo)
-                            .OrderBy(f => f.Nome)
-                            .ToListAsync();
-                    }
-                    
-                    return View(model);
+                    ViewBag.Funcionarios = await _context.Funcionarios
+                        .Where(f => f.Ativo)
+                        .OrderBy(f => f.Nome)
+                        .ToListAsync();
                 }
-
-                // Verificar se já existe cliente com mesmo CPF
-                var cpfExistente = await _context.Clientes
-                    .AnyAsync(c => c.CPF == model.CPF);
-
-                if (cpfExistente)
-                {
-                    ModelState.AddModelError("CPF", "Já existe um cliente cadastrado com este CPF");
-                    
-                    // Recarregar ViewBag se for admin
-                    if (IsUserAdmin())
-                    {
-                        ViewBag.Funcionarios = await _context.Funcionarios
-                            .Where(f => f.Ativo)
-                            .OrderBy(f => f.Nome)
-                            .ToListAsync();
-                    }
-                    
-                    return View(model);
-                }
-
-                // Gerar MagicToken único
-                var magicToken = _magicLinkService.GerarMagicToken();
-
-                // Criar novo cliente
-                var cliente = new Cliente
-                {
-                    Nome = model.Nome,
-                    Email = model.Email,
-                    Telefone = model.Telefone,
-                    TelefoneResidencial = model.TelefoneResidencial,
-                    TelefoneComercial = model.TelefoneComercial,
-                    Observacoes = model.Observacoes,
-                    CorDaPasta = model.CorDaPasta,
-                    CPF = model.CPF,
-                    FuncionarioId = model.FuncionarioId,
-                    FuncionarioResponsavelId = model.FuncionarioResponsavelId,
-                    MagicToken = magicToken,
-                    TokenGeradoEm = DateTime.UtcNow,
-                    TokenExpiracao = DateTime.UtcNow.AddHours(8),  // 8 HORAS
-                    TokenAtivo = true,
-                    Ativo = true,
-                    DataCriacao = DateTime.UtcNow
-                };
-
-                _context.Add(cliente);
-                await _context.SaveChangesAsync();
-
-                _logger.LogInformation($"Novo cliente criado: {cliente.Nome} (ID: {cliente.Id}) por {User.Identity?.Name}");
-                _logger.LogInformation($"🔑 Token gerado para cliente {cliente.Nome} - Expira em: {cliente.TokenExpiracao:dd/MM/yyyy HH:mm}");
-
-                // Redirecionar para página de sucesso com o ID do cliente
-                return RedirectToAction(nameof(CreatedSuccess), new { id = cliente.Id });
+                
+                return View(model);
             }
 
-            // Se chegou aqui, houve erro de validação
-            // Recarregar ViewBag se for admin
-            if (IsUserAdmin())
+            // Verificar se funcionário existe e está ativo
+            var funcionario = await _context.Funcionarios
+                .FirstOrDefaultAsync(f => f.Id == model.FuncionarioResponsavelId && f.Ativo);
+
+            if (funcionario == null)
             {
-                ViewBag.Funcionarios = await _context.Funcionarios
-                    .Where(f => f.Ativo)
-                    .OrderBy(f => f.Nome)
-                    .ToListAsync();
+                ModelState.AddModelError("FuncionarioResponsavelId", "Funcionário não encontrado ou inativo");
+                
+                // Recarregar ViewBag se for admin
+                if (IsUserAdmin())
+                {
+                    ViewBag.Funcionarios = await _context.Funcionarios
+                        .Where(f => f.Ativo)
+                        .OrderBy(f => f.Nome)
+                        .ToListAsync();
+                }
+                
+                return View(model);
             }
 
-            return View(model);
+            // Verificar se já existe cliente com mesmo CPF
+            var cpfExistente = await _context.Clientes
+                .AnyAsync(c => c.CPF == model.CPF);
+
+            if (cpfExistente)
+            {
+                ModelState.AddModelError("CPF", "Já existe um cliente cadastrado com este CPF");
+                
+                // Recarregar ViewBag se for admin
+                if (IsUserAdmin())
+                {
+                    ViewBag.Funcionarios = await _context.Funcionarios
+                        .Where(f => f.Ativo)
+                        .OrderBy(f => f.Nome)
+                        .ToListAsync();
+                }
+                
+                return View(model);
+            }
+
+            // Criar novo cliente SEM magic token
+            var cliente = new Cliente
+            {
+                Nome = model.Nome,
+                Email = model.Email,
+                Telefone = model.Telefone,
+                TelefoneResidencial = model.TelefoneResidencial,
+                TelefoneComercial = model.TelefoneComercial,
+                Observacoes = model.Observacoes,
+                CorDaPasta = model.CorDaPasta,
+                CPF = model.CPF,
+                FuncionarioResponsavelId = model.FuncionarioResponsavelId,
+                // Campos de token não são preenchidos automaticamente
+                Ativo = true,
+                DataCriacao = DateTime.UtcNow
+            };
+
+            _context.Add(cliente);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation($"Novo cliente criado: {cliente.Nome} (ID: {cliente.Id}) por {User.Identity?.Name}");
+
+            // Redirecionar para Index com mensagem de sucesso
+            TempData["SuccessMessage"] = $"Cliente {cliente.Nome} cadastrado com sucesso!";
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Clientes/CreatedSuccess/5
         /// <summary>
         /// Exibe página de sucesso após criação do cliente
-        /// Mostra o magic link gerado para copiar e compartilhar
+        /// Mostra o magic link gerado (se existir) para copiar e compartilhar
         /// </summary>
         public async Task<IActionResult> CreatedSuccess(int? id)
         {
@@ -338,7 +332,7 @@ namespace AgendaIR.Controllers
             }
 
             var cliente = await _context.Clientes
-                .Include(c => c.Funcionario)
+                .Include(c => c.FuncionarioResponsavel)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (cliente == null)
@@ -350,24 +344,27 @@ namespace AgendaIR.Controllers
             if (!IsUserAdmin())
             {
                 var currentFuncionarioId = GetCurrentFuncionarioId();
-                if (currentFuncionarioId == null || cliente.FuncionarioId != currentFuncionarioId.Value)
+                if (currentFuncionarioId == null || cliente.FuncionarioResponsavelId != currentFuncionarioId.Value)
                 {
                     return RedirectToAction("AccessDenied", "Auth");
                 }
             }
 
-            // Gerar magic link completo
-            var magicLink = _magicLinkService.GerarMagicLink(
-                cliente.MagicToken,
-                $"{Request.Scheme}://{Request.Host}");
+            // Gerar magic link completo (se token existir)
+            if (!string.IsNullOrEmpty(cliente.MagicToken))
+            {
+                var magicLink = _magicLinkService.GerarMagicLink(
+                    cliente.MagicToken,
+                    $"{Request.Scheme}://{Request.Host}");
 
-            ViewBag.MagicLink = magicLink;
+                ViewBag.MagicLink = magicLink;
 
-            // Gerar link do WhatsApp
-            // Remove caracteres não numéricos do telefone
-            var telefoneNumeros = new string(cliente.Telefone.Where(char.IsDigit).ToArray());
-            var mensagemWhatsApp = Uri.EscapeDataString($"Olá {cliente.Nome}! Aqui está seu link de acesso ao sistema: {magicLink}");
-            ViewBag.WhatsAppLink = $"https://wa.me/{telefoneNumeros}?text={mensagemWhatsApp}";
+                // Gerar link do WhatsApp
+                // Remove caracteres não numéricos do telefone
+                var telefoneNumeros = new string(cliente.Telefone.Where(char.IsDigit).ToArray());
+                var mensagemWhatsApp = Uri.EscapeDataString($"Olá {cliente.Nome}! Aqui está seu link de acesso ao sistema: {magicLink}");
+                ViewBag.WhatsAppLink = $"https://wa.me/{telefoneNumeros}?text={mensagemWhatsApp}";
+            }
 
             return View(cliente);
         }
@@ -390,7 +387,7 @@ namespace AgendaIR.Controllers
             }
 
             var cliente = await _context.Clientes
-                .Include(c => c.Funcionario)
+                .Include(c => c.FuncionarioResponsavel)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (cliente == null)
@@ -402,7 +399,7 @@ namespace AgendaIR.Controllers
             if (!IsUserAdmin())
             {
                 var currentFuncionarioId = GetCurrentFuncionarioId();
-                if (currentFuncionarioId == null || cliente.FuncionarioId != currentFuncionarioId.Value)
+                if (currentFuncionarioId == null || cliente.FuncionarioResponsavelId != currentFuncionarioId.Value)
                 {
                     _logger.LogWarning($"Funcionário {User.Identity?.Name} tentou editar cliente {id} sem permissão");
                     return RedirectToAction("AccessDenied", "Auth");
@@ -422,9 +419,8 @@ namespace AgendaIR.Controllers
                 CorDaPasta = cliente.CorDaPasta,
                 CPF = cliente.CPF,
                 Ativo = cliente.Ativo,
-                FuncionarioId = cliente.FuncionarioId,
-                FuncionarioNome = cliente.Funcionario?.Nome,
-                FuncionarioResponsavelId = cliente.FuncionarioResponsavelId
+                FuncionarioResponsavelId = cliente.FuncionarioResponsavelId,
+                FuncionarioNome = cliente.FuncionarioResponsavel?.Nome
             };
 
             // Carregar lista de funcionários para seleção do funcionário responsável
@@ -457,7 +453,7 @@ namespace AgendaIR.Controllers
 
             // Buscar cliente original
             var cliente = await _context.Clientes
-                .Include(c => c.Funcionario)
+                .Include(c => c.FuncionarioResponsavel)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (cliente == null)
@@ -469,7 +465,7 @@ namespace AgendaIR.Controllers
             if (!IsUserAdmin())
             {
                 var currentFuncionarioId = GetCurrentFuncionarioId();
-                if (currentFuncionarioId == null || cliente.FuncionarioId != currentFuncionarioId.Value)
+                if (currentFuncionarioId == null || cliente.FuncionarioResponsavelId != currentFuncionarioId.Value)
                 {
                     return RedirectToAction("AccessDenied", "Auth");
                 }
@@ -484,7 +480,7 @@ namespace AgendaIR.Controllers
                 if (cpfExistente)
                 {
                     ModelState.AddModelError("CPF", "Já existe outro cliente cadastrado com este CPF");
-                    model.FuncionarioNome = cliente.Funcionario?.Nome;
+                    model.FuncionarioNome = cliente.FuncionarioResponsavel?.Nome;
                     return View(model);
                 }
 
@@ -500,10 +496,12 @@ namespace AgendaIR.Controllers
                     cliente.CorDaPasta = model.CorDaPasta;
                     cliente.CPF = model.CPF;
                     cliente.Ativo = model.Ativo;
-                    cliente.FuncionarioResponsavelId = model.FuncionarioResponsavelId;
+                    if (model.FuncionarioResponsavelId.HasValue)
+                    {
+                        cliente.FuncionarioResponsavelId = model.FuncionarioResponsavelId.Value;
+                    }
                     
-                    // FuncionarioId NÃO é atualizado - é IMUTÁVEL
-                    // MagicToken também NÃO é alterado
+                    // MagicToken não é alterado
 
                     _context.Update(cliente);
                     await _context.SaveChangesAsync();
@@ -527,7 +525,7 @@ namespace AgendaIR.Controllers
             }
 
             // Se chegou aqui, houve erro - recarregar nome do funcionário
-            model.FuncionarioNome = cliente.Funcionario?.Nome;
+            model.FuncionarioNome = cliente.FuncionarioResponsavel?.Nome;
             return View(model);
         }
 
@@ -548,7 +546,7 @@ namespace AgendaIR.Controllers
             }
 
             var cliente = await _context.Clientes
-                .Include(c => c.Funcionario)
+                .Include(c => c.FuncionarioResponsavel)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (cliente == null)
@@ -560,7 +558,7 @@ namespace AgendaIR.Controllers
             if (!IsUserAdmin())
             {
                 var currentFuncionarioId = GetCurrentFuncionarioId();
-                if (currentFuncionarioId == null || cliente.FuncionarioId != currentFuncionarioId.Value)
+                if (currentFuncionarioId == null || cliente.FuncionarioResponsavelId != currentFuncionarioId.Value)
                 {
                     return RedirectToAction("AccessDenied", "Auth");
                 }
@@ -593,7 +591,7 @@ namespace AgendaIR.Controllers
             if (!IsUserAdmin())
             {
                 var currentFuncionarioId = GetCurrentFuncionarioId();
-                if (currentFuncionarioId == null || cliente.FuncionarioId != currentFuncionarioId.Value)
+                if (currentFuncionarioId == null || cliente.FuncionarioResponsavelId != currentFuncionarioId.Value)
                 {
                     return RedirectToAction("AccessDenied", "Auth");
                 }
@@ -631,7 +629,7 @@ namespace AgendaIR.Controllers
             if (!IsUserAdmin())
             {
                 var currentFuncionarioId = GetCurrentFuncionarioId();
-                if (currentFuncionarioId == null || cliente.FuncionarioId != currentFuncionarioId.Value)
+                if (currentFuncionarioId == null || cliente.FuncionarioResponsavelId != currentFuncionarioId.Value)
                 {
                     return RedirectToAction("AccessDenied", "Auth");
                 }
@@ -698,7 +696,7 @@ namespace AgendaIR.Controllers
             // Se não for admin, filtrar apenas clientes do funcionário
             if (!isAdmin)
             {
-                query = query.Where(c => c.FuncionarioId == funcionarioId);
+                query = query.Where(c => c.FuncionarioResponsavelId == funcionarioId);
             }
 
             // Buscar por nome ou CPF (EF Core automatically parameterizes these queries)

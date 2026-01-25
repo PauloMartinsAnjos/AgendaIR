@@ -116,7 +116,7 @@ namespace AgendaIR.Controllers
 
             // Buscar cliente pelo token
             var cliente = await _context.Clientes
-                .Include(c => c.Funcionario) // Incluir dados do funcionário
+                .Include(c => c.FuncionarioResponsavel) // Incluir dados do funcionário
                 .FirstOrDefaultAsync(c => c.MagicToken == token && c.Ativo);
 
             if (cliente == null)
@@ -147,7 +147,7 @@ namespace AgendaIR.Controllers
                 new Claim(ClaimTypes.Name, cliente.Nome),
                 new Claim(ClaimTypes.Email, cliente.Email),
                 new Claim("UserType", "Cliente"),
-                new Claim("FuncionarioId", cliente.FuncionarioId.ToString()),
+                new Claim("FuncionarioResponsavelId", cliente.FuncionarioResponsavelId.ToString()),
                 new Claim("IsAdmin", "False")
             };
 
