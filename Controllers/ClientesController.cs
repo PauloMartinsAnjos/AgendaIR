@@ -63,15 +63,6 @@ namespace AgendaIR.Controllers
         }
 
         /// <summary>
-        /// Helper para pegar ID do funcionário logado (alternativo)
-        /// </summary>
-        private int GetFuncionarioLogadoId()
-        {
-            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            return userIdClaim != null ? int.Parse(userIdClaim) : 0;
-        }
-
-        /// <summary>
         /// Verifica se o usuário tem permissão para acessar funcionalidades de clientes
         /// Apenas funcionários e administradores podem acessar
         /// </summary>
@@ -100,11 +91,18 @@ namespace AgendaIR.Controllers
             }
 
             var isAdmin = IsUserAdmin();
-            var funcionarioId = GetFuncionarioLogadoId();
-            var funcionario = await _context.Funcionarios.FindAsync(funcionarioId);
+            var funcionarioId = GetCurrentFuncionarioId();
+            
+            if (funcionarioId == null)
+            {
+                _logger.LogWarning($"Funcionário não encontrado para o usuário {User.Identity?.Name}");
+                return RedirectToAction("AccessDenied", "Auth");
+            }
+            
+            var funcionario = await _context.Funcionarios.FindAsync(funcionarioId.Value);
 
             ViewBag.IsAdmin = isAdmin;
-            ViewBag.FuncionarioLogadoId = funcionarioId;
+            ViewBag.FuncionarioLogadoId = funcionarioId.Value;
             ViewBag.FuncionarioLogadoNome = funcionario?.Nome ?? "Usuário";
             
             ViewBag.FiltroNome = filtroNome;
@@ -150,7 +148,7 @@ namespace AgendaIR.Controllers
             else if (!isAdmin)
             {
                 // Funcionário não-admin só vê seus clientes
-                query = query.Where(c => c.FuncionarioResponsavelId == funcionarioId);
+                query = query.Where(c => c.FuncionarioResponsavelId == funcionarioId.Value);
             }
 
             var clientes = await query

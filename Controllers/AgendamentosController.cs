@@ -946,7 +946,7 @@ namespace AgendaIR.Controllers
                 IsAdmin = isAdmin,
                 FuncionarioLogadoId = funcionarioId.Value,
                 FuncionarioLogadoNome = funcionario?.Nome ?? "Usuário",
-                FiltroFuncionarioId = filtroFuncionarioId ?? (isAdmin ? null : funcionarioId),
+                FiltroFuncionarioId = filtroFuncionarioId ?? (isAdmin ? null : funcionarioId.Value),
                 FiltroClienteId = filtroClienteId,
                 FiltroTipoId = filtroTipoId,
                 FiltroStatus = filtroStatus,
@@ -970,7 +970,7 @@ namespace AgendaIR.Controllers
             else if (!isAdmin)
             {
                 // Funcionário não-admin só vê seus próprios agendamentos
-                query = query.Where(a => a.FuncionarioId == funcionarioId);
+                query = query.Where(a => a.FuncionarioId == funcionarioId.Value);
             }
 
             // Filtro por Cliente
@@ -1042,7 +1042,7 @@ namespace AgendaIR.Controllers
             var queryClientes = _context.Clientes.Where(c => c.Ativo).AsQueryable();
             if (!isAdmin)
             {
-                queryClientes = queryClientes.Where(c => c.FuncionarioResponsavelId == funcionarioId);
+                queryClientes = queryClientes.Where(c => c.FuncionarioResponsavelId == funcionarioId.Value);
             }
             
             model.Clientes = await queryClientes
