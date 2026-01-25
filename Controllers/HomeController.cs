@@ -68,7 +68,11 @@ public class HomeController : Controller
         
         // Pegar ID do funcionário logado
         var funcionarioIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-        var funcionarioId = funcionarioIdClaim != null ? int.Parse(funcionarioIdClaim) : 0;
+        var funcionarioId = 0;
+        if (funcionarioIdClaim != null)
+        {
+            int.TryParse(funcionarioIdClaim, out funcionarioId);
+        }
 
         // Criar ViewModel com dados da dashboard
         var viewModel = new DashboardViewModel();
