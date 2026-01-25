@@ -16,11 +16,11 @@
             </div>
             <div class="flex-grow-1">
                 <h5 class="alert-heading mb-2">
-                    <i class="bi bi-exclamation-triangle-fill"></i> 
+                    <i class="bi bi-exclamation-triangle-fill"></i>
                     Autorização do Google Calendar Necessária
                 </h5>
                 <p class="mb-2">
-                    Você possui o email <strong>@Html.Encode(TempData["GoogleCalendarEmail"])</strong> cadastrado para integração com Google Calendar, 
+                    Você possui o email <strong>@Html.Encode(TempData["GoogleCalendarEmail"])</strong> cadastrado para integração com Google Calendar,
                     mas ainda não autorizou o acesso.
                 </p>
                 <p class="mb-3">
@@ -59,7 +59,7 @@
     <div class="page-header-rir">
         <div>
             <h1>
-                <i class="bi bi-speedometer2"></i> 
+                <i class="bi bi-speedometer2"></i>
                 Dashboard
                 @if (!Model.IsAdmin)
                 {
@@ -180,7 +180,7 @@
 @section Scripts {
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-    
+
     <script>
         // Dados do servidor
         const statusData = {
@@ -213,7 +213,7 @@
                     labels: ['Concluídos', 'Pendentes', 'Confirmados', 'Cancelados'],
                     datasets: [{
                         data: [
-                            statusData.concluidos, 
+                            statusData.concluidos,
                             statusData.pendentes,
                             statusData.confirmados,
                             statusData.cancelados
@@ -258,9 +258,19 @@
             });
         }
 
-        // Gráfico 2: Top Status (Bar)
+        // Gráfico 2: Top Status (Bar) - COM CORES POR STATUS
         const statusBarChartCtx = document.getElementById('statusBarChart');
         if (statusBarChartCtx) {
+            // ✅ Função para mapear cores por status
+            const getStatusColor = (status) => {
+                const statusLower = status.toLowerCase();
+                if (statusLower === 'concluído' || statusLower === 'concluido') return '#28a745'; // verde
+                if (statusLower === 'pendente') return '#ffc107'; // amarelo
+                if (statusLower === 'confirmado') return '#007bff'; // azul
+                if (statusLower === 'cancelado') return '#dc3545'; // vermelho
+                return '#6c757d'; // cinza (padrão)
+            };
+
             new Chart(statusBarChartCtx, {
                 type: 'bar',
                 data: {
@@ -268,7 +278,7 @@
                     datasets: [{
                         label: 'Agendamentos',
                         data: topStatusData.values,
-                        backgroundColor: '#F58634',
+                        backgroundColor: topStatusData.labels.map(label => getStatusColor(label)), // ✅ CORES DINÂMICAS
                         borderRadius: 8,
                         barThickness: 50,
                         maxBarThickness: 60
