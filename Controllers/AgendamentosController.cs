@@ -417,33 +417,53 @@ namespace AgendaIR.Controllers
         }
 
         /// <summary>
-        /// CLIENTE: Processa a criação de um novo agendamento
+        /// CLIENTE: Processa a criação de um novo agendamento (via token ou autenticado)
         /// </summary>
         [HttpPost]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(AgendamentoCreateViewModel model, string? ParticipantesJson)
+        public async Task<IActionResult> Create(AgendamentoCreateViewModel model, string? ParticipantesJson, string? token)
         {
-            // Verificar autenticação
-            var userType = GetUserType();
-            if (userType != "Cliente")
+            Cliente? cliente = null;
+            
+            // Se tiver token, validar via token
+            if (!string.IsNullOrEmpty(token))
             {
-                return RedirectToAction("Login", "Auth");
+                cliente = await _context.Clientes
+                    .Include(c => c.Funcionario)
+                    .Include(c => c.FuncionarioResponsavel)
+                    .FirstOrDefaultAsync(c => c.MagicToken == token);
+
+                if (cliente == null || !cliente.TokenValido())
+                {
+                    return View("../Auth/TokenExpirado");
+                }
             }
-
-            var clienteId = GetUsuarioId();
-            if (clienteId == null)
+            else
             {
-                return RedirectToAction("Login", "Auth");
-            }
+                // Verificar autenticação
+                var userType = GetUserType();
+                if (userType != "Cliente")
+                {
+                    return RedirectToAction("Login", "Auth");
+                }
 
-            // Buscar cliente
-            var cliente = await _context.Clientes
-                .Include(c => c.Funcionario)
-                .FirstOrDefaultAsync(c => c.Id == clienteId.Value);
+                var clienteId = GetUsuarioId();
+                if (clienteId == null)
+                {
+                    return RedirectToAction("Login", "Auth");
+                }
 
-            if (cliente == null)
-            {
-                return NotFound();
+                // Buscar cliente
+                cliente = await _context.Clientes
+                    .Include(c => c.Funcionario)
+                    .Include(c => c.FuncionarioResponsavel)
+                    .FirstOrDefaultAsync(c => c.Id == clienteId.Value);
+
+                if (cliente == null)
+                {
+                    return NotFound();
+                }
             }
 
             // ✅ CORREÇÃO: Guardar referência aos documentos ANTES de recarregar
@@ -460,7 +480,8 @@ namespace AgendaIR.Controllers
                 // Recarregar dados para view
                 ViewBag.TiposAgendamento = await _context.TiposAgendamento.Where(t => t.Ativo).ToListAsync();
                 ViewBag.ClienteNome = cliente.Nome;
-                model.FuncionarioNome = cliente.Funcionario?.Nome ?? "Não atribuído";
+                ViewBag.Token = token;
+                model.FuncionarioNome = cliente.FuncionarioResponsavel?.Nome ?? cliente.Funcionario?.Nome ?? "Não atribuído";
                 return View(model);
             }
 
@@ -487,13 +508,14 @@ namespace AgendaIR.Controllers
                 };
             }).ToList();
 
-            model.FuncionarioNome = cliente.Funcionario?.Nome ?? "Não atribuído";
+            model.FuncionarioNome = cliente.FuncionarioResponsavel?.Nome ?? cliente.Funcionario?.Nome ?? "Não atribuído";
 
             if (!ModelState.IsValid)
             {
                 // Recarregar dados para view
                 ViewBag.TiposAgendamento = await _context.TiposAgendamento.Where(t => t.Ativo).ToListAsync();
                 ViewBag.ClienteNome = cliente.Nome;
+                ViewBag.Token = token;
                 return View(model);
             }
 
@@ -535,12 +557,17 @@ namespace AgendaIR.Controllers
                 // Recarregar dados para view
                 ViewBag.TiposAgendamento = await _context.TiposAgendamento.Where(t => t.Ativo).ToListAsync();
                 ViewBag.ClienteNome = cliente.Nome;
+                ViewBag.Token = token;
                 return View(model);
             }
 
+            // Usar funcionário responsável ou fallback para funcionário principal
+            var funcionario = cliente.FuncionarioResponsavel ?? cliente.Funcionario;
+            var funcionarioId = cliente.FuncionarioResponsavelId ?? cliente.FuncionarioId;
+
             // Verificar disponibilidade no Google Calendar
             var disponivel = await _calendarService.VerificarDisponibilidadeAsync(
-                cliente.Funcionario?.GoogleCalendarEmail ?? "",
+                funcionario?.GoogleCalendarEmail ?? "",
                 model.DataHora
             );
 
@@ -550,14 +577,15 @@ namespace AgendaIR.Controllers
                 // Recarregar dados para view
                 ViewBag.TiposAgendamento = await _context.TiposAgendamento.Where(t => t.Ativo).ToListAsync();
                 ViewBag.ClienteNome = cliente.Nome;
+                ViewBag.Token = token;
                 return View(model);
             }
 
             // Criar o agendamento
             var agendamento = new Agendamento
             {
-                ClienteId = clienteId.Value,
-                FuncionarioId = cliente.FuncionarioId,
+                ClienteId = cliente.Id,
+                FuncionarioId = funcionarioId,
                 TipoAgendamentoId = model.TipoAgendamentoId,
                 DataHora = model.DataHora,
                 Status = "Pendente",
@@ -796,6 +824,12 @@ namespace AgendaIR.Controllers
             );
 
             TempData["SuccessMessage"] = "Agendamento criado com sucesso!";
+            
+            if (!string.IsNullOrEmpty(token))
+            {
+                return RedirectToAction(nameof(MeusAgendamentos), new { token = token });
+            }
+            
             return RedirectToAction(nameof(MeusAgendamentos));
         }
 
