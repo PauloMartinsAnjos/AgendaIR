@@ -8,9 +8,20 @@ namespace AgendaIR.Models.ViewModels
     /// </summary>
     public class DashboardViewModel
     {
+        // ===== Informações do Usuário =====
+        /// <summary>
+        /// Indica se o usuário é administrador
+        /// </summary>
+        public bool IsAdmin { get; set; }
+
+        /// <summary>
+        /// Nome do funcionário logado
+        /// </summary>
+        public string NomeFuncionario { get; set; } = string.Empty;
+
         // ===== KPIs =====
         /// <summary>
-        /// Total de agendamentos no sistema
+        /// Total de agendamentos no sistema (ou do funcionário)
         /// </summary>
         public int TotalAgendamentos { get; set; }
 
