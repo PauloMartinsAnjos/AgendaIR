@@ -370,92 +370,61 @@ class StepperAgendamento {
     }
 
     renderizarResumo() {
-        const container = document.getElementById('resumo-container');
-        if (!container) {
-            console.warn('Container resumo-container não encontrado');
-            return;
-        }
-
+        console.log('📋 Renderizando resumo...');
+        console.log('📅 DataHora:', this.data.dataHora);
+        
+        // Buscar dados do formulário
         const tipoSelect = document.getElementById('tipoAgendamentoSelect');
         const tipoNome = tipoSelect?.options[tipoSelect.selectedIndex]?.text || 'Não selecionado';
-
-        const funcionarioNome = document.querySelector('[data-funcionario-nome]')?.textContent ||
-            document.querySelector('.funcionario-responsavel')?.textContent ||
-            'Consultor';
-
+        
+        // Atualizar tipo no resumo
+        const resumoTipo = document.getElementById('resumo-tipo');
+        if (resumoTipo) {
+            resumoTipo.textContent = tipoNome;
+        }
+        
+        // Atualizar data e hora
         const dataHora = this.data.dataHora ? new Date(this.data.dataHora) : null;
-
-        let html = '<div class="resumo-agendamento">';
-
-        html += `
-            <div class="resumo-item">
-                <div class="resumo-label">
-                    <i class="bi bi-bookmark"></i> Tipo de Atendimento
-                </div>
-                <div class="resumo-value">${tipoNome}</div>
-            </div>
-        `;
-
-        html += `
-            <div class="resumo-item">
-                <div class="resumo-label">
-                    <i class="bi bi-person-badge"></i> Consultor Responsável
-                </div>
-                <div class="resumo-value">${funcionarioNome}</div>
-            </div>
-        `;
-
-        if (dataHora) {
+        
+        if (dataHora && !isNaN(dataHora.getTime())) {
+            // Formatar data
             const dataFormatada = dataHora.toLocaleDateString('pt-BR', {
                 weekday: 'long',
                 day: '2-digit',
                 month: 'long',
                 year: 'numeric'
             });
+            
+            // Formatar horário
             const horaFormatada = dataHora.toLocaleTimeString('pt-BR', {
                 hour: '2-digit',
                 minute: '2-digit'
             });
-
-            html += `
-                <div class="resumo-item">
-                    <div class="resumo-label">
-                        <i class="bi bi-calendar-event"></i> Data e Horário
-                    </div>
-                    <div class="resumo-value">
-                        ${dataFormatada}<br>
-                        <strong>${horaFormatada}</strong>
-                    </div>
-                </div>
-            `;
+            
+            console.log('✅ Data formatada:', dataFormatada);
+            console.log('✅ Hora formatada:', horaFormatada);
+            
+            // Atualizar elementos na VIEW usando IDs
+            const resumoData = document.getElementById('resumo-data');
+            const resumoHora = document.getElementById('resumo-hora');
+            
+            if (resumoData) {
+                resumoData.textContent = dataFormatada;
+                console.log('✅ Campo Data atualizado');
+            } else {
+                console.warn('⚠️ Elemento resumo-data não encontrado');
+            }
+            
+            if (resumoHora) {
+                resumoHora.textContent = horaFormatada;
+                console.log('✅ Campo Hora atualizado');
+            } else {
+                console.warn('⚠️ Elemento resumo-hora não encontrado');
+            }
+        } else {
+            console.error('❌ DataHora inválida:', this.data.dataHora);
         }
-
-        if (this.temDocumentos) {
-            const docsEnviados = document.querySelectorAll('[data-doc-required="true"]');
-            let docsCount = 0;
-
-            docsEnviados.forEach(input => {
-                if (input.files && input.files.length > 0) {
-                    docsCount++;
-                }
-            });
-
-            html += `
-                <div class="resumo-item">
-                    <div class="resumo-label">
-                        <i class="bi bi-files"></i> Documentos
-                    </div>
-                    <div class="resumo-value">
-                        ${docsCount} documento(s) enviado(s)
-                    </div>
-                </div>
-            `;
-        }
-
-        html += '</div>';
-
-        container.innerHTML = html;
-
+        
         console.log('✅ Resumo renderizado');
     }
 
