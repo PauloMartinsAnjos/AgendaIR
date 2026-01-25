@@ -107,6 +107,28 @@
                         </div>
                     </div>
 
+                    @* Funcionário Responsável Principal *@
+                    <div class="mb-3">
+                        <label asp-for="FuncionarioResponsavelId" class="form-label">
+                            <i class="bi bi-person-badge"></i> Funcionário Responsável Principal
+                        </label>
+                        <select asp-for="FuncionarioResponsavelId" class="form-select">
+                            <option value="">-- Selecione --</option>
+                            @if (ViewBag.Funcionarios != null)
+                            {
+                                var funcionarios = ViewBag.Funcionarios as IEnumerable<AgendaIR.Models.Funcionario>;
+                                if (funcionarios != null)
+                                {
+                                    foreach (var func in funcionarios)
+                                    {
+                                        <option value="@func.Id">@func.Nome</option>
+                                    }
+                                }
+                            }
+                        </select>
+                        <small class="text-muted">Este funcionário será o responsável principal pelo cliente</small>
+                    </div>
+
                     <!-- ✅ NOVO CAMPO - COR DA PASTA -->
                     <div class="mb-3">
                         <label asp-for="CorDaPasta" class="form-label">

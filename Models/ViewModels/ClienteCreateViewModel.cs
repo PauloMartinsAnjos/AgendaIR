@@ -78,5 +78,11 @@ namespace AgendaIR.Models.ViewModels
         [Required(ErrorMessage = "É necessário selecionar um funcionário")]
         [Display(Name = "Funcionário Responsável")]
         public int FuncionarioId { get; set; }
+
+        /// <summary>
+        /// Id do funcionário responsável principal pelo cliente
+        /// </summary>
+        [Display(Name = "Funcionário Responsável Principal")]
+        public int? FuncionarioResponsavelId { get; set; }
     }
 }

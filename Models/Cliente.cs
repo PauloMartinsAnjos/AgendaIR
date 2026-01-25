@@ -83,6 +83,16 @@ namespace AgendaIR.Models
         public bool Ativo { get; set; } = true;
 
         /// <summary>
+        /// Funcionário responsável principal pelo cliente
+        /// </summary>
+        public int? FuncionarioResponsavelId { get; set; }
+
+        /// <summary>
+        /// Navegação para funcionário responsável
+        /// </summary>
+        public Funcionario? FuncionarioResponsavel { get; set; }
+
+        /// <summary>
         /// Verifica se o token está válido (não expirou)
         /// </summary>
         public bool TokenValido()
