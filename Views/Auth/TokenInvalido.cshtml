@@ -1,52 +1,50 @@
 @{
     ViewData["Title"] = "Link Inválido";
+    Layout = "~/Views/Shared/_LayoutCliente.cshtml";
 }
 
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-6">
-            <div class="card shadow-sm border-danger">
-                <div class="card-body text-center p-5">
-                    <i class="bi bi-x-circle text-danger" style="font-size: 4rem;"></i>
+            <div class="card-rir">
+                <div class="card-rir-body text-center p-5">
+                    <i class="bi bi-x-circle" style="font-size: 4rem; color: var(--rir-danger);"></i>
                     
-                    <h2 class="mt-4 mb-3">❌ Link Inválido</h2>
+                    <h2 class="mt-4 mb-3" style="color: var(--rir-danger);">❌ Link Inválido</h2>
                     
                     <p class="text-muted mb-4">
                         O link que você utilizou não é válido ou foi revogado.
                     </p>
                     
-                    <div class="alert alert-danger">
-                        <i class="bi bi-shield-exclamation"></i>
+                    <div class="alert-rir" style="background: #fee2e2; border: 2px solid #ef4444; border-radius: 8px; padding: 1rem; margin-bottom: 2rem;">
+                        <i class="bi bi-shield-exclamation" style="color: #dc2626;"></i>
                         Verifique se copiou o link corretamente do email recebido.
                     </div>
                     
-                    <hr class="my-4">
+                    <hr style="margin: 2rem 0; border-color: var(--rir-border);">
                     
-                    <h5 class="mb-3">📞 Precisa de ajuda?</h5>
+                    <h5 class="mb-3" style="color: var(--rir-secondary);">📞 Precisa de ajuda?</h5>
                     
-                    <p class="text-muted">
+                    <p class="text-muted mb-4">
                         Entre em contato com nosso escritório:
                     </p>
                     
-                    <div class="d-grid gap-2 mt-4">
-                        <a href="mailto:contato@rir.com.br" class="btn btn-primary btn-lg">
+                    <div class="d-grid gap-2">
+                        <a href="mailto:contato@rir.com.br" class="btn-rir-primary btn-lg">
                             <i class="bi bi-envelope-fill"></i> Enviar Email
                         </a>
+                        
+                        <a href="tel:+5511999999999" class="btn-rir-secondary btn-lg">
+                            <i class="bi bi-telephone-fill"></i> Ligar Agora
+                        </a>
                     </div>
+                    
+                    <p class="text-muted mt-4 small">
+                        <i class="bi bi-clock"></i> Nosso horário de atendimento:<br>
+                        <strong>Segunda a Sexta: 8h às 18h</strong>
+                    </p>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<style>
-    .card {
-        border-radius: 15px;
-    }
-    
-    .btn-lg {
-        border-radius: 10px;
-        padding: 1rem;
-        font-weight: 600;
-    }
-</style>

@@ -75,6 +75,21 @@ class StepperAgendamento {
             currentContent.classList.add('active');
         }
         
+        // Ações específicas por passo
+        if (step === 3) {
+            // GARANTIR que funcionário está definido ANTES de inicializar calendário
+            const funcionarioIdInput = document.getElementById('FuncionarioId');
+            if (funcionarioIdInput && funcionarioIdInput.value) {
+                const funcionarioId = parseInt(funcionarioIdInput.value);
+                if (typeof calendarioState !== 'undefined') {
+                    calendarioState.funcionarioId = funcionarioId;
+                    console.log('✅ Calendário inicializado com funcionário:', funcionarioId);
+                }
+            } else {
+                console.error('❌ FuncionarioId não encontrado ou vazio');
+            }
+        }
+        
         // Scroll to top
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }

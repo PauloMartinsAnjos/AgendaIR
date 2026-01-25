@@ -167,7 +167,10 @@
                 
                 <!-- Campo hidden para enviar no POST -->
                 <input type="hidden" asp-for="DataHora" id="DataHora" />
-                <input type="hidden" asp-for="FuncionarioId" />
+                <input type="hidden" 
+                       asp-for="FuncionarioId" 
+                       id="FuncionarioId"
+                       value="@ViewBag.FuncionarioResponsavel?.Id" />
                 <span asp-validation-for="DataHora" class="text-danger"></span>
                 
                 <!-- Confirmação visual -->
@@ -402,5 +405,20 @@
             const btnNext = document.querySelector('[data-step="3"] [data-step-next]');
             if (btnNext) btnNext.disabled = false;
         };
+        
+        // Pré-definir funcionário responsável
+        document.addEventListener('DOMContentLoaded', () => {
+            const funcionarioId = document.getElementById('FuncionarioId')?.value;
+            
+            if (funcionarioId) {
+                // Salvar no estado global do calendário
+                if (typeof calendarioState !== 'undefined') {
+                    calendarioState.funcionarioId = parseInt(funcionarioId);
+                    console.log('✅ Funcionário pré-definido:', funcionarioId);
+                }
+            } else {
+                console.error('❌ FuncionarioId não encontrado!');
+            }
+        });
     </script>
 }
