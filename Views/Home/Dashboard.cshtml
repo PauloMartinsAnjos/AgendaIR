@@ -6,6 +6,54 @@
 <!-- Dashboard Styles -->
 <link rel="stylesheet" href="~/css/rir-design/dashboard.css" />
 
+@* BANNER: AUTORIZAÇÃO GOOGLE CALENDAR NECESSÁRIA *@
+@if (TempData["NecessitaAutorizacaoGoogle"] != null && (bool)TempData["NecessitaAutorizacaoGoogle"])
+{
+    <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
+        <div class="d-flex align-items-center">
+            <div class="me-3" style="font-size: 2.5rem;">
+                📅
+            </div>
+            <div class="flex-grow-1">
+                <h5 class="alert-heading mb-2">
+                    <i class="bi bi-exclamation-triangle-fill"></i> 
+                    Autorização do Google Calendar Necessária
+                </h5>
+                <p class="mb-2">
+                    Você possui o email <strong>@TempData["GoogleCalendarEmail"]</strong> cadastrado para integração com Google Calendar, 
+                    mas ainda não autorizou o acesso.
+                </p>
+                <p class="mb-3">
+                    <strong>Autorize agora</strong> para que seus agendamentos sejam criados automaticamente no seu calendário Google.
+                </p>
+                <a asp-controller="GoogleCalendar" asp-action="IniciarAutorizacao" class="btn btn-success">
+                    <i class="bi bi-shield-check"></i> Autorizar Google Calendar
+                </a>
+                <button type="button" class="btn btn-outline-secondary ms-2" data-bs-dismiss="alert">
+                    Lembrar depois
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@* MENSAGENS DE SUCESSO/ERRO GLOBAIS *@
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill"></i> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
 <div class="dashboard-container">
     <!-- Header -->
     <div class="page-header-rir">
