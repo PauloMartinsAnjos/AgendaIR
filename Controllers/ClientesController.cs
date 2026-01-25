@@ -720,7 +720,7 @@ namespace AgendaIR.Controllers
                     nome = c.Nome,
                     cpf = c.CPF,
                     telefone = c.Telefone,
-                    label = c.Nome + " - " + c.CPF
+                    label = c.CPF != null ? c.Nome + " - " + c.CPF : c.Nome
                 })
                 .ToListAsync();
 
