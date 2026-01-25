@@ -51,9 +51,8 @@ namespace AgendaIR.Models
         public string? CorDaPasta { get; set; }
 
         // CPF do cliente
-        [Required(ErrorMessage = "O CPF é obrigatório")]
         [StringLength(14)]
-        public string CPF { get; set; } = string.Empty;
+        public string? CPF { get; set; }
 
         /// <summary>
         /// Funcionário responsável principal pelo cliente
