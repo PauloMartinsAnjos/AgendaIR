@@ -912,12 +912,17 @@ namespace AgendaIR.Controllers
         #region Ações para FUNCIONÁRIOS e ADMINISTRADORES
 
         /// <summary>
-        /// FUNCIONÁRIO/ADMIN: Lista agendamentos
-        /// Funcionário vê apenas seus agendamentos
-        /// Admin vê todos os agendamentos
+        /// Lista de agendamentos com filtros avançados
+        /// Admin vê todos, Funcionário vê apenas seus agendamentos
         /// </summary>
         [HttpGet]
-        public async Task<IActionResult> Index(AgendamentoIndexViewModel model)
+        public async Task<IActionResult> Index(
+            int? filtroFuncionarioId, 
+            int? filtroClienteId, 
+            int? filtroTipoId, 
+            string? filtroStatus, 
+            DateTime? filtroDataInicio, 
+            DateTime? filtroDataFim)
         {
             // Verificar autenticação
             var userType = GetUserType();
@@ -933,8 +938,23 @@ namespace AgendaIR.Controllers
             }
 
             var isAdmin = IsAdmin();
+            var funcionario = await _context.Funcionarios.FindAsync(funcionarioId.Value);
 
-            // Construir query base
+            // Criar ViewModel
+            var model = new AgendamentoIndexViewModel
+            {
+                IsAdmin = isAdmin,
+                FuncionarioLogadoId = funcionarioId.Value,
+                FuncionarioLogadoNome = funcionario?.Nome ?? "Usuário",
+                FiltroFuncionarioId = filtroFuncionarioId ?? (isAdmin ? null : funcionarioId),
+                FiltroClienteId = filtroClienteId,
+                FiltroTipoId = filtroTipoId,
+                FiltroStatus = filtroStatus,
+                FiltroDataInicio = filtroDataInicio,
+                FiltroDataFim = filtroDataFim
+            };
+
+            // ===== CONSTRUIR QUERY COM FILTROS =====
             var query = _context.Agendamentos
                 .Include(a => a.Cliente)
                 .Include(a => a.Funcionario)
@@ -942,37 +962,51 @@ namespace AgendaIR.Controllers
                 .Include(a => a.DocumentosAnexados)
                 .AsQueryable();
 
-            // Se não for admin, filtrar apenas agendamentos do funcionário
-            if (!isAdmin)
+            // Filtro por Funcionário
+            if (filtroFuncionarioId.HasValue)
             {
-                query = query.Where(a => a.FuncionarioId == funcionarioId.Value);
+                query = query.Where(a => a.FuncionarioId == filtroFuncionarioId.Value);
+            }
+            else if (!isAdmin)
+            {
+                // Funcionário não-admin só vê seus próprios agendamentos
+                query = query.Where(a => a.FuncionarioId == funcionarioId);
             }
 
-            // Aplicar filtros
-            if (!string.IsNullOrEmpty(model.FiltroStatus))
+            // Filtro por Cliente
+            if (filtroClienteId.HasValue)
             {
-                query = query.Where(a => a.Status == model.FiltroStatus);
+                query = query.Where(a => a.ClienteId == filtroClienteId.Value);
             }
 
-            if (model.FiltroDataInicio.HasValue)
+            // Filtro por Tipo de Agendamento
+            if (filtroTipoId.HasValue)
             {
-                query = query.Where(a => a.DataHora.Date >= model.FiltroDataInicio.Value.Date);
+                query = query.Where(a => a.TipoAgendamentoId == filtroTipoId.Value);
             }
 
-            if (model.FiltroDataFim.HasValue)
+            // Filtro por Status
+            if (!string.IsNullOrEmpty(filtroStatus))
             {
-                query = query.Where(a => a.DataHora.Date <= model.FiltroDataFim.Value.Date);
+                query = query.Where(a => a.Status.ToLower() == filtroStatus.ToLower());
             }
 
-            // Filtro por funcionário (apenas para admin)
-            if (isAdmin && model.FiltroFuncionarioId.HasValue)
+            // Filtro por Data Início
+            if (filtroDataInicio.HasValue)
             {
-                query = query.Where(a => a.FuncionarioId == model.FiltroFuncionarioId.Value);
+                query = query.Where(a => a.DataHora >= filtroDataInicio.Value);
             }
 
-            // Buscar agendamentos
-            var agendamentos = await query
-                .OrderBy(a => a.DataHora)
+            // Filtro por Data Fim
+            if (filtroDataFim.HasValue)
+            {
+                var dataFimFinal = filtroDataFim.Value.AddDays(1).AddSeconds(-1);
+                query = query.Where(a => a.DataHora <= dataFimFinal);
+            }
+
+            // Executar query
+            model.Agendamentos = await query
+                .OrderByDescending(a => a.DataHora)
                 .Select(a => new AgendamentoListItem
                 {
                     Id = a.Id,
@@ -988,9 +1022,9 @@ namespace AgendaIR.Controllers
                 })
                 .ToListAsync();
 
-            model.Agendamentos = agendamentos;
+            // ===== CARREGAR DROPDOWNS =====
 
-            // Se for admin, carregar lista de funcionários para o filtro
+            // Funcionários (apenas se admin)
             if (isAdmin)
             {
                 model.Funcionarios = await _context.Funcionarios
@@ -1003,6 +1037,33 @@ namespace AgendaIR.Controllers
                     })
                     .ToListAsync();
             }
+
+            // Clientes (filtrar por funcionário se não for admin)
+            var queryClientes = _context.Clientes.Where(c => c.Ativo).AsQueryable();
+            if (!isAdmin)
+            {
+                queryClientes = queryClientes.Where(c => c.FuncionarioResponsavelId == funcionarioId);
+            }
+            
+            model.Clientes = await queryClientes
+                .OrderBy(c => c.Nome)
+                .Select(c => new ClienteSelectItem
+                {
+                    Id = c.Id,
+                    Nome = c.Nome
+                })
+                .ToListAsync();
+
+            // Tipos de Agendamento
+            model.TiposAgendamento = await _context.TiposAgendamento
+                .Where(t => t.Ativo)
+                .OrderBy(t => t.Nome)
+                .Select(t => new TipoAgendamentoSelectItem
+                {
+                    Id = t.Id,
+                    Nome = t.Nome
+                })
+                .ToListAsync();
 
             return View(model);
         }

@@ -8,35 +8,26 @@ namespace AgendaIR.Models.ViewModels
     /// </summary>
     public class AgendamentoIndexViewModel
     {
-        // Filtros
-        [Display(Name = "Status")]
-        public string? FiltroStatus { get; set; }
-        
-        [Display(Name = "Data Início")]
-        [DataType(DataType.Date)]
-        public DateTime? FiltroDataInicio { get; set; }
-        
-        [Display(Name = "Data Fim")]
-        [DataType(DataType.Date)]
-        public DateTime? FiltroDataFim { get; set; }
-        
-        [Display(Name = "Funcionário")]
+        // ===== Filtros =====
         public int? FiltroFuncionarioId { get; set; }
+        public int? FiltroClienteId { get; set; }
+        public int? FiltroTipoId { get; set; }
+        public string? FiltroStatus { get; set; }
+        public DateTime? FiltroDataInicio { get; set; }
+        public DateTime? FiltroDataFim { get; set; }
+
+        // ===== Dados =====
+        public List<AgendamentoListItem> Agendamentos { get; set; } = new();
         
-        // Lista de agendamentos filtrados
-        public List<AgendamentoListItem> Agendamentos { get; set; } = new List<AgendamentoListItem>();
+        // ===== Dropdowns =====
+        public List<FuncionarioSelectItem> Funcionarios { get; set; } = new();
+        public List<ClienteSelectItem> Clientes { get; set; } = new();
+        public List<TipoAgendamentoSelectItem> TiposAgendamento { get; set; } = new();
         
-        // Lista de funcionários para o filtro (apenas para admins)
-        public List<FuncionarioSelectItem>? Funcionarios { get; set; }
-        
-        // Lista de status para o filtro
-        public List<string> StatusList { get; set; } = new List<string> 
-        { 
-            "Pendente", 
-            "Confirmado", 
-            "Concluido", 
-            "Cancelado" 
-        };
+        // ===== Controle =====
+        public bool IsAdmin { get; set; }
+        public int FuncionarioLogadoId { get; set; }
+        public string FuncionarioLogadoNome { get; set; } = string.Empty;
     }
     
     /// <summary>
@@ -60,6 +51,24 @@ namespace AgendaIR.Models.ViewModels
     /// Item para dropdown de seleção de funcionário
     /// </summary>
     public class FuncionarioSelectItem
+    {
+        public int Id { get; set; }
+        public string Nome { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// Item para dropdown de seleção de cliente
+    /// </summary>
+    public class ClienteSelectItem
+    {
+        public int Id { get; set; }
+        public string Nome { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// Item para dropdown de seleção de tipo de agendamento
+    /// </summary>
+    public class TipoAgendamentoSelectItem
     {
         public int Id { get; set; }
         public string Nome { get; set; } = string.Empty;

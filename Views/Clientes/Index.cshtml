@@ -2,7 +2,7 @@
 
 @{
     ViewData["Title"] = "Clientes";
-    var isAdmin = User.FindFirst("IsAdmin")?.Value == "True";
+    var isAdmin = ViewBag.IsAdmin ?? false;
     var baseUrl = ViewBag.BaseUrl as string ?? "";
 }
 
@@ -18,38 +18,6 @@
         </a>
     </div>
 </div>
-
-<!-- FILTRO ADMIN -->
-@if (isAdmin)
-{
-    <div class="card-rir mb-4">
-        <div class="card-rir-body">
-            <form method="get" asp-action="Index" class="row g-3">
-                <div class="col-md-10">
-                    <label for="funcionarioId" class="form-label">
-                        <i class="bi bi-funnel"></i> Filtrar por Funcionário
-                    </label>
-                    <select name="funcionarioId" id="funcionarioId" class="form-select">
-                        <option value="">Todos os funcionários</option>
-                        @{
-                            var funcionarios = ViewBag.Funcionarios as IEnumerable<AgendaIR.Models.Funcionario> ?? Enumerable.Empty<AgendaIR.Models.Funcionario>();
-                        }
-                        @foreach (var func in funcionarios)
-                        {
-                            var selected = ViewBag.FuncionarioIdFiltro != null && (int)ViewBag.FuncionarioIdFiltro == func.Id;
-                            <option value="@func.Id" selected="@selected">@func.Nome</option>
-                        }
-                    </select>
-                </div>
-                <div class="col-md-2 d-flex align-items-end">
-                    <button type="submit" class="btn-rir-primary w-100">
-                        <i class="bi bi-funnel"></i> Filtrar
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-}
 
 <!-- MENSAGENS -->
 @if (TempData["SuccessMessage"] != null)
@@ -81,6 +49,96 @@
         </div>
     </div>
 }
+
+@* FILTROS AVANÇADOS *@
+<div class="card-rir mb-4">
+    <div class="card-rir-header">
+        <h5 class="mb-0"><i class="bi bi-funnel"></i> Filtros de Busca</h5>
+    </div>
+    <div class="card-rir-body">
+        <form asp-action="Index" method="get">
+            <div class="row g-3">
+                @* Nome *@
+                <div class="col-12 col-md-6 col-lg-3">
+                    <label class="form-label fw-bold">
+                        <i class="bi bi-person"></i> Nome
+                    </label>
+                    <input type="text" name="filtroNome" class="form-control" 
+                           value="@ViewBag.FiltroNome" placeholder="Buscar por nome..." />
+                </div>
+
+                @* Email *@
+                <div class="col-12 col-md-6 col-lg-3">
+                    <label class="form-label fw-bold">
+                        <i class="bi bi-envelope"></i> Email
+                    </label>
+                    <input type="text" name="filtroEmail" class="form-control" 
+                           value="@ViewBag.FiltroEmail" placeholder="Buscar por email..." />
+                </div>
+
+                @* Telefone *@
+                <div class="col-12 col-md-6 col-lg-3">
+                    <label class="form-label fw-bold">
+                        <i class="bi bi-telephone"></i> Telefone
+                    </label>
+                    <input type="text" name="filtroTelefone" class="form-control" 
+                           value="@ViewBag.FiltroTelefone" placeholder="Buscar por telefone..." />
+                </div>
+
+                @* CPF *@
+                <div class="col-12 col-md-6 col-lg-3">
+                    <label class="form-label fw-bold">
+                        <i class="bi bi-card-text"></i> CPF
+                    </label>
+                    <input type="text" name="filtroCPF" class="form-control" 
+                           value="@ViewBag.FiltroCPF" placeholder="Buscar por CPF..." />
+                </div>
+
+                @* Funcionário Responsável *@
+                <div class="col-12 col-md-6 col-lg-4">
+                    <label class="form-label fw-bold">
+                        <i class="bi bi-person-badge"></i> Funcionário Responsável
+                    </label>
+                    @if (isAdmin)
+                    {
+                        <select name="filtroFuncionarioId" class="form-select">
+                            <option value="">Todos os Funcionários</option>
+                            @{
+                                var funcionarios = ViewBag.Funcionarios as IEnumerable<AgendaIR.Models.Funcionario> ?? Enumerable.Empty<AgendaIR.Models.Funcionario>();
+                            }
+                            @foreach (var func in funcionarios)
+                            {
+                                <option value="@func.Id" selected="@(ViewBag.FiltroFuncionarioId == func.Id)">
+                                    @func.Nome
+                                </option>
+                            }
+                        </select>
+                    }
+                    else
+                    {
+                        <input type="text" class="form-control" value="@ViewBag.FuncionarioLogadoNome" readonly style="background-color: #f8f9fa;" />
+                        <input type="hidden" name="filtroFuncionarioId" value="@ViewBag.FuncionarioLogadoId" />
+                    }
+                </div>
+            </div>
+
+            <div class="mt-3 d-flex gap-2">
+                <button type="submit" class="btn-rir-primary">
+                    <i class="bi bi-search"></i> Filtrar
+                </button>
+                <a asp-action="Index" class="btn-rir-secondary">
+                    <i class="bi bi-x-circle"></i> Limpar Filtros
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@* Contador de Resultados *@
+<div class="alert alert-info mb-3">
+    <i class="bi bi-info-circle"></i> 
+    <strong>@Model.Count()</strong> cliente(s) encontrado(s)
+</div>
 
 <!-- CONTEÚDO -->
 @if (Model.Any())

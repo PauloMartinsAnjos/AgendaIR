@@ -63,6 +63,15 @@ namespace AgendaIR.Controllers
         }
 
         /// <summary>
+        /// Helper para pegar ID do funcionário logado (alternativo)
+        /// </summary>
+        private int GetFuncionarioLogadoId()
+        {
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            return userIdClaim != null ? int.Parse(userIdClaim) : 0;
+        }
+
+        /// <summary>
         /// Verifica se o usuário tem permissão para acessar funcionalidades de clientes
         /// Apenas funcionários e administradores podem acessar
         /// </summary>
@@ -73,11 +82,15 @@ namespace AgendaIR.Controllers
 
         // GET: Clientes
         /// <summary>
-        /// Lista os clientes
-        /// - Funcionário: vê apenas seus próprios clientes
-        /// - Admin: vê todos os clientes, com opção de filtrar por funcionário
+        /// Lista de clientes com filtros avançados
+        /// Admin vê todos, Funcionário vê apenas seus clientes
         /// </summary>
-        public async Task<IActionResult> Index(int? funcionarioId)
+        public async Task<IActionResult> Index(
+            string? filtroNome, 
+            string? filtroEmail, 
+            string? filtroTelefone, 
+            string? filtroCPF, 
+            int? filtroFuncionarioId)
         {
             // Verificar permissão
             if (!HasPermission())
@@ -86,39 +99,71 @@ namespace AgendaIR.Controllers
                 return RedirectToAction("AccessDenied", "Auth");
             }
 
-            // Query base
+            var isAdmin = IsUserAdmin();
+            var funcionarioId = GetFuncionarioLogadoId();
+            var funcionario = await _context.Funcionarios.FindAsync(funcionarioId);
+
+            ViewBag.IsAdmin = isAdmin;
+            ViewBag.FuncionarioLogadoId = funcionarioId;
+            ViewBag.FuncionarioLogadoNome = funcionario?.Nome ?? "Usuário";
+            
+            ViewBag.FiltroNome = filtroNome;
+            ViewBag.FiltroEmail = filtroEmail;
+            ViewBag.FiltroTelefone = filtroTelefone;
+            ViewBag.FiltroCPF = filtroCPF;
+            ViewBag.FiltroFuncionarioId = filtroFuncionarioId;
+
+            // ===== CONSTRUIR QUERY COM FILTROS =====
             var query = _context.Clientes
                 .Include(c => c.FuncionarioResponsavel)
                 .AsQueryable();
 
-            // Se for funcionário (não admin), mostrar apenas seus clientes
-            if (!IsUserAdmin())
+            // Filtro por Nome
+            if (!string.IsNullOrWhiteSpace(filtroNome))
             {
-                var currentFuncionarioId = GetCurrentFuncionarioId();
-                if (currentFuncionarioId == null)
-                {
-                    return RedirectToAction("AccessDenied", "Auth");
-                }
-                query = query.Where(c => c.FuncionarioResponsavelId == currentFuncionarioId.Value);
-            }
-            else if (funcionarioId.HasValue) // Admin com filtro por funcionário
-            {
-                query = query.Where(c => c.FuncionarioResponsavelId == funcionarioId.Value);
+                query = query.Where(c => c.Nome.Contains(filtroNome));
             }
 
-            // Ordenar por nome
+            // Filtro por Email
+            if (!string.IsNullOrWhiteSpace(filtroEmail))
+            {
+                query = query.Where(c => c.Email.Contains(filtroEmail));
+            }
+
+            // Filtro por Telefone
+            if (!string.IsNullOrWhiteSpace(filtroTelefone))
+            {
+                query = query.Where(c => c.Telefone.Contains(filtroTelefone));
+            }
+
+            // Filtro por CPF
+            if (!string.IsNullOrWhiteSpace(filtroCPF))
+            {
+                query = query.Where(c => c.CPF != null && c.CPF.Contains(filtroCPF));
+            }
+
+            // Filtro por Funcionário
+            if (filtroFuncionarioId.HasValue)
+            {
+                query = query.Where(c => c.FuncionarioResponsavelId == filtroFuncionarioId.Value);
+            }
+            else if (!isAdmin)
+            {
+                // Funcionário não-admin só vê seus clientes
+                query = query.Where(c => c.FuncionarioResponsavelId == funcionarioId);
+            }
+
             var clientes = await query
                 .OrderBy(c => c.Nome)
                 .ToListAsync();
 
-            // Se for admin, carregar lista de funcionários para o filtro
-            if (IsUserAdmin())
+            // Carregar lista de funcionários para dropdown (se admin)
+            if (isAdmin)
             {
                 ViewBag.Funcionarios = await _context.Funcionarios
                     .Where(f => f.Ativo)
                     .OrderBy(f => f.Nome)
                     .ToListAsync();
-                ViewBag.FuncionarioIdFiltro = funcionarioId;
             }
 
             // Passar a URL base para gerar magic links na view
