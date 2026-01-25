@@ -40,6 +40,15 @@
     <form asp-action="Create" method="post" enctype="multipart/form-data" id="agendamentoForm">
         @Html.AntiForgeryToken()
         
+        @* ✅ CAMPOS HIDDEN OBRIGATÓRIOS *@
+        @if (!string.IsNullOrEmpty(ViewBag.Token as string))
+        {
+            <input type="hidden" name="token" value="@ViewBag.Token" />
+        }
+        
+        <input type="hidden" asp-for="TipoAgendamentoId" id="TipoAgendamentoId" />
+        <input type="hidden" asp-for="FuncionarioNome" />
+        
         <!-- PASSO 1: BOAS-VINDAS -->
         <div class="step-content active" data-step="1">
             <div class="card-cliente">
