@@ -49,16 +49,6 @@
         <input type="hidden" asp-for="TipoAgendamentoId" id="TipoAgendamentoId" />
         <input type="hidden" asp-for="FuncionarioNome" />
         
-        @* FuncionarioId vem do ViewBag *@
-        @if (ViewBag.FuncionarioResponsavel != null)
-        {
-            <input type="hidden" name="FuncionarioId" value="@ViewBag.FuncionarioResponsavel.Id" />
-        }
-        else if (Model != null && Model.FuncionarioId > 0)
-        {
-            <input type="hidden" name="FuncionarioId" value="@Model.FuncionarioId" />
-        }
-        
         <!-- PASSO 1: BOAS-VINDAS -->
         <div class="step-content active" data-step="1">
             <div class="card-cliente">
