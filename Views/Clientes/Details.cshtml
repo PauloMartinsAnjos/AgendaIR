@@ -170,7 +170,16 @@
                     </div>
                     <div class="col-12 col-md-6 mb-3">
                         <label class="text-muted small">Token Gerado Em</label>
-                        <p class="h5 mb-0">@Model.TokenGeradoEm.ToString("dd/MM/yyyy HH:mm")</p>
+                        <p class="h5 mb-0">
+                            @if (Model.TokenGeradoEm.HasValue)
+                            {
+                                @Model.TokenGeradoEm.Value.ToString("dd/MM/yyyy HH:mm")
+                            }
+                            else
+                            {
+                                <span class="text-muted">Não gerado</span>
+                            }
+                        </p>
                     </div>
                 </div>
             </div>

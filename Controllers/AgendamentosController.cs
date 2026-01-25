@@ -329,7 +329,6 @@ namespace AgendaIR.Controllers
             if (!string.IsNullOrEmpty(token))
             {
                 cliente = await _context.Clientes
-                    .Include(c => c.Funcionario)
                     .Include(c => c.FuncionarioResponsavel)
                     .FirstOrDefaultAsync(c => c.MagicToken == token);
 
@@ -358,7 +357,6 @@ namespace AgendaIR.Controllers
 
                 // Buscar informações do cliente
                 cliente = await _context.Clientes
-                    .Include(c => c.Funcionario)
                     .Include(c => c.FuncionarioResponsavel)
                     .FirstOrDefaultAsync(c => c.Id == clienteId.Value);
 
@@ -441,7 +439,6 @@ namespace AgendaIR.Controllers
             if (!string.IsNullOrEmpty(token))
             {
                 cliente = await _context.Clientes
-                    .Include(c => c.Funcionario)
                     .Include(c => c.FuncionarioResponsavel)
                     .FirstOrDefaultAsync(c => c.MagicToken == token);
 
@@ -467,7 +464,6 @@ namespace AgendaIR.Controllers
 
                 // Buscar cliente
                 cliente = await _context.Clientes
-                    .Include(c => c.Funcionario)
                     .Include(c => c.FuncionarioResponsavel)
                     .FirstOrDefaultAsync(c => c.Id == clienteId.Value);
 
@@ -492,7 +488,7 @@ namespace AgendaIR.Controllers
                 ViewBag.TiposAgendamento = await _context.TiposAgendamento.Where(t => t.Ativo).ToListAsync();
                 ViewBag.ClienteNome = cliente.Nome;
                 ViewBag.Token = token;
-                model.FuncionarioNome = cliente.FuncionarioResponsavel?.Nome ?? cliente.Funcionario?.Nome ?? "Não atribuído";
+                model.FuncionarioNome = cliente.FuncionarioResponsavel?.Nome ?? "Não atribuído";
                 return View(model);
             }
 
@@ -519,7 +515,7 @@ namespace AgendaIR.Controllers
                 };
             }).ToList();
 
-            model.FuncionarioNome = cliente.FuncionarioResponsavel?.Nome ?? cliente.Funcionario?.Nome ?? "Não atribuído";
+            model.FuncionarioNome = cliente.FuncionarioResponsavel?.Nome ?? "Não atribuído";
 
             if (!ModelState.IsValid)
             {

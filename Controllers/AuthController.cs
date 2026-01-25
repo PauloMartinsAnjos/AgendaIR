@@ -116,7 +116,7 @@ namespace AgendaIR.Controllers
 
             // Buscar cliente pelo token
             var cliente = await _context.Clientes
-                .Include(c => c.Funcionario) // Incluir dados do funcionário
+                .Include(c => c.FuncionarioResponsavel) // Incluir dados do funcionário
                 .FirstOrDefaultAsync(c => c.MagicToken == token && c.Ativo);
 
             if (cliente == null)

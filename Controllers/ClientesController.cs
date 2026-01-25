@@ -496,7 +496,10 @@ namespace AgendaIR.Controllers
                     cliente.CorDaPasta = model.CorDaPasta;
                     cliente.CPF = model.CPF;
                     cliente.Ativo = model.Ativo;
-                    cliente.FuncionarioResponsavelId = model.FuncionarioResponsavelId;
+                    if (model.FuncionarioResponsavelId.HasValue)
+                    {
+                        cliente.FuncionarioResponsavelId = model.FuncionarioResponsavelId.Value;
+                    }
                     
                     // MagicToken não é alterado
 
@@ -543,7 +546,7 @@ namespace AgendaIR.Controllers
             }
 
             var cliente = await _context.Clientes
-                .Include(c => c.Funcionario)
+                .Include(c => c.FuncionarioResponsavel)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (cliente == null)
@@ -555,7 +558,7 @@ namespace AgendaIR.Controllers
             if (!IsUserAdmin())
             {
                 var currentFuncionarioId = GetCurrentFuncionarioId();
-                if (currentFuncionarioId == null || cliente.FuncionarioId != currentFuncionarioId.Value)
+                if (currentFuncionarioId == null || cliente.FuncionarioResponsavelId != currentFuncionarioId.Value)
                 {
                     return RedirectToAction("AccessDenied", "Auth");
                 }
