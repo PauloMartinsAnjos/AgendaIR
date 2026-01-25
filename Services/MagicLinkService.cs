@@ -37,8 +37,8 @@ namespace AgendaIR.Services
             // Remove barra final da URL se existir
             baseUrl = baseUrl.TrimEnd('/');
 
-            // Retorna o link no formato: https://seusite.com/Auth/LoginMagic?token=abc123...
-            return $"{baseUrl}/Auth/LoginMagic?token={token}";
+            // Retorna o link no formato: https://seusite.com/Agendamentos/AcessarLinkMagico?token=abc123...
+            return $"{baseUrl}/Agendamentos/AcessarLinkMagico?token={token}";
         }
 
         /// <summary>

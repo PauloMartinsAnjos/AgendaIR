@@ -1,0 +1,128 @@
+@model AgendaIR.Models.Agendamento
+@{
+    ViewData["Title"] = "Editar Agendamento";
+    Layout = "~/Views/Shared/_LayoutCliente.cshtml";
+    var token = ViewBag.Token as string;
+}
+
+<div class="card-rir">
+    <div class="card-rir-header">
+        <i class="bi bi-pencil-square"></i> Editar Agendamento
+    </div>
+    <div class="card-rir-body">
+        
+        <form asp-action="EditarMeuAgendamento" method="post" id="form-edit">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" value="@Model.Id" />
+            <input type="hidden" name="token" value="@token" />
+            <input type="hidden" asp-for="ClienteId" />
+            <input type="hidden" asp-for="FuncionarioId" />
+            <input type="hidden" asp-for="TipoAgendamentoId" />
+            <input type="hidden" asp-for="Status" />
+            
+            <!-- TIPO (READ-ONLY) -->
+            <div class="mb-4">
+                <label class="form-label fw-bold">
+                    <i class="bi bi-bookmark"></i> Tipo de Atendimento
+                </label>
+                <input type="text" 
+                       class="form-control" 
+                       value="@Model.TipoAgendamento?.Nome" 
+                       readonly 
+                       style="background: #f9f9f9;" />
+                <small class="text-muted">Não é possível alterar o tipo. Cancele e crie novo agendamento se necessário.</small>
+            </div>
+            
+            <!-- FUNCIONÁRIO (READ-ONLY) -->
+            <div class="mb-4">
+                <label class="form-label fw-bold">
+                    <i class="bi bi-person-badge"></i> Consultor Responsável
+                </label>
+                <input type="text" 
+                       class="form-control" 
+                       value="@Model.Funcionario?.Nome" 
+                       readonly 
+                       style="background: #f9f9f9;" />
+            </div>
+            
+            <!-- DATA E HORÁRIO -->
+            <div class="mb-4">
+                <label class="form-label fw-bold">
+                    <i class="bi bi-calendar-event"></i> Data e Horário
+                </label>
+                
+                <div class="data-hora-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                    <div class="calendario-wrapper">
+                        <div id="calendario"></div>
+                    </div>
+                    
+                    <div class="horarios-wrapper">
+                        <div id="horarios-disponiveis">
+                            <div class="alert-rir alert-rir-info">
+                                📅 Selecione um dia no calendário
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <input type="hidden" asp-for="DataHora" id="DataHora" />
+                <div id="confirmacao-horario" class="mt-3"></div>
+            </div>
+            
+            <!-- OBSERVAÇÕES -->
+            <div class="mb-4">
+                <label asp-for="Observacoes" class="form-label fw-bold">
+                    <i class="bi bi-chat-text"></i> Observações
+                </label>
+                <textarea asp-for="Observacoes" 
+                          class="form-control" 
+                          rows="3"
+                          placeholder="Alguma observação adicional? (opcional)"></textarea>
+            </div>
+            
+            <!-- BOTÕES -->
+            <div class="d-flex gap-2 justify-content-between">
+                <a href="@Url.Action("MeusAgendamentos", "Agendamentos", new { token = token })" 
+                   class="btn-rir-secondary">
+                    <i class="bi bi-arrow-left"></i> Voltar
+                </a>
+                
+                <button type="submit" class="btn-rir-primary" id="btn-salvar" disabled>
+                    <i class="bi bi-check-circle"></i> Salvar Alterações
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/rir-design/calendario.css" />
+}
+
+@section Scripts {
+    <script src="~/js/calendario-disponibilidade.js"></script>
+    <script>
+        // Pré-selecionar data/horário atual
+        document.addEventListener('DOMContentLoaded', () => {
+            const funcionarioId = @Model.FuncionarioId;
+            const dataHoraAtual = new Date('@Model.DataHora.ToString("o")');
+            const agendamentoId = @Model.Id;
+            
+            calendarioState.funcionarioId = funcionarioId;
+            calendarioState.duracao = 60;
+            calendarioState.ignorarAgendamentoId = agendamentoId;
+            
+            renderizarCalendario(calendarioState.mesAtual);
+            
+            setTimeout(() => {
+                calendarioState.dataSelecionada = dataHoraAtual;
+                carregarHorarios(dataHoraAtual);
+            }, 500);
+        });
+        
+        // Habilitar botão quando horário for selecionado
+        window.addEventListener('horarioSelecionado', () => {
+            document.getElementById('btn-salvar').disabled = false;
+        });
+    </script>
+}
