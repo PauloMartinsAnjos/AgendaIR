@@ -168,7 +168,7 @@
                 <!-- Campo hidden para enviar no POST -->
                 <input type="hidden" asp-for="DataHora" id="DataHora" />
                 <input type="hidden" 
-                       name="FuncionarioId" 
+                       asp-for="FuncionarioId" 
                        id="FuncionarioId"
                        value="@ViewBag.FuncionarioResponsavel?.Id" />
                 <span asp-validation-for="DataHora" class="text-danger"></span>
