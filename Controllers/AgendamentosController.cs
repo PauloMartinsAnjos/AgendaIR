@@ -387,6 +387,14 @@ namespace AgendaIR.Controllers
             var funcionarioId = cliente.FuncionarioResponsavelId ?? cliente.FuncionarioId;
             var funcionario = cliente.FuncionarioResponsavel ?? cliente.Funcionario;
             
+            // ✅ VALIDAR se cliente tem funcionário responsável
+            if (funcionarioId == null)
+            {
+                _logger.LogError($"❌ Cliente {cliente.Id} não tem funcionário responsável definido!");
+                TempData["Erro"] = "⚠️ Cliente sem funcionário responsável. Contate o suporte.";
+                return View("../Auth/TokenInvalido");
+            }
+            
             ViewBag.FuncionarioResponsavel = funcionario;
             ViewBag.FuncionarioId = funcionarioId;
             ViewBag.Token = token;
@@ -405,6 +413,9 @@ namespace AgendaIR.Controllers
             // Passar nome do cliente para o layout
             ViewBag.ClienteNome = cliente.Nome;
             ViewBag.Cliente = cliente;
+            
+            // ✅ LOGAR para debug
+            _logger.LogInformation($"✅ Cliente {cliente.Nome} - Funcionário Responsável: {funcionario?.Nome} (ID: {funcionarioId})");
 
             var viewModel = new AgendamentoCreateViewModel
             {
