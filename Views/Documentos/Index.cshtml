@@ -72,11 +72,14 @@
                     </label>
                     <select name="filtroTipoId" class="form-select">
                         <option value="">Todos os Tipos</option>
-                        @foreach (var tipo in ViewBag.TiposAgendamento)
+                        @if (ViewBag.TiposAgendamento != null)
                         {
-                            <option value="@tipo.Id" selected="@(ViewBag.FiltroTipoId == tipo.Id)">
-                                @tipo.Nome
-                            </option>
+                            @foreach (var tipo in (List<AgendaIR.Models.TipoAgendamento>)ViewBag.TiposAgendamento)
+                            {
+                                <option value="@tipo.Id" selected="@(ViewBag.FiltroTipoId == tipo.Id)">
+                                    @tipo.Nome
+                                </option>
+                            }
                         }
                     </select>
                 </div>
