@@ -2,7 +2,6 @@
 
 @{
     ViewData["Title"] = "Agendamentos";
-    var isAdmin = Context.Session.GetString("IsAdmin") == "True";
 }
 
 <!-- PAGE HEADER -->
@@ -41,113 +40,164 @@
     </div>
 }
 
-<!-- FILTROS -->
+@* FILTROS AVANÇADOS *@
 <div class="card-rir mb-4">
     <div class="card-rir-header">
-        <h5 class="mb-0"><i class="bi bi-funnel"></i> Filtros</h5>
+        <h5 class="mb-0"><i class="bi bi-funnel"></i> Filtros de Busca</h5>
     </div>
     <div class="card-rir-body">
-            <form asp-action="Index" method="get">
-                <div class="row g-3">
-                    <!-- Filtro Status -->
-                    <div class="col-md-3">
-                        <label asp-for="FiltroStatus" class="form-label">Status</label>
-                        <select asp-for="FiltroStatus" class="form-select">
-                            <option value="">Todos</option>
-                            @foreach (var status in Model.StatusList)
+        <form asp-action="Index" method="get">
+            <div class="row g-3">
+                @* Funcionário Responsável *@
+                <div class="col-12 col-md-6 col-lg-4">
+                    <label class="form-label fw-bold">
+                        <i class="bi bi-person-badge"></i> Funcionário Responsável
+                    </label>
+                    @if (Model.IsAdmin)
+                    {
+                        <select name="filtroFuncionarioId" class="form-select">
+                            <option value="">Todos os Funcionários</option>
+                            @foreach (var func in Model.Funcionarios)
                             {
-                                <option value="@status">@status</option>
+                                <option value="@func.Id" selected="@(Model.FiltroFuncionarioId == func.Id)">
+                                    @func.Nome
+                                </option>
                             }
                         </select>
-                    </div>
-
-                    <!-- Filtro Data Início -->
-                    <div class="col-md-3">
-                        <label asp-for="FiltroDataInicio" class="form-label">Data Início</label>
-                        <input asp-for="FiltroDataInicio" class="form-control" type="date" />
-                    </div>
-
-                    <!-- Filtro Data Fim -->
-                    <div class="col-md-3">
-                        <label asp-for="FiltroDataFim" class="form-label">Data Fim</label>
-                        <input asp-for="FiltroDataFim" class="form-control" type="date" />
-                    </div>
-
-                    <!-- Filtro Funcionário (apenas para Admin) -->
-                    @if (isAdmin && Model.Funcionarios != null)
+                    }
+                    else
                     {
-                        <div class="col-md-3">
-                            <label asp-for="FiltroFuncionarioId" class="form-label">Funcionário</label>
-                            <select asp-for="FiltroFuncionarioId" class="form-select">
-                                <option value="">Todos</option>
-                                @foreach (var func in Model.Funcionarios)
-                                {
-                                    <option value="@func.Id">@func.Nome</option>
-                                }
-                            </select>
-                        </div>
+                        <input type="text" class="form-control" value="@Model.FuncionarioLogadoNome" readonly style="background-color: #f8f9fa;" />
+                        <input type="hidden" name="filtroFuncionarioId" value="@Model.FuncionarioLogadoId" />
                     }
                 </div>
 
-                <div class="row mt-3">
-                    <div class="col-md-12">
-                        <div class="d-flex flex-column flex-md-row gap-2">
-                            <button type="submit" class="btn-rir-primary">
-                                <i class="bi bi-search"></i> Filtrar
-                            </button>
-                            <a asp-action="Index" class="btn-rir-secondary">
-                                <i class="bi bi-x-circle"></i> Limpar Filtros
-                            </a>
-                        </div>
-                    </div>
+                @* Cliente *@
+                <div class="col-12 col-md-6 col-lg-4">
+                    <label class="form-label fw-bold">
+                        <i class="bi bi-people"></i> Cliente
+                    </label>
+                    <select name="filtroClienteId" class="form-select">
+                        <option value="">Todos os Clientes</option>
+                        @foreach (var cliente in Model.Clientes)
+                        {
+                            <option value="@cliente.Id" selected="@(Model.FiltroClienteId == cliente.Id)">
+                                @cliente.Nome
+                            </option>
+                        }
+                    </select>
                 </div>
-            </form>
-        </div>
-    </div>
 
-    <!-- TABELA DE AGENDAMENTOS -->
-    <div class="card-rir">
-        <div class="card-rir-body">
-            @if (!Model.Agendamentos.Any())
-            {
-                <div class="alert-rir alert-rir-info">
-                    <i class="bi bi-info-circle"></i>
-                    <div>
-                        <strong>Nenhum agendamento encontrado</strong><br />
-                        Clique em "Novo Agendamento" para criar o primeiro.
-                    </div>
+                @* Tipo de Agendamento *@
+                <div class="col-12 col-md-6 col-lg-4">
+                    <label class="form-label fw-bold">
+                        <i class="bi bi-tag"></i> Tipo de Agendamento
+                    </label>
+                    <select name="filtroTipoId" class="form-select">
+                        <option value="">Todos os Tipos</option>
+                        @foreach (var tipo in Model.TiposAgendamento)
+                        {
+                            <option value="@tipo.Id" selected="@(Model.FiltroTipoId == tipo.Id)">
+                                @tipo.Nome
+                            </option>
+                        }
+                    </select>
                 </div>
-            }
-            else
-            {
-                <!-- ✅ TABELA DESKTOP -->
-                <div class="table-responsive desktop-only">
-                    <table class="table-rir">
-                        <thead>
+
+                @* Status *@
+                <div class="col-12 col-md-6 col-lg-4">
+                    <label class="form-label fw-bold">
+                        <i class="bi bi-flag"></i> Status
+                    </label>
+                    <select name="filtroStatus" class="form-select">
+                        <option value="">Todos os Status</option>
+                        <option value="Pendente" selected="@(Model.FiltroStatus == "Pendente")">🟡 Pendente</option>
+                        <option value="Confirmado" selected="@(Model.FiltroStatus == "Confirmado")">🔵 Confirmado</option>
+                        <option value="Concluído" selected="@(Model.FiltroStatus == "Concluído")">🟢 Concluído</option>
+                        <option value="Cancelado" selected="@(Model.FiltroStatus == "Cancelado")">🔴 Cancelado</option>
+                    </select>
+                </div>
+
+                @* Data Início *@
+                <div class="col-12 col-md-6 col-lg-4">
+                    <label class="form-label fw-bold">
+                        <i class="bi bi-calendar-event"></i> Data Início
+                    </label>
+                    <input type="date" name="filtroDataInicio" class="form-control" 
+                           value="@(Model.FiltroDataInicio?.ToString("yyyy-MM-dd"))" />
+                </div>
+
+                @* Data Fim *@
+                <div class="col-12 col-md-6 col-lg-4">
+                    <label class="form-label fw-bold">
+                        <i class="bi bi-calendar-event"></i> Data Fim
+                    </label>
+                    <input type="date" name="filtroDataFim" class="form-control" 
+                           value="@(Model.FiltroDataFim?.ToString("yyyy-MM-dd"))" />
+                </div>
+            </div>
+
+            <div class="mt-3 d-flex gap-2">
+                <button type="submit" class="btn-rir-primary">
+                    <i class="bi bi-search"></i> Filtrar
+                </button>
+                <a asp-action="Index" class="btn-rir-secondary">
+                    <i class="bi bi-x-circle"></i> Limpar Filtros
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@* Contador de Resultados *@
+<div class="alert alert-info mb-3">
+    <i class="bi bi-info-circle"></i> 
+    <strong>@Model.Agendamentos.Count</strong> agendamento(s) encontrado(s)
+</div>
+
+<!-- TABELA DE AGENDAMENTOS -->
+<div class="card-rir">
+    <div class="card-rir-body">
+        @if (!Model.Agendamentos.Any())
+        {
+            <div class="alert-rir alert-rir-info">
+                <i class="bi bi-info-circle"></i>
+                <div>
+                    <strong>Nenhum agendamento encontrado</strong><br />
+                    Clique em "Novo Agendamento" para criar o primeiro.
+                </div>
+            </div>
+        }
+        else
+        {
+            <!-- ✅ TABELA DESKTOP -->
+            <div class="table-responsive desktop-only">
+                <table class="table-rir">
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Tipo</th>
+                            <th>Data/Hora</th>
+                            <th>Status</th>
+                            <th>Responsável</th>
+                            <th class="text-end">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Agendamentos)
+                        {
                             <tr>
-                                <th>Cliente</th>
-                                <th>Tipo</th>
-                                <th>Data/Hora</th>
-                                <th>Status</th>
-                                <th>Responsável</th>
-                                <th class="text-end">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in Model.Agendamentos)
-                            {
-                                <tr>
-                                    <td>
-                                        <strong>@item.ClienteNome</strong><br />
-                                        <small class="text-muted">CPF: @(item.ClienteCPF ?? "N/A")</small>
-                                    </td>
-                                    <td>
-                                        <span class="badge-rir badge-rir-info">
-                                            @(item.TipoAgendamentoNome ?? "Não especificado")
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <i class="bi bi-calendar"></i> @item.DataHora.ToString("dd/MM/yyyy")<br />
+                                <td>
+                                    <strong>@item.ClienteNome</strong><br />
+                                    <small class="text-muted">CPF: @(item.ClienteCPF ?? "N/A")</small>
+                                </td>
+                                <td>
+                                    <span class="badge-rir badge-rir-info">
+                                        @(item.TipoAgendamentoNome ?? "Não especificado")
+                                    </span>
+                                </td>
+                                <td>
+                                    <i class="bi bi-calendar"></i> @item.DataHora.ToString("dd/MM/yyyy")<br />
                                         <small class="text-muted"><i class="bi bi-clock"></i> @item.DataHora.ToString("HH:mm")</small>
                                     </td>
                                     <td>
