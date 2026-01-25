@@ -38,7 +38,7 @@ namespace AgendaIR.Controllers
         /// Lista todos os funcionários cadastrados no sistema
         /// Apenas administradores podem visualizar esta lista
         /// </summary>
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? filtroNome, string? filtroEmail, string? filtroUsername, bool? filtroAtivo, bool? filtroAdmin)
         {
             // Verificar se o usuário é administrador
             if (!IsUserAdmin())
@@ -47,8 +47,49 @@ namespace AgendaIR.Controllers
                 return RedirectToAction("AccessDenied", "Auth");
             }
 
-            // Buscar todos os funcionários ordenados por nome
-            var funcionarios = await _context.Funcionarios
+            // Armazenar filtros no ViewBag
+            ViewBag.FiltroNome = filtroNome;
+            ViewBag.FiltroEmail = filtroEmail;
+            ViewBag.FiltroUsername = filtroUsername;
+            ViewBag.FiltroAtivo = filtroAtivo;
+            ViewBag.FiltroAdmin = filtroAdmin;
+
+            // Query base
+            var query = _context.Funcionarios.AsQueryable();
+
+            // ✅ APLICAR FILTROS
+
+            // Filtro por Nome
+            if (!string.IsNullOrWhiteSpace(filtroNome))
+            {
+                query = query.Where(f => f.Nome.Contains(filtroNome));
+            }
+
+            // Filtro por Email
+            if (!string.IsNullOrWhiteSpace(filtroEmail))
+            {
+                query = query.Where(f => f.Email.Contains(filtroEmail));
+            }
+
+            // Filtro por Username
+            if (!string.IsNullOrWhiteSpace(filtroUsername))
+            {
+                query = query.Where(f => f.Username.Contains(filtroUsername));
+            }
+
+            // Filtro por Status (Ativo/Inativo)
+            if (filtroAtivo.HasValue)
+            {
+                query = query.Where(f => f.Ativo == filtroAtivo.Value);
+            }
+
+            // Filtro por Perfil (Admin/Funcionário)
+            if (filtroAdmin.HasValue)
+            {
+                query = query.Where(f => f.IsAdmin == filtroAdmin.Value);
+            }
+
+            var funcionarios = await query
                 .OrderBy(f => f.Nome)
                 .ToListAsync();
 

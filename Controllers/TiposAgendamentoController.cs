@@ -25,14 +25,49 @@ namespace AgendaIR.Controllers
         }
 
         // GET: TiposAgendamento
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? filtroNome, bool? filtroAtivo, bool? filtroCriarMeet, bool? filtroBloqueiaHorario)
         {
             if (!IsUserAdmin())
             {
                 return RedirectToAction("AccessDenied", "Auth");
             }
 
-            var tipos = await _context.TiposAgendamento
+            // Armazenar filtros no ViewBag
+            ViewBag.FiltroNome = filtroNome;
+            ViewBag.FiltroAtivo = filtroAtivo;
+            ViewBag.FiltroCriarMeet = filtroCriarMeet;
+            ViewBag.FiltroBloqueiaHorario = filtroBloqueiaHorario;
+
+            // Query base
+            var query = _context.TiposAgendamento.AsQueryable();
+
+            // ✅ APLICAR FILTROS
+
+            // Filtro por Nome
+            if (!string.IsNullOrWhiteSpace(filtroNome))
+            {
+                query = query.Where(t => t.Nome.Contains(filtroNome));
+            }
+
+            // Filtro por Ativo
+            if (filtroAtivo.HasValue)
+            {
+                query = query.Where(t => t.Ativo == filtroAtivo.Value);
+            }
+
+            // Filtro por Criar Google Meet
+            if (filtroCriarMeet.HasValue)
+            {
+                query = query.Where(t => t.CriarGoogleMeet == filtroCriarMeet.Value);
+            }
+
+            // Filtro por Bloqueia Horário
+            if (filtroBloqueiaHorario.HasValue)
+            {
+                query = query.Where(t => t.BloqueiaHorario == filtroBloqueiaHorario.Value);
+            }
+
+            var tipos = await query
                 .OrderByDescending(t => t.DataCriacao)
                 .ToListAsync();
 
