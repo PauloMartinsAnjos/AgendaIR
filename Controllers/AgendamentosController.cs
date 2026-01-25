@@ -538,7 +538,9 @@ namespace AgendaIR.Controllers
             }
 
             // Validar que todos os documentos obrigatórios foram enviados
-            var documentosObrigatorios = documentosNoBanco.Where(d => d.Obrigatorio).ToList();
+            var documentosObrigatorios = documentosNoBanco
+                .Where(d => d.Obrigatorio && d.TipoAgendamentoId == model.TipoAgendamentoId)
+                .ToList();
 
             _logger.LogInformation($"Validando {documentosObrigatorios.Count} documentos obrigatórios para tipo '{tipoSelecionado.Nome}'");
 
