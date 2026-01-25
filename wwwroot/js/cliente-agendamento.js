@@ -39,6 +39,13 @@ class StepperAgendamento {
         if (tipoSelect) {
             tipoSelect.addEventListener('change', async (e) => {
                 this.data.tipoAgendamento = e.target.value;
+                
+                // ✅ ATUALIZAR campo hidden
+                const tipoIdInput = document.getElementById('TipoAgendamentoId');
+                if (tipoIdInput) {
+                    tipoIdInput.value = e.target.value;
+                    console.log('✅ Campo hidden TipoAgendamentoId atualizado:', tipoIdInput.value);
+                }
 
                 // ✅ NOVO: Carregar documentos do tipo
                 if (e.target.value) {
@@ -54,11 +61,56 @@ class StepperAgendamento {
             console.log('🎯 Evento horarioSelecionado capturado pela classe!', e.detail);
 
             this.data.dataHora = e.detail.dataHoraISO || e.detail.dataHora;
+            
+            // ✅ ATUALIZAR campo hidden DataHora
+            const dataHoraInput = document.getElementById('DataHora');
+            if (dataHoraInput) {
+                dataHoraInput.value = this.data.dataHora;
+                console.log('✅ Campo hidden DataHora atualizado:', dataHoraInput.value);
+            }
 
             console.log('✅ DataHora atualizado:', this.data.dataHora);
 
             this.validateStep(3);
         });
+        
+        // ✅ DEBUG: Log do formulário antes de submeter
+        const form = document.getElementById('agendamentoForm');
+        if (form) {
+            form.addEventListener('submit', (e) => {
+                console.log('📤 Formulário sendo submetido...');
+                console.log('📋 Dados do formulário:');
+                
+                const formData = new FormData(form);
+                for (let [key, value] of formData.entries()) {
+                    console.log(`  ${key}: ${value}`);
+                }
+                
+                // Verificar se token está presente
+                const token = formData.get('token');
+                if (!token) {
+                    console.error('❌ TOKEN NÃO ENCONTRADO NO FORMULÁRIO!');
+                } else {
+                    console.log('✅ Token presente:', token);
+                }
+                
+                // Verificar DataHora
+                const dataHora = formData.get('DataHora');
+                if (!dataHora) {
+                    console.error('❌ DataHora NÃO ENCONTRADO!');
+                } else {
+                    console.log('✅ DataHora presente:', dataHora);
+                }
+                
+                // Verificar TipoAgendamentoId
+                const tipoId = formData.get('TipoAgendamentoId');
+                if (!tipoId) {
+                    console.error('❌ TipoAgendamentoId NÃO ENCONTRADO!');
+                } else {
+                    console.log('✅ TipoAgendamentoId presente:', tipoId);
+                }
+            });
+        }
     }
 
     nextStep() {
