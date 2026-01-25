@@ -196,14 +196,11 @@ namespace AgendaIR.Controllers
                 model.FuncionarioId = currentFuncionarioId.Value;
             }
 
-            // Se for admin, carregar lista de funcionários para seleção
-            if (IsUserAdmin())
-            {
-                ViewBag.Funcionarios = await _context.Funcionarios
-                    .Where(f => f.Ativo)
-                    .OrderBy(f => f.Nome)
-                    .ToListAsync();
-            }
+            // Carregar lista de funcionários para seleção (para ambos campos)
+            ViewBag.Funcionarios = await _context.Funcionarios
+                .Where(f => f.Ativo)
+                .OrderBy(f => f.Nome)
+                .ToListAsync();
 
             return View(model);
         }
@@ -291,6 +288,7 @@ namespace AgendaIR.Controllers
                     CorDaPasta = model.CorDaPasta,
                     CPF = model.CPF,
                     FuncionarioId = model.FuncionarioId,
+                    FuncionarioResponsavelId = model.FuncionarioResponsavelId,
                     MagicToken = magicToken,
                     TokenGeradoEm = DateTime.UtcNow,
                     TokenExpiracao = DateTime.UtcNow.AddHours(8),  // 8 HORAS
@@ -425,8 +423,15 @@ namespace AgendaIR.Controllers
                 CPF = cliente.CPF,
                 Ativo = cliente.Ativo,
                 FuncionarioId = cliente.FuncionarioId,
-                FuncionarioNome = cliente.Funcionario?.Nome
+                FuncionarioNome = cliente.Funcionario?.Nome,
+                FuncionarioResponsavelId = cliente.FuncionarioResponsavelId
             };
+
+            // Carregar lista de funcionários para seleção do funcionário responsável
+            ViewBag.Funcionarios = await _context.Funcionarios
+                .Where(f => f.Ativo)
+                .OrderBy(f => f.Nome)
+                .ToListAsync();
 
             return View(model);
         }
@@ -495,6 +500,7 @@ namespace AgendaIR.Controllers
                     cliente.CorDaPasta = model.CorDaPasta;
                     cliente.CPF = model.CPF;
                     cliente.Ativo = model.Ativo;
+                    cliente.FuncionarioResponsavelId = model.FuncionarioResponsavelId;
                     
                     // FuncionarioId NÃO é atualizado - é IMUTÁVEL
                     // MagicToken também NÃO é alterado

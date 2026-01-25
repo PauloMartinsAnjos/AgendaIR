@@ -93,5 +93,11 @@ namespace AgendaIR.Models.ViewModels
         /// </summary>
         [Display(Name = "Funcionário Responsável")]
         public string? FuncionarioNome { get; set; }
+
+        /// <summary>
+        /// Id do funcionário responsável principal pelo cliente
+        /// </summary>
+        [Display(Name = "Funcionário Responsável Principal")]
+        public int? FuncionarioResponsavelId { get; set; }
     }
 }

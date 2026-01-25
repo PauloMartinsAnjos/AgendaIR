@@ -22,6 +22,8 @@
     
     <!-- Portal do Cliente CSS -->
     <link rel="stylesheet" href="~/css/rir-design/cliente-portal.css" asp-append-version="true" />
+    
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body class="cliente-portal-body">
     <!-- HEADER SIMPLIFICADO -->

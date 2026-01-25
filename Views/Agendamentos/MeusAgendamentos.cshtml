@@ -1,142 +1,258 @@
-@model AgendaIR.Models.ViewModels.AgendamentoIndexViewModel
-
+@model List<AgendaIR.Models.Agendamento>
 @{
     ViewData["Title"] = "Meus Agendamentos";
+    Layout = "~/Views/Shared/_LayoutCliente.cshtml";
+    var cliente = ViewBag.Cliente as AgendaIR.Models.Cliente;
+    var token = ViewBag.Token as string;
 }
 
-<div class="container mt-4">
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <h2><i class="bi bi-calendar-check"></i> Meus Agendamentos</h2>
-            <p class="text-muted">Visualize e gerencie seus agendamentos de atendimento IR</p>
-        </div>
+<div class="card-rir">
+    <div class="card-rir-header">
+        <i class="bi bi-calendar-check"></i> Meus Agendamentos
     </div>
-
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
-
-    @if (TempData["ErrorMessage"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="bi bi-exclamation-triangle"></i> @TempData["ErrorMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
-
-    <div class="row mb-3">
-        <div class="col-md-12">
-            <a asp-action="Create" class="btn btn-primary">
-                <i class="bi bi-plus-circle"></i> Novo Agendamento
-            </a>
-        </div>
-    </div>
-
-    @if (Model.Agendamentos.Any())
-    {
-        <div class="row">
-            <div class="col-md-12">
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>Data/Hora</th>
-                                <th>Status</th>
-                                <th>Funcionário</th>
-                                <th>Documentos</th>
-                                <th>Criado em</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var agendamento in Model.Agendamentos)
-                            {
-                                <tr>
-                                    <td>
-                                        <strong>@agendamento.DataHora.ToString("dd/MM/yyyy")</strong><br>
-                                        <small class="text-muted">@agendamento.DataHora.ToString("HH:mm")</small>
-                                    </td>
-                                    <td>
-                                        @if (agendamento.Status == "Pendente")
-                                        {
-                                            <span class="badge bg-warning text-dark">
-                                                <i class="bi bi-clock"></i> Pendente
-                                            </span>
-                                        }
-                                        else if (agendamento.Status == "Confirmado")
-                                        {
-                                            <span class="badge bg-success">
-                                                <i class="bi bi-check-circle"></i> Confirmado
-                                            </span>
-                                        }
-                                        else if (agendamento.Status == "Concluido")
-                                        {
-                                            <span class="badge bg-primary">
-                                                <i class="bi bi-check-all"></i> Concluído
-                                            </span>
-                                        }
-                                        else if (agendamento.Status == "Cancelado")
-                                        {
-                                            <span class="badge bg-danger">
-                                                <i class="bi bi-x-circle"></i> Cancelado
-                                            </span>
-                                        }
-                                    </td>
-                                    <td>@agendamento.FuncionarioNome</td>
-                                    <td>
-                                        <span class="badge bg-info">
-                                            <i class="bi bi-file-earmark"></i> @agendamento.TotalDocumentos
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <small>@agendamento.DataCriacao.ToString("dd/MM/yyyy HH:mm")</small>
-                                    </td>
-                                    <td>
-                                        @if (agendamento.Status != "Cancelado" && agendamento.Status != "Concluido")
-                                        {
-                                            @if ((agendamento.DataHora - DateTime.Now).TotalHours > 24)
-                                            {
-                                                <form asp-action="CancelMeu" asp-route-id="@agendamento.Id" method="post" class="d-inline"
-                                                      onsubmit="return confirm('Tem certeza que deseja cancelar este agendamento?');">
-                                                    @Html.AntiForgeryToken()
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Cancelar agendamento">
-                                                        <i class="bi bi-x-circle"></i> Cancelar
-                                                    </button>
-                                                </form>
-                                            }
-                                            else
-                                            {
-                                                <small class="text-muted">Não é possível cancelar</small>
-                                            }
-                                        }
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
+    <div class="card-rir-body">
+        
+        @if (TempData["Mensagem"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["Mensagem"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
-        </div>
-    }
-    else
-    {
-        <div class="alert alert-info">
-            <i class="bi bi-info-circle"></i> 
-            Você ainda não possui agendamentos. 
-            <a asp-action="Create" class="alert-link">Clique aqui para criar seu primeiro agendamento</a>.
-        </div>
-    }
+        }
+        
+        @if (Model == null || !Model.Any())
+        {
+            <!-- NENHUM AGENDAMENTO -->
+            <div class="text-center py-5">
+                <div style="font-size: 4rem; opacity: 0.3;">📅</div>
+                <h4 class="text-muted mb-4">Você ainda não possui agendamentos</h4>
+                <p class="text-muted mb-4">Clique no botão abaixo para agendar seu atendimento</p>
+                <a href="@Url.Action("Create", "Agendamentos", new { token = token })" 
+                   class="btn-rir-primary btn-lg">
+                    <i class="bi bi-plus-circle"></i> Novo Agendamento
+                </a>
+            </div>
+        }
+        else
+        {
+            <!-- LISTA DE AGENDAMENTOS -->
+            <div class="agendamentos-list">
+                @foreach (var agendamento in Model.OrderBy(a => a.DataHora))
+                {
+                    var isPast = agendamento.DataHora < DateTime.Now;
+                    var statusClass = agendamento.Status switch
+                    {
+                        "Confirmado" => "status-confirmado",
+                        "Cancelado" => "status-cancelado",
+                        "Concluido" => "status-concluido",
+                        _ => "status-pendente"
+                    };
+                    
+                    <div class="agendamento-card @statusClass @(isPast ? "past" : "")">
+                        <div class="agendamento-header">
+                            <div class="agendamento-tipo">
+                                <i class="bi bi-bookmark-fill"></i>
+                                <strong>@agendamento.TipoAgendamento?.Nome</strong>
+                            </div>
+                            <span class="badge-status badge-@agendamento.Status.ToLower()">
+                                @agendamento.Status
+                            </span>
+                        </div>
+                        
+                        <div class="agendamento-details">
+                            <div class="detail-item">
+                                <i class="bi bi-person-badge"></i>
+                                <span>Com: <strong>@agendamento.Funcionario?.Nome</strong></span>
+                            </div>
+                            
+                            <div class="detail-item">
+                                <i class="bi bi-calendar-event"></i>
+                                <span>@agendamento.DataHora.ToString("dddd, dd/MM/yyyy", new System.Globalization.CultureInfo("pt-BR"))</span>
+                            </div>
+                            
+                            <div class="detail-item">
+                                <i class="bi bi-clock"></i>
+                                <span>@agendamento.DataHora.ToString("HH:mm") - @agendamento.DataHora.AddMinutes(60).ToString("HH:mm")</span>
+                            </div>
+                            
+                            @if (!string.IsNullOrEmpty(agendamento.TipoAgendamento?.Local))
+                            {
+                                <div class="detail-item">
+                                    <i class="bi bi-geo-alt"></i>
+                                    <span>@agendamento.TipoAgendamento.Local</span>
+                                </div>
+                            }
+                        </div>
+                        
+                        @if (!isPast && agendamento.Status != "Cancelado")
+                        {
+                            <div class="agendamento-actions">
+                                <a href="@Url.Action("EditarMeuAgendamento", "Agendamentos", new { id = agendamento.Id, token = token })" 
+                                   class="btn-rir-secondary">
+                                    <i class="bi bi-pencil"></i> Editar
+                                </a>
+                                
+                                <button type="button" 
+                                        class="btn-rir-danger"
+                                        onclick="cancelarAgendamento(@agendamento.Id, '@token')">
+                                    <i class="bi bi-x-circle"></i> Cancelar
+                                </button>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+            
+            <div class="text-center mt-4">
+                <a href="@Url.Action("Create", "Agendamentos", new { token = token })" 
+                   class="btn-rir-primary">
+                    <i class="bi bi-plus-circle"></i> Novo Agendamento
+                </a>
+            </div>
+        }
+    </div>
 </div>
 
-@section Scripts {
-    <script>
-        // Auto-dismiss alerts após 5 segundos
-        setTimeout(function() {
-            $('.alert').fadeOut('slow');
-        }, 5000);
-    </script>
+<style>
+.agendamentos-list {
+    display: grid;
+    gap: 1.5rem;
 }
+
+.agendamento-card {
+    background: white;
+    border: 2px solid var(--rir-border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.agendamento-card:hover {
+    box-shadow: 0 4px 12px rgba(123, 67, 26, 0.15);
+    transform: translateY(-2px);
+}
+
+.agendamento-card.past {
+    opacity: 0.6;
+    background: #f9f9f9;
+}
+
+.agendamento-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--rir-light);
+}
+
+.agendamento-tipo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.2rem;
+    color: var(--rir-primary);
+}
+
+.agendamento-details {
+    display: grid;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #666;
+}
+
+.detail-item i {
+    color: var(--rir-primary);
+    font-size: 1.2rem;
+    width: 20px;
+}
+
+.agendamento-actions {
+    display: flex;
+    gap: 1rem;
+    padding-top: 1rem;
+    border-top: 2px solid var(--rir-light);
+}
+
+.btn-rir-danger {
+    background: #fee2e2;
+    color: #dc2626;
+    border: 2px solid #fecaca;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-rir-danger:hover {
+    background: #dc2626;
+    color: white;
+    border-color: #dc2626;
+}
+
+.badge-confirmado { background: #d1fae5; color: #047857; border: 1px solid #10b981; }
+.badge-cancelado { background: #fee2e2; color: #dc2626; border: 1px solid #ef4444; }
+.badge-concluido { background: #dbeafe; color: #1e40af; border: 1px solid #3b82f6; }
+.badge-pendente { background: #fef3c7; color: #d97706; border: 1px solid #f59e0b; }
+
+.badge-status {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+@@media (max-width: 768px) {
+    .agendamento-actions {
+        flex-direction: column;
+    }
+    
+    .agendamento-actions button,
+    .agendamento-actions a {
+        width: 100%;
+    }
+}
+</style>
+
+<script>
+function cancelarAgendamento(id, token) {
+    if (!confirm('⚠️ Tem certeza que deseja cancelar este agendamento?')) {
+        return;
+    }
+    
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '@Url.Action("CancelarMeuAgendamento", "Agendamentos")';
+    
+    const inputId = document.createElement('input');
+    inputId.type = 'hidden';
+    inputId.name = 'id';
+    inputId.value = id;
+    
+    const inputToken = document.createElement('input');
+    inputToken.type = 'hidden';
+    inputToken.name = 'token';
+    inputToken.value = token;
+    
+    const antiForgery = document.createElement('input');
+    antiForgery.type = 'hidden';
+    antiForgery.name = '__RequestVerificationToken';
+    antiForgery.value = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+    
+    form.appendChild(inputId);
+    form.appendChild(inputToken);
+    form.appendChild(antiForgery);
+    
+    document.body.appendChild(form);
+    form.submit();
+}
+</script>
+
+@Html.AntiForgeryToken()
