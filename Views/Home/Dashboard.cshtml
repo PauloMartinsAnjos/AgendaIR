@@ -20,7 +20,7 @@
                     Autorização do Google Calendar Necessária
                 </h5>
                 <p class="mb-2">
-                    Você possui o email <strong>@TempData["GoogleCalendarEmail"]</strong> cadastrado para integração com Google Calendar, 
+                    Você possui o email <strong>@Html.Encode(TempData["GoogleCalendarEmail"])</strong> cadastrado para integração com Google Calendar, 
                     mas ainda não autorizou o acesso.
                 </p>
                 <p class="mb-3">

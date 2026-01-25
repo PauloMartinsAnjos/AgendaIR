@@ -33,7 +33,12 @@ namespace AgendaIR.Controllers
         [HttpGet]
         public async Task<IActionResult> IniciarAutorizacao()
         {
-            var funcionarioId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            var funcionarioIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(funcionarioIdClaim) || !int.TryParse(funcionarioIdClaim, out int funcionarioId))
+            {
+                TempData["Error"] = "Usuário não autenticado";
+                return RedirectToAction("Login", "Auth");
+            }
 
             var funcionario = await _context.Funcionarios.FindAsync(funcionarioId);
 
@@ -127,7 +132,12 @@ namespace AgendaIR.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RevogarAutorizacao()
         {
-            var funcionarioId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            var funcionarioIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(funcionarioIdClaim) || !int.TryParse(funcionarioIdClaim, out int funcionarioId))
+            {
+                TempData["Error"] = "Usuário não autenticado";
+                return RedirectToAction("Login", "Auth");
+            }
 
             var funcionario = await _context.Funcionarios.FindAsync(funcionarioId);
 
