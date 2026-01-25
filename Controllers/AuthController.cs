@@ -94,6 +94,15 @@ namespace AgendaIR.Controllers
 
             _logger.LogInformation($"Funcionário {funcionario.Username} fez login com sucesso");
 
+            // ✅ VERIFICAR SE PRECISA AUTORIZAR GOOGLE CALENDAR
+            if (!string.IsNullOrEmpty(funcionario.GoogleCalendarEmail) && 
+                string.IsNullOrEmpty(funcionario.GoogleCalendarToken))
+            {
+                TempData["NecessitaAutorizacaoGoogle"] = true;
+                TempData["GoogleCalendarEmail"] = funcionario.GoogleCalendarEmail;
+                _logger.LogInformation($"Funcionário {funcionario.Username} precisa autorizar Google Calendar ({funcionario.GoogleCalendarEmail})");
+            }
+
             // Redirecionar para página inicial
             return RedirectToAction("Index", "Home");
         }
