@@ -388,7 +388,7 @@ namespace AgendaIR.Controllers
             var funcionario = cliente.FuncionarioResponsavel ?? cliente.Funcionario;
             
             // ✅ VALIDAR se cliente tem funcionário responsável
-            if (funcionarioId == null)
+            if (funcionario == null || funcionarioId == 0)
             {
                 _logger.LogError($"❌ Cliente {cliente.Id} não tem funcionário responsável definido!");
                 TempData["Erro"] = "⚠️ Cliente sem funcionário responsável. Contate o suporte.";
