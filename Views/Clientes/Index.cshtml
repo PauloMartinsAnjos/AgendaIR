@@ -52,6 +52,15 @@
 }
 
 <!-- MENSAGENS -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert-rir alert-rir-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill"></i>
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
 @if (TempData["Success"] != null)
 {
     <div class="alert-rir alert-rir-success">
@@ -135,7 +144,7 @@
                             <td>
                                 <span class="badge-rir badge-rir-info">
                                     <i class="bi bi-person"></i>
-                                    @(cliente.Funcionario?.Nome ?? "Não atribuído")
+                                    @(cliente.FuncionarioResponsavel?.Nome ?? "Não atribuído")
                                 </span>
                             </td>
                         }
@@ -268,7 +277,7 @@
                         <div class="client-info-row">
                             <i class="bi bi-person-badge"></i>
                             <span class="badge-rir badge-rir-info">
-                                @(cliente.Funcionario?.Nome ?? "Não atribuído")
+                                @(cliente.FuncionarioResponsavel?.Nome ?? "Não atribuído")
                             </span>
                         </div>
                     }

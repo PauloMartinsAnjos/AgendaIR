@@ -99,18 +99,17 @@
                             </label>
                             
                             <input type="text" class="form-control" value="@Model.FuncionarioNome" readonly disabled />
-                            <input asp-for="FuncionarioId" type="hidden" />
                             
                             <small class="form-text text-muted">
-                                <i class="bi bi-lock"></i> O funcionário responsável não pode ser alterado após a criação
+                                <i class="bi bi-info-circle"></i> Funcionário responsável atual
                             </small>
                         </div>
                     </div>
 
-                    @* Funcionário Responsável Principal *@
+                    @* Alterar Funcionário Responsável (se necessário) *@
                     <div class="mb-3">
                         <label asp-for="FuncionarioResponsavelId" class="form-label">
-                            <i class="bi bi-person-badge"></i> Funcionário Responsável Principal
+                            <i class="bi bi-person-badge"></i> Alterar Funcionário Responsável
                         </label>
                         <select asp-for="FuncionarioResponsavelId" class="form-select">
                             <option value="">-- Selecione --</option>
@@ -126,7 +125,7 @@
                                 }
                             }
                         </select>
-                        <small class="text-muted">Este funcionário será o responsável principal pelo cliente</small>
+                        <small class="text-muted">Selecione um novo funcionário responsável se necessário</small>
                     </div>
 
                     <!-- ✅ NOVO CAMPO - COR DA PASTA -->

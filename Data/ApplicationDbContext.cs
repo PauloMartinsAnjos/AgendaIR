@@ -82,19 +82,18 @@ namespace AgendaIR.Data
                 .HasIndex(f => f.Username)
                 .IsUnique();
 
-            // Configurar índice único para MagicToken de Cliente
+            // Configurar índice único para MagicToken de Cliente (se não for nulo)
             // Cada cliente deve ter um token único
             modelBuilder.Entity<Cliente>()
-                .HasIndex(c => c.MagicToken)
-                .IsUnique();
+                .HasIndex(c => c.MagicToken);
 
             // Configurar relacionamento Cliente -> Funcionário
             // Um funcionário pode ter vários clientes
-            // Um cliente pertence a apenas um funcionário
+            // Um cliente pertence a apenas um funcionário responsável
             modelBuilder.Entity<Cliente>()
-                .HasOne(c => c.Funcionario)
+                .HasOne(c => c.FuncionarioResponsavel)
                 .WithMany(f => f.Clientes)
-                .HasForeignKey(c => c.FuncionarioId)
+                .HasForeignKey(c => c.FuncionarioResponsavelId)
                 .OnDelete(DeleteBehavior.Restrict); // Não permite deletar funcionário se tiver clientes
 
             // Configurar relacionamento Agendamento -> Cliente

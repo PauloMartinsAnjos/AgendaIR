@@ -71,18 +71,12 @@ namespace AgendaIR.Models.ViewModels
         public string CPF { get; set; } = string.Empty;
 
         /// <summary>
-        /// Id do funcionário responsável
+        /// Id do funcionário responsável pelo cliente
         /// Se for funcionário comum, este valor será preenchido automaticamente
         /// Se for admin, pode selecionar qualquer funcionário
         /// </summary>
-        [Required(ErrorMessage = "É necessário selecionar um funcionário")]
+        [Required(ErrorMessage = "É necessário selecionar um funcionário responsável")]
         [Display(Name = "Funcionário Responsável")]
-        public int FuncionarioId { get; set; }
-
-        /// <summary>
-        /// Id do funcionário responsável principal pelo cliente
-        /// </summary>
-        [Display(Name = "Funcionário Responsável Principal")]
-        public int? FuncionarioResponsavelId { get; set; }
+        public int FuncionarioResponsavelId { get; set; }
     }
 }

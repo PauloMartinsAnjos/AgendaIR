@@ -147,7 +147,7 @@ namespace AgendaIR.Controllers
                 new Claim(ClaimTypes.Name, cliente.Nome),
                 new Claim(ClaimTypes.Email, cliente.Email),
                 new Claim("UserType", "Cliente"),
-                new Claim("FuncionarioId", cliente.FuncionarioId.ToString()),
+                new Claim("FuncionarioResponsavelId", cliente.FuncionarioResponsavelId.ToString()),
                 new Claim("IsAdmin", "False")
             };
 

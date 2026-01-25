@@ -96,15 +96,14 @@
 
                         @* Funcionário Responsável *@
                         <div class="col-12 col-md-6 mb-3">
-                            <label asp-for="FuncionarioId" class="form-label fw-bold">
-                                <i class="bi bi-person-badge"></i> Funcionário Responsável
-                            </label>
-                            
                             @if (isAdmin)
                             {
-                                @* Admin pode selecionar qualquer funcionário *@
-                                <select asp-for="FuncionarioId" class="form-select">
-                                    <option value="">Selecione um funcionário</option>
+                                <label asp-for="FuncionarioResponsavelId" class="form-label fw-bold">
+                                    <i class="bi bi-person-badge"></i> Funcionário Responsável
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <select asp-for="FuncionarioResponsavelId" class="form-select">
+                                    <option value="">-- Selecione o funcionário responsável --</option>
                                     @if (ViewBag.Funcionarios != null)
                                     {
                                         var funcionarios = ViewBag.Funcionarios as IEnumerable<AgendaIR.Models.Funcionario>;
@@ -117,41 +116,18 @@
                                         }
                                     }
                                 </select>
-                                <span asp-validation-for="FuncionarioId" class="text-danger"></span>
+                                <span asp-validation-for="FuncionarioResponsavelId" class="text-danger"></span>
                             }
                             else
                             {
-                                @* Funcionário vê apenas seu nome (readonly) *@
-                                var funcionarioNome = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value ?? "";
-                                <input type="text" class="form-control" value="@funcionarioNome" readonly disabled />
-                                <input asp-for="FuncionarioId" type="hidden" />
-                                <small class="form-text text-muted">
-                                    Este cliente será vinculado a você
-                                </small>
+                                @* Funcionário comum: campo hidden *@
+                                <input type="hidden" asp-for="FuncionarioResponsavelId" />
+                                <div class="alert-rir alert-rir-info">
+                                    <i class="bi bi-info-circle"></i>
+                                    Você será definido automaticamente como funcionário responsável deste cliente.
+                                </div>
                             }
                         </div>
-                    </div>
-
-                    @* Funcionário Responsável Principal *@
-                    <div class="mb-3">
-                        <label asp-for="FuncionarioResponsavelId" class="form-label">
-                            <i class="bi bi-person-badge"></i> Funcionário Responsável Principal
-                        </label>
-                        <select asp-for="FuncionarioResponsavelId" class="form-select">
-                            <option value="">-- Selecione --</option>
-                            @if (ViewBag.Funcionarios != null)
-                            {
-                                var funcionarios = ViewBag.Funcionarios as IEnumerable<AgendaIR.Models.Funcionario>;
-                                if (funcionarios != null)
-                                {
-                                    foreach (var func in funcionarios)
-                                    {
-                                        <option value="@func.Id">@func.Nome</option>
-                                    }
-                                }
-                            }
-                        </select>
-                        <small class="text-muted">Este funcionário será o responsável principal pelo cliente</small>
                     </div>
 
                     <!-- ✅ NOVO CAMPO - COR DA PASTA -->
@@ -193,15 +169,6 @@
                             <small class="form-text text-muted">
                                 <span id="charCount">0</span> / 2000 caracteres
                             </small>
-                        </div>
-                    </div>
-
-                    <div class="alert-rir alert-rir-info mb-3">
-                        <i class="bi bi-info-circle" style="font-size: 1.5rem;"></i>
-                        <div>
-                            <strong>Importante:</strong><br />
-                            Após criar o cliente, um link mágico (Magic Link) será gerado automaticamente.
-                            Você poderá copiar este link e enviar ao cliente via WhatsApp para que ele acesse o sistema.
                         </div>
                     </div>
 

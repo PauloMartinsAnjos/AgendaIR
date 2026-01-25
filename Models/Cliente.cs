@@ -55,19 +55,25 @@ namespace AgendaIR.Models
         [StringLength(14)]
         public string CPF { get; set; } = string.Empty;
 
-        // FuncionarioId é a chave estrangeira (Foreign Key) que vincula o cliente a um funcionário
-        // Este vínculo é IMUTÁVEL - uma vez definido, não pode ser alterado
+        /// <summary>
+        /// Funcionário responsável principal pelo cliente
+        /// </summary>
         [Required]
-        public int FuncionarioId { get; set; }
+        public int FuncionarioResponsavelId { get; set; }
+
+        /// <summary>
+        /// Navegação para funcionário responsável
+        /// </summary>
+        public Funcionario? FuncionarioResponsavel { get; set; }
 
         // MagicToken é o token único que permite login automático
         // É como uma "senha mágica" que dá acesso ao sistema
-        [Required]
+        // Campos permanecem no banco mas não são preenchidos automaticamente na criação
         [StringLength(500)]
-        public string MagicToken { get; set; } = string.Empty;
+        public string? MagicToken { get; set; }
 
         // Data e hora em que o token foi gerado
-        public DateTime TokenGeradoEm { get; set; } = DateTime.UtcNow;
+        public DateTime? TokenGeradoEm { get; set; }
 
         /// <summary>
         /// Data/hora de expiração do token (UTC)
@@ -77,20 +83,10 @@ namespace AgendaIR.Models
         /// <summary>
         /// Indica se o token está ativo (não expirou ou foi revogado)
         /// </summary>
-        public bool TokenAtivo { get; set; } = true;
+        public bool TokenAtivo { get; set; } = false;
 
         // Indica se o cliente está ativo
         public bool Ativo { get; set; } = true;
-
-        /// <summary>
-        /// Funcionário responsável principal pelo cliente
-        /// </summary>
-        public int? FuncionarioResponsavelId { get; set; }
-
-        /// <summary>
-        /// Navegação para funcionário responsável
-        /// </summary>
-        public Funcionario? FuncionarioResponsavel { get; set; }
 
         /// <summary>
         /// Verifica se o token está válido (não expirou)
@@ -105,11 +101,6 @@ namespace AgendaIR.Models
 
         // Data de criação do registro
         public DateTime DataCriacao { get; set; } = DateTime.UtcNow;
-
-        // Propriedade de navegação: referência ao funcionário responsável
-        // O Entity Framework usa isso para fazer JOIN entre as tabelas
-        [ForeignKey("FuncionarioId")]
-        public virtual Funcionario? Funcionario { get; set; }
 
         // Relacionamento: Um cliente pode ter vários agendamentos
         public virtual ICollection<Agendamento> Agendamentos { get; set; } = new List<Agendamento>();

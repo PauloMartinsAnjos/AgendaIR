@@ -82,22 +82,15 @@ namespace AgendaIR.Models.ViewModels
         public bool Ativo { get; set; } = true;
 
         /// <summary>
-        /// FuncionarioId - APENAS PARA EXIBIÇÃO (readonly)
-        /// Este campo é IMUTÁVEL e não pode ser alterado
+        /// Id do funcionário responsável pelo cliente (para exibição)
         /// </summary>
         [Display(Name = "Funcionário Responsável")]
-        public int FuncionarioId { get; set; }
+        public int? FuncionarioResponsavelId { get; set; }
 
         /// <summary>
         /// Nome do funcionário responsável (para exibição)
         /// </summary>
         [Display(Name = "Funcionário Responsável")]
         public string? FuncionarioNome { get; set; }
-
-        /// <summary>
-        /// Id do funcionário responsável principal pelo cliente
-        /// </summary>
-        [Display(Name = "Funcionário Responsável Principal")]
-        public int? FuncionarioResponsavelId { get; set; }
     }
 }
