@@ -50,8 +50,8 @@ namespace AgendaIR.Controllers
 
             if (string.IsNullOrEmpty(funcionario.GoogleCalendarEmail))
             {
-                TempData["Error"] = "Configure seu email do Google Calendar antes de autorizar";
-                return RedirectToAction("Edit", "Funcionarios", new { id = funcionarioId });
+                TempData["Error"] = "Configure seu email do Google Calendar nas configurações antes de autorizar";
+                return RedirectToAction("Index", "Home");
             }
 
             // Gerar URL de autorização
