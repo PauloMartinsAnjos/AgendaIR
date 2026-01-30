@@ -59,7 +59,7 @@ namespace AgendaIR.Controllers
         /// Lista todos os documentos solicitados (lista GLOBAL)
         /// Exibe documentos ativos e inativos com badges de status
         /// </summary>
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? filtroNome, int? filtroTipoId, bool? filtroObrigatorio, bool? filtroAtivo)
         {
             // Verificar permissão
             if (!HasPermission())
@@ -68,9 +68,51 @@ namespace AgendaIR.Controllers
                 return RedirectToAction("AccessDenied", "Auth");
             }
 
-            // Buscar todos os documentos ordenados por nome
-            var documentos = await _context.DocumentosSolicitados
+            // Armazenar filtros no ViewBag
+            ViewBag.FiltroNome = filtroNome;
+            ViewBag.FiltroTipoId = filtroTipoId;
+            ViewBag.FiltroObrigatorio = filtroObrigatorio;
+            ViewBag.FiltroAtivo = filtroAtivo;
+
+            // Query base
+            var query = _context.DocumentosSolicitados
+                .Include(d => d.TipoAgendamento)
+                .AsQueryable();
+
+            // ✅ APLICAR FILTROS
+
+            // Filtro por Nome
+            if (!string.IsNullOrWhiteSpace(filtroNome))
+            {
+                query = query.Where(d => d.Nome.Contains(filtroNome));
+            }
+
+            // Filtro por Tipo de Agendamento
+            if (filtroTipoId.HasValue)
+            {
+                query = query.Where(d => d.TipoAgendamentoId == filtroTipoId.Value);
+            }
+
+            // Filtro por Obrigatório
+            if (filtroObrigatorio.HasValue)
+            {
+                query = query.Where(d => d.Obrigatorio == filtroObrigatorio.Value);
+            }
+
+            // Filtro por Ativo
+            if (filtroAtivo.HasValue)
+            {
+                query = query.Where(d => d.Ativo == filtroAtivo.Value);
+            }
+
+            var documentos = await query
                 .OrderBy(d => d.Nome)
+                .ToListAsync();
+
+            // Carregar tipos de agendamento para o dropdown
+            ViewBag.TiposAgendamento = await _context.TiposAgendamento
+                .Where(t => t.Ativo)
+                .OrderBy(t => t.Nome)
                 .ToListAsync();
 
             return View(documentos);
